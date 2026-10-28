@@ -10,3 +10,7 @@ backend/app/frontend/
 # Local environment
 .env
 .env.local
+
+# AI assistants local cache
+.claude/
+.agents/
