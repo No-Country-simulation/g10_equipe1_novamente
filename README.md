@@ -1,68 +1,94 @@
-# Full Stack FastAPI Template
+# NovaMente 🧠✨
 
-[![Test Docker Compose](../../actions/workflows/test-docker-compose.yml/badge.svg)](../../actions/workflows/test-docker-compose.yml)
-[![Test Backend](../../actions/workflows/test-backend.yml/badge.svg)](../../actions/workflows/test-backend.yml)
+> **Sistema Inteligente de Adaptação e Geração de Conteúdo Educacional**  
+> *Projeto desenvolvido para a Simulação No-Country — G10 Equipe 1*
 
-## Technology Stack and Features
+---
 
-- ⚡ [**FastAPI**](https://fastapi.tiangolo.com) for the Python backend API.
-  - 🧰 [SQLModel](https://sqlmodel.tiangolo.com) for the Python SQL database interactions (ORM).
-  - 🔍 [Pydantic](https://docs.pydantic.dev), used by FastAPI, for the data validation and settings management.
-  - 💾 [PostgreSQL](https://www.postgresql.org) as the SQL database.
-- 🚀 [React](https://react.dev) for the frontend.
-  - 🧩 Built into the backend application and served by FastAPI on the same domain as the API.
-  - 💃 Using TypeScript, hooks, [Vite](https://vitejs.dev), and other parts of a modern frontend stack.
-  - 🎨 [Tailwind CSS](https://tailwindcss.com) and [shadcn/ui](https://ui.shadcn.com) for the frontend components.
-  - 🤖 An automatically generated frontend client.
-  - 🧪 [Playwright](https://playwright.dev) for end-to-end testing.
-  - 🦇 Dark mode support.
-- 🐋 [Docker Compose](https://www.docker.com) for local services and self-hosted deployment.
-  - 📞 [Traefik](https://traefik.io) as a reverse proxy with automatic HTTPS.
-- 🔒 Secure password hashing by default.
-- 🔑 JWT (JSON Web Token) authentication.
-- ✅ Tests with [Pytest](https://pytest.org).
-- 🏭 CI (continuous integration) and CD (continuous deployment) based on GitHub Actions.
+## 📌 Sobre o Projeto
 
-### Dashboard Login
+O **NovaMente** é uma plataforma educacional inteligente projetada para transformar o aprendizado de pessoas neurodivergentes (como TDAH, TEA e dislexia) e profissionais em transição de carreira. A plataforma utiliza Inteligência Artificial generativa para criar trilhas de estudo personalizadas (*roadmaps*), quebrar conteúdos complexos em microlearning e oferecer suporte adaptativo contínuo, reduzindo a sobrecarga cognitiva e a frustração no estudo.
 
-![Dashboard login screenshot](img/login.png)
+### 🌟 Principais Funcionalidades
 
-### Dashboard - Items
+- **🗺️ Roadmaps Adaptativos Inteligentes**: Criação de trilhas de aprendizado dinâmicas, divididas por fases, semanas e tópicos claros.
+- **🎯 Modo Foco & Acessibilidade**: Interface limpa, com controle de distrações e formatação visual voltada para menor estresse cognitivo.
+- **💬 Assistente Pedagógico Integrado**: Tire dúvidas em tempo real com explicação adaptada ao seu estilo de aprendizado e FAQ inteligente contextual.
+- **📊 Acompanhamento de Progresso**: Dashboard com métricas de evolução, tempo de estudo focado e metas atingidas.
+- **📚 Documentação e Planejamento**: Documentos técnicos, diagramas e relatórios arquiteturais disponíveis no repositório na pasta `docs/`.
 
-![Items dashboard screenshot](img/dashboard-items.png)
+---
 
-### Dashboard - Dark Mode
+## 🛠️ Tecnologias Utilizadas
 
-![Dark mode dashboard screenshot](img/dashboard-dark.png)
+- **Frontend**: [React](https://react.dev/), [TypeScript](https://www.typescriptlang.org/), [Vite](https://vitejs.dev/), [Tailwind CSS](https://tailwindcss.com/) & [shadcn/ui](https://ui.shadcn.com/)
+- **Backend**: [FastAPI](https://fastapi.tiangolo.com/) (Python 3.10+), [Pydantic v2](https://docs.pydantic.dev/), [SQLModel](https://sqlmodel.tiangolo.com/)
+- **Banco de Dados**: [PostgreSQL](https://www.postgresql.org/)
+- **Infraestrutura**: [Docker](https://www.docker.com/) & Docker Compose, [Traefik](https://traefik.io/) (proxy reverso)
+- **Gerenciamento de Pacotes**: [uv](https://github.com/astral-sh/uv) (Python) e [Bun](https://bun.sh/) / npm (Frontend)
 
-### Interactive API Documentation
+---
 
-![API docs](img/docs.png)
+## 🚀 Como Executar o Projeto
 
-## How to Use It
+### Pré-requisitos
+- [Docker](https://docs.docker.com/get-docker/) e Docker Compose instalados **OU**
+- Node.js (v18+) / Bun e Python 3.10+ para execução local sem Docker.
 
-Click the **Use this template** button at the top of this page to create a new repository.
+### Opção 1: Execução com Docker (Recomendada)
+Para subir o banco de dados, o backend e o frontend juntos:
 
-## Backend Development
+```bash
+# 1. Clone o repositório
+git clone git@github.com:No-Country-simulation/g10_equipe1_novamente.git
+cd g10_equipe1_novamente
 
-Backend docs: [backend/README.md](./backend/README.md).
+# 2. Crie o arquivo de ambiente a partir do exemplo
+cp .env.example .env
 
-## Frontend Development
+# 3. Suba os containers
+docker compose up -d
+```
 
-Frontend docs: [frontend/README.md](./frontend/README.md).
+Acesse:
+- **Frontend**: http://localhost:5173 (ou http://localhost)
+- **API Docs (Swagger)**: http://localhost/docs ou http://localhost:8000/docs
 
-## Deployment
+---
 
-Deployment and repository automation: [deployment.md](./deployment.md).
+### Opção 2: Desenvolvimento Local (Frontend)
+Para rodar apenas o frontend de forma rápida:
 
-Self-hosted deployment with Docker Compose: [deployment-docker-compose.md](./deployment-docker-compose.md).
+```bash
+cd frontend
+npm install # ou bun install
+npm run dev # ou bun run dev
+```
+Acesse: `http://localhost:5173`
 
-## Development
+---
 
-General development docs: [development.md](./development.md).
+## 📂 Estrutura do Repositório
 
-This includes the local FastAPI and Vite workflow, Docker Compose services, `.env` configuration, and more.
+```
+g10_equipe1_novamente/
+├── frontend/           # Aplicação Web em React + Vite + TypeScript
+│   ├── src/
+│   │   ├── components/ # Componentes (Sidebar, Assistente, Logos, etc.)
+│   │   ├── routes/     # Rotas (Dashboard, Novo Curso, Roadmap, Conteúdo)
+│   │   └── services/   # Integração com APIs
+├── backend/            # API REST em FastAPI e modelos de dados
+│   ├── app/
+│   │   ├── api/        # Rotas da API
+│   │   ├── models/     # Modelos do banco de dados (SQLModel)
+│   │   └── core/       # Configurações de segurança e autenticação
+├── docs/               # Documentação técnica e relatórios do projeto
+└── compose.yml         # Configuração de containers Docker
+```
 
-## License
+---
 
-The Full Stack FastAPI Template is licensed under the terms of the MIT license.
+## 👥 Equipe NovaMente (No-Country G10 - Equipe 1)
+
+Projeto desenvolvido com dedicação e foco em impacto social e inclusão educacional.
+Licença sob a [Licença MIT](LICENSE).
