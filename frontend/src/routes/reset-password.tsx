@@ -6,7 +6,6 @@ import {
   redirect,
   useNavigate,
 } from "@tanstack/react-router"
-import { LockKeyhole, ArrowRight, ArrowLeft } from "lucide-react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 
@@ -17,11 +16,9 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "@/components/ui/form"
 import { LoadingButton } from "@/components/ui/loading-button"
-import { PasswordInput } from "@/components/ui/password-input"
 import { isLoggedIn } from "@/hooks/useAuth"
 import useCustomToast from "@/hooks/useCustomToast"
 import { handleError } from "@/utils"
@@ -99,89 +96,89 @@ function ResetPassword() {
 
   return (
     <AuthLayout>
-      <div className="flex flex-col gap-6">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-            <LockKeyhole className="h-5 w-5" />
-          </div>
-          <div>
-            <h2 className="text-2xl font-bold font-heading text-foreground tracking-tight">
-              Nova Senha
-            </h2>
-            <p className="text-xs text-muted-foreground">
-              Crie uma senha segura para proteger o seu acesso.
-            </p>
-          </div>
+      <div className="flex flex-col gap-5">
+        <div className="text-center">
+          <h1 className="m-0 mb-1 text-2xl leading-tight font-bold text-[#11151C] dark:text-white">
+            Redefinir senha
+          </h1>
+          <p className="m-0 text-sm text-[#555B66] dark:text-zinc-400">
+            Crie uma nova senha para proteger seu acesso.
+          </p>
         </div>
 
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
-            className="flex flex-col gap-5"
+            className="flex flex-col gap-4"
           >
-            <div className="grid gap-4">
-              <FormField
-                control={form.control}
-                name="new_password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-xs font-semibold text-foreground">
-                      Nova Senha
-                    </FormLabel>
-                    <FormControl>
-                      <PasswordInput
-                        data-testid="new-password-input"
-                        placeholder="••••••••"
-                        className="h-11 bg-background"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage className="text-xs" />
-                  </FormItem>
-                )}
-              />
+            <FormField
+              control={form.control}
+              name="new_password"
+              render={({ field }) => (
+                <FormItem className="flex flex-col gap-1.5 space-y-0">
+                  <label
+                    htmlFor="n-pass"
+                    className="text-sm font-semibold text-[#11151C] dark:text-zinc-200"
+                  >
+                    Nova senha
+                  </label>
+                  <FormControl>
+                    <input
+                      id="n-pass"
+                      data-testid="new-password-input"
+                      type="password"
+                      placeholder="••••••••"
+                      className="w-full min-h-[48px] px-3.5 py-2.5 rounded-[6px] border border-[#8A919C] dark:border-zinc-700 bg-white dark:bg-zinc-900 text-[#11151C] dark:text-white text-base outline-none focus-visible:outline-3 focus-visible:outline-[#1F4FD8] focus-visible:outline-offset-2 transition-all box-border"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage className="text-xs text-destructive" />
+                </FormItem>
+              )}
+            />
 
-              <FormField
-                control={form.control}
-                name="confirm_password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-xs font-semibold text-foreground">
-                      Confirmar Nova Senha
-                    </FormLabel>
-                    <FormControl>
-                      <PasswordInput
-                        data-testid="confirm-password-input"
-                        placeholder="••••••••"
-                        className="h-11 bg-background"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage className="text-xs" />
-                  </FormItem>
-                )}
-              />
+            <FormField
+              control={form.control}
+              name="confirm_password"
+              render={({ field }) => (
+                <FormItem className="flex flex-col gap-1.5 space-y-0">
+                  <label
+                    htmlFor="c-pass"
+                    className="text-sm font-semibold text-[#11151C] dark:text-zinc-200"
+                  >
+                    Confirmar nova senha
+                  </label>
+                  <FormControl>
+                    <input
+                      id="c-pass"
+                      data-testid="confirm-password-input"
+                      type="password"
+                      placeholder="••••••••"
+                      className="w-full min-h-[48px] px-3.5 py-2.5 rounded-[6px] border border-[#8A919C] dark:border-zinc-700 bg-white dark:bg-zinc-900 text-[#11151C] dark:text-white text-base outline-none focus-visible:outline-3 focus-visible:outline-[#1F4FD8] focus-visible:outline-offset-2 transition-all box-border"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage className="text-xs text-destructive" />
+                </FormItem>
+              )}
+            />
 
-              <LoadingButton
-                type="submit"
-                className="h-11 w-full bg-[#11151C] hover:bg-[#1f2530] text-white dark:bg-primary dark:hover:bg-primary/90 font-semibold text-sm shadow-sm flex items-center justify-center gap-2 mt-1"
-                loading={mutation.isPending}
-              >
-                <span>Salvar Nova Senha</span>
-                <ArrowRight className="w-4 h-4" />
-              </LoadingButton>
-            </div>
+            <LoadingButton
+              type="submit"
+              className="w-full min-h-[48px] border-none rounded-[6px] bg-[#F26B21] hover:bg-[#D95A12] text-[#11151C] font-semibold text-base cursor-pointer transition-colors shadow-none flex items-center justify-center mt-1 focus-visible:outline-3 focus-visible:outline-[#1F4FD8] focus-visible:outline-offset-2"
+              loading={mutation.isPending}
+            >
+              Salvar nova senha
+            </LoadingButton>
 
-            <div className="pt-2 border-t border-border/60 text-center text-xs text-muted-foreground">
-              Lembrou da sua senha?{" "}
+            <p className="m-0 mt-1 text-center text-sm text-[#11151C] dark:text-zinc-300">
               <RouterLink
                 to="/login"
-                className="font-semibold text-primary underline underline-offset-4 hover:text-primary/90 inline-flex items-center gap-1 ml-1"
+                className="text-[#11151C] dark:text-white underline font-semibold hover:text-[#1F4FD8] dark:hover:text-[#3B82F6] inline-flex items-center min-h-[44px]"
               >
-                <ArrowLeft className="w-3.5 h-3.5" />
                 Voltar ao Login
               </RouterLink>
-            </div>
+            </p>
           </form>
         </Form>
       </div>
