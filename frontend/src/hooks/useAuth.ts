@@ -20,9 +20,22 @@ const useAuth = () => {
   const queryClient = useQueryClient()
   const { showErrorToast } = useCustomToast()
 
+  const isDemo = localStorage.getItem("access_token") === "demo-token-novamente"
+
   const { data: user } = useQuery<UserPublic | null, Error>({
     queryKey: ["currentUser"],
-    queryFn: async () => (await UsersService.readUserMe()).data,
+    queryFn: async () => {
+      if (isDemo) {
+        return {
+          id: "00000000-0000-0000-0000-000000000001",
+          email: "banca.hackathon@novamente.ai",
+          full_name: "Avaliador(a) da Banca",
+          is_active: true,
+          is_superuser: false,
+        } as unknown as UserPublic
+      }
+      return (await UsersService.readUserMe()).data
+    },
     enabled: isLoggedIn(),
   })
 
