@@ -4,7 +4,6 @@ import {
   Link as RouterLink,
   redirect,
 } from "@tanstack/react-router"
-import { ArrowRight, CheckCircle2 } from "lucide-react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { AuthLayout } from "@/components/Common/AuthLayout"
@@ -13,12 +12,9 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
 import { LoadingButton } from "@/components/ui/loading-button"
-import { PasswordInput } from "@/components/ui/password-input"
 import useAuth, { isLoggedIn } from "@/hooks/useAuth"
 
 const formSchema = z
@@ -88,154 +84,141 @@ function SignUp() {
 
   return (
     <AuthLayout>
-      <div className="flex flex-col gap-6">
-        {/* Abas Superiores no estilo do protótipo da Karina */}
-        <div className="flex rounded-lg border border-[#D5D9D2] dark:border-zinc-800 p-1 bg-muted/60">
-          <RouterLink
-            to="/login"
-            className="flex-1 py-2 text-center text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-          >
-            Entrar
-          </RouterLink>
-          <div className="flex-1 py-2 text-center text-sm font-semibold rounded-md bg-[#F26B21] text-white shadow-sm">
-            Criar conta
-          </div>
-        </div>
+      <div className="flex flex-col gap-5">
+        <h1 className="m-0 mb-1 text-center text-2xl leading-tight font-bold text-[#11151C] dark:text-white">
+          Criar conta
+        </h1>
 
-        {/* Cabeçalho do Card */}
-        <div className="flex flex-col gap-1.5 text-left">
-          <h2 className="text-2xl font-bold font-heading text-foreground tracking-tight">
-            Crie sua conta
-          </h2>
-          <p className="text-xs text-muted-foreground">
-            Comece a transformar suas documentações técnicas em cursos didáticos.
-          </p>
-        </div>
-
-        {/* Formulário de Cadastro */}
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
             className="flex flex-col gap-4"
           >
-            <div className="grid gap-3.5">
-              <FormField
-                control={form.control}
-                name="full_name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-xs font-semibold text-foreground">
-                      Nome Completo
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        data-testid="full-name-input"
-                        placeholder="Ex: Carlos Eduardo"
-                        type="text"
-                        className="h-10 bg-background"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage className="text-xs" />
-                  </FormItem>
-                )}
-              />
+            <FormField
+              control={form.control}
+              name="full_name"
+              render={({ field }) => (
+                <FormItem className="flex flex-col gap-1.5 space-y-0">
+                  <label
+                    htmlFor="s-name"
+                    className="text-sm font-semibold text-[#11151C] dark:text-zinc-200"
+                  >
+                    Nome completo
+                  </label>
+                  <FormControl>
+                    <input
+                      id="s-name"
+                      data-testid="full-name-input"
+                      placeholder="Seu nome"
+                      type="text"
+                      className="w-full min-h-[48px] px-3.5 py-2.5 rounded-[6px] border border-[#8A919C] dark:border-zinc-700 bg-white dark:bg-zinc-900 text-[#11151C] dark:text-white text-base outline-none focus-visible:outline-3 focus-visible:outline-[#1F4FD8] focus-visible:outline-offset-2 transition-all placeholder:text-muted-foreground box-border"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage className="text-xs text-destructive" />
+                </FormItem>
+              )}
+            />
 
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-xs font-semibold text-foreground">
-                      E-mail Corporativo ou Pessoal
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        data-testid="email-input"
-                        placeholder="voce@empresa.com"
-                        type="email"
-                        className="h-10 bg-background"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage className="text-xs" />
-                  </FormItem>
-                )}
-              />
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem className="flex flex-col gap-1.5 space-y-0">
+                  <label
+                    htmlFor="s-email"
+                    className="text-sm font-semibold text-[#11151C] dark:text-zinc-200"
+                  >
+                    E-mail
+                  </label>
+                  <FormControl>
+                    <input
+                      id="s-email"
+                      data-testid="email-input"
+                      type="email"
+                      className="w-full min-h-[48px] px-3.5 py-2.5 rounded-[6px] border border-[#8A919C] dark:border-zinc-700 bg-white dark:bg-zinc-900 text-[#11151C] dark:text-white text-base outline-none focus-visible:outline-3 focus-visible:outline-[#1F4FD8] focus-visible:outline-offset-2 transition-all box-border"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage className="text-xs text-destructive" />
+                </FormItem>
+              )}
+            />
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-xs font-semibold text-foreground">
-                        Senha
-                      </FormLabel>
-                      <FormControl>
-                        <PasswordInput
-                          data-testid="password-input"
-                          placeholder="••••••••"
-                          className="h-10 bg-background"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage className="text-xs" />
-                    </FormItem>
-                  )}
-                />
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem className="flex flex-col gap-1.5 space-y-0">
+                  <label
+                    htmlFor="s-password"
+                    className="text-sm font-semibold text-[#11151C] dark:text-zinc-200"
+                  >
+                    Senha
+                  </label>
+                  <FormControl>
+                    <input
+                      id="s-password"
+                      data-testid="password-input"
+                      type="password"
+                      placeholder="••••••••"
+                      className="w-full min-h-[48px] px-3.5 py-2.5 rounded-[6px] border border-[#8A919C] dark:border-zinc-700 bg-white dark:bg-zinc-900 text-[#11151C] dark:text-white text-base outline-none focus-visible:outline-3 focus-visible:outline-[#1F4FD8] focus-visible:outline-offset-2 transition-all box-border"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage className="text-xs text-destructive" />
+                </FormItem>
+              )}
+            />
 
-                <FormField
-                  control={form.control}
-                  name="confirm_password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-xs font-semibold text-foreground">
-                        Confirmar Senha
-                      </FormLabel>
-                      <FormControl>
-                        <PasswordInput
-                          data-testid="confirm-password-input"
-                          placeholder="••••••••"
-                          className="h-10 bg-background"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage className="text-xs" />
-                    </FormItem>
-                  )}
-                />
-              </div>
+            <FormField
+              control={form.control}
+              name="confirm_password"
+              render={({ field }) => (
+                <FormItem className="flex flex-col gap-1.5 space-y-0">
+                  <label
+                    htmlFor="s-confirm-password"
+                    className="text-sm font-semibold text-[#11151C] dark:text-zinc-200"
+                  >
+                    Confirmar senha
+                  </label>
+                  <FormControl>
+                    <input
+                      id="s-confirm-password"
+                      data-testid="confirm-password-input"
+                      type="password"
+                      placeholder="••••••••"
+                      className="w-full min-h-[48px] px-3.5 py-2.5 rounded-[6px] border border-[#8A919C] dark:border-zinc-700 bg-white dark:bg-zinc-900 text-[#11151C] dark:text-white text-base outline-none focus-visible:outline-3 focus-visible:outline-[#1F4FD8] focus-visible:outline-offset-2 transition-all box-border"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage className="text-xs text-destructive" />
+                </FormItem>
+              )}
+            />
 
-              {/* Destaque de Benefícios rápidos */}
-              <div className="rounded-lg bg-primary/5 border border-primary/20 p-2.5 flex items-center gap-2 text-[11px] text-muted-foreground font-medium">
-                <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
-                <span>Acesso gratuito ao gerador de flashcards, quizzes e tutoriais RAG</span>
-              </div>
+            <LoadingButton
+              type="submit"
+              className="w-full min-h-[48px] border-none rounded-[6px] bg-[#F26B21] hover:bg-[#D95A12] text-[#11151C] font-semibold text-base cursor-pointer transition-colors shadow-none flex items-center justify-center mt-1 focus-visible:outline-3 focus-visible:outline-[#1F4FD8] focus-visible:outline-offset-2"
+              loading={signUpMutation.isPending}
+            >
+              Criar conta
+            </LoadingButton>
 
-              <LoadingButton
-                type="submit"
-                className="h-11 w-full bg-[#F26B21] hover:bg-[#d95b18] text-white font-semibold text-sm shadow-sm flex items-center justify-center gap-2 mt-1"
-                loading={signUpMutation.isPending}
-              >
-                <span>Finalizar Cadastro</span>
-                <ArrowRight className="w-4 h-4" />
-              </LoadingButton>
-            </div>
-
-            <div className="pt-2 border-t border-border/60 text-center text-xs text-muted-foreground">
-              Já possui uma conta ativa?{" "}
+            <p className="m-0 mt-1 text-center text-sm text-[#11151C] dark:text-zinc-300">
+              Já tem conta?{" "}
               <RouterLink
                 to="/login"
-                className="font-semibold text-primary underline underline-offset-4 hover:text-primary/90"
+                className="text-[#11151C] dark:text-white underline font-semibold hover:text-[#1F4FD8] dark:hover:text-[#3B82F6] inline-flex items-center min-h-[44px]"
               >
-                Fazer Login
+                Entrar
               </RouterLink>
-            </div>
+            </p>
           </form>
         </Form>
       </div>
     </AuthLayout>
   )
 }
+
 
