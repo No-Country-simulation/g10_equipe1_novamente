@@ -22,18 +22,16 @@ import useAuth, { isLoggedIn } from "@/hooks/useAuth"
 
 const formSchema = z
   .object({
-    email: z.email({ message: "Invalid email address" }),
-    full_name: z.string().min(1, { message: "Full Name is required" }),
+    email: z.email({ message: "Informe um e-mail válido" }),
+    full_name: z.string().min(1, { message: "Informe o nome completo" }),
     password: z
       .string()
-      .min(1, { message: "Password is required" })
-      .min(8, { message: "Password must be at least 8 characters" }),
-    confirm_password: z
-      .string()
-      .min(1, { message: "Password confirmation is required" }),
+      .min(1, { message: "Informe a senha" })
+      .min(8, { message: "A senha deve ter pelo menos 8 caracteres" }),
+    confirm_password: z.string().min(1, { message: "Confirme a senha" }),
   })
   .refine((data) => data.password === data.confirm_password, {
-    message: "The passwords don't match",
+    message: "As senhas não coincidem",
     path: ["confirm_password"],
   })
 
@@ -51,7 +49,7 @@ export const Route = createFileRoute("/signup")({
   head: () => ({
     meta: [
       {
-        title: "Sign Up - FastAPI Template",
+        title: "Criar conta - NovaMente",
       },
     ],
   }),
@@ -87,7 +85,7 @@ function SignUp() {
           className="flex flex-col gap-6"
         >
           <div className="flex flex-col items-center gap-2 text-center">
-            <h1 className="text-2xl font-bold">Create an account</h1>
+            <h1 className="text-2xl font-bold">Crie uma conta</h1>
           </div>
 
           <div className="grid gap-4">
@@ -96,11 +94,11 @@ function SignUp() {
               name="full_name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Full Name</FormLabel>
+                  <FormLabel>Nome completo</FormLabel>
                   <FormControl>
                     <Input
                       data-testid="full-name-input"
-                      placeholder="User"
+                      placeholder="Usuário"
                       type="text"
                       {...field}
                     />
@@ -115,11 +113,11 @@ function SignUp() {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel>E-mail</FormLabel>
                   <FormControl>
                     <Input
                       data-testid="email-input"
-                      placeholder="user@example.com"
+                      placeholder="usuario@exemplo.com"
                       type="email"
                       {...field}
                     />
@@ -134,11 +132,11 @@ function SignUp() {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Password</FormLabel>
+                  <FormLabel>Senha</FormLabel>
                   <FormControl>
                     <PasswordInput
                       data-testid="password-input"
-                      placeholder="Password"
+                      placeholder="Senha"
                       {...field}
                     />
                   </FormControl>
@@ -152,11 +150,11 @@ function SignUp() {
               name="confirm_password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Confirm Password</FormLabel>
+                  <FormLabel>Confirmar senha</FormLabel>
                   <FormControl>
                     <PasswordInput
                       data-testid="confirm-password-input"
-                      placeholder="Confirm Password"
+                      placeholder="Confirmar senha"
                       {...field}
                     />
                   </FormControl>
@@ -170,14 +168,14 @@ function SignUp() {
               className="w-full"
               loading={signUpMutation.isPending}
             >
-              Sign Up
+              Criar conta
             </LoadingButton>
           </div>
 
           <div className="text-center text-sm">
-            Already have an account?{" "}
+            Já tem uma conta?{" "}
             <RouterLink to="/login" className="underline underline-offset-4">
-              Log in
+              Entrar
             </RouterLink>
           </div>
         </form>

@@ -8,11 +8,14 @@ import { createRouter, RouterProvider } from "@tanstack/react-router"
 import { AxiosError } from "axios"
 import { StrictMode } from "react"
 import ReactDOM from "react-dom/client"
+import { z } from "zod"
 import { client } from "./client/client.gen"
 import { ThemeProvider } from "./components/theme-provider"
 import { Toaster } from "./components/ui/sonner"
 import "./index.css"
 import { routeTree } from "./routeTree.gen"
+
+z.config(z.locales.pt())
 
 client.setConfig({
   baseURL: import.meta.env.VITE_API_URL ?? "",

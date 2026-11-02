@@ -13,10 +13,10 @@ const PendingItems = () => (
     <TableHeader>
       <TableRow>
         <TableHead>ID</TableHead>
-        <TableHead>Title</TableHead>
-        <TableHead>Description</TableHead>
+        <TableHead>Título</TableHead>
+        <TableHead>Descrição</TableHead>
         <TableHead>
-          <span className="sr-only">Actions</span>
+          <span className="sr-only">Ações</span>
         </TableHead>
       </TableRow>
     </TableHeader>
