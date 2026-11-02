@@ -2,7 +2,7 @@
 
 O NovaMente guarda usuários, cursos, metadados de documentos, chunks com embeddings de 768 dimensões e citações em PostgreSQL 18 com pgvector. Os arquivos originais e o JSON gerado de cada conteúdo ficam no OCI Object Storage. O banco guarda só a chave de cada objeto.
 
-Este documento descreve a versão 5 do ERD. Hoje `backend/app/models.py` define só as tabelas `user` e `item`. As outras seis tabelas deste documento ainda não têm model nem migration. A tabela `item` vem do template e não faz parte do ERD.
+Este documento descreve a versão 5 do ERD. `backend/app/models.py` define as sete tabelas, e a migration de base fica em `backend/app/alembic/versions/`.
 
 O diagrama está em [`erd.svg`](erd.svg).
 

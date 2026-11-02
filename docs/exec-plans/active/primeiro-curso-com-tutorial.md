@@ -15,7 +15,7 @@ Esta é a primeira camada do produto. Ela usa o esquema definitivo do banco (ERD
 ## Progresso
 
 - [x] (2026-11-02 00:00Z) Plano escrito.
-- [ ] Marco 1: models do ERD, migration única de base, remoção de `Item` no backend e no frontend, banco local migrado, testes e build passando.
+- [x] (2026-11-02 07:15Z) Marco 1: models do ERD, migration única, remoção de `Item`, banco migrado, testes e build verificados.
 - [ ] Marco 2: armazenamento de objetos (MinIO local, OCI em produção) e `endpoint` que cria curso, documento e conteúdo pendente.
 - [ ] Marco 3: indexação do texto (chunks e embeddings) e geração do tutorial com Gemini, em tarefa de fundo.
 - [ ] Marco 4: telas "Cursos", "Novo curso" e "Curso" no frontend, com teste Playwright.
@@ -23,7 +23,14 @@ Esta é a primeira camada do produto. Ela usa o esquema definitivo do banco (ERD
 
 ## Surpresas e Descobertas
 
-Nenhuma ainda.
+- Observação: o SQLAlchemy grava `None` em JSONB como JSON `null` por padrão, e o CHECK de objeto o rejeita. `JSONB(none_as_null=True)` grava SQL NULL.
+  Evidência: o primeiro teste do grafo falhou em `ck_course_content_body_json`; os oito testes do esquema passaram após a mudança.
+- Observação: o ERD não define os textos de `prompt_hint`.
+  Evidência: os textos escolhidos são "Use examples from banking, payments and personal finance.", "Use examples from healthcare and health technology.", "Use examples from online shops and retail platforms." e "Use general-purpose examples relevant to the topic."
+- Observação: `frontend/openapi.json` é ignorado pelo Git; o script o regenerou localmente e versionou o cliente gerado.
+  Evidência: `git check-ignore frontend/openapi.json` retorna o caminho.
+- Observação: o plano recomendava `docker compose down -v`, mas isso apaga outros volumes. O procedimento foi corrigido para remover só o volume do Postgres.
+  Evidência: o Compose iniciou um volume novo e `\dt` retornou `Did not find any tables.` antes do autogenerate.
 
 ## Registro de Decisões
 
@@ -63,9 +70,13 @@ Nenhuma ainda.
   Justificativa: o CI, os testes e o Playwright precisam subir o backend sem chave. Uma chave obrigatória quebraria esses ambientes, e um provedor falso dentro da aplicação seria código só de teste em produção.
   Data/Autor: 2026-11-02, Flavio Murata com agente.
 
+- Decisão: usar `JSONB(none_as_null=True)` nas três colunas JSON opcionais.
+  Justificativa: os CHECKs do ERD aceitam SQL NULL, não o valor JSON null.
+  Data/Autor: 2026-11-02, agente.
+
 ## Resultados e Retrospectiva
 
-Nada a relatar ainda.
+O Marco 1 entrega o esquema e remove o recurso do template. Os Marcos 2 a 5 continuam pendentes.
 
 ## Contexto e Orientação
 
@@ -277,7 +288,6 @@ Para o frontend:
 Para o Playwright, com o Compose inteiro:
 
     docker compose build
-    docker compose down -v --remove-orphans
     docker compose run --rm backend bash scripts/prestart.sh
     docker compose up -d --wait backend
     docker compose run --rm playwright bunx playwright test
@@ -310,7 +320,7 @@ Marco 4 está aceito quando o fluxo descrito em `Propósito / Visão Geral` func
 
 ## Idempotência e Recuperação
 
-A migration de base só roda em banco vazio. Um banco local criado com as migrations antigas do template tem `alembic_version` apontando para uma revisão que não existe mais, e `alembic upgrade head` falha com `Can't locate revision`. Nesse caso, recrie o banco com `docker compose down -v` e `docker compose up -d --wait db`. Os comandos estão em `Passos Concretos`. Eles apagam só o volume do PostgreSQL local; faça antes um `docker compose exec db pg_dump -U postgres app > backup.sql` se os dados locais importam. Não há banco de produção com esse esquema; se passar a haver antes deste plano chegar a ele, pare e registre o problema em `Surpresas e Descobertas`.
+A migration de base só roda em banco vazio. Um banco local criado com as migrations antigas do template tem `alembic_version` apontando para uma revisão que não existe mais, e `alembic upgrade head` falha com `Can't locate revision`. Nesse caso, recrie só o volume do PostgreSQL com os comandos em `Passos Concretos`. Eles apagam os dados do PostgreSQL local; faça antes um `docker compose exec db pg_dump -U postgres app > backup.sql` se os dados locais importam. Não há banco de produção com esse esquema; se passar a haver antes deste plano chegar a ele, pare e registre o problema em `Surpresas e Descobertas`.
 
 `downgrade base` seguido de `upgrade head` é seguro e repetível. O seed de `niche` usa `ON CONFLICT`, então rodar de novo não duplica linhas. `generate-client.sh` e `bun run build` regeneram arquivos e podem rodar quantas vezes for preciso.
 
@@ -318,7 +328,21 @@ Na criação de curso, o arquivo vai ao armazenamento antes do `commit`. Se o `c
 
 ## Artefatos e Notas
 
-Nenhum ainda.
+Validação do Marco 1 em 2026-11-02:
+
+    Banco vazio: Did not find any tables.
+    prestart.sh: Running upgrade  -> b23eaa5c1998, create erd v5 schema
+    \dt: alembic_version, content_citation, course, course_content, document_chunk, niche, source_document, user (8 rows)
+    alembic check: No new upgrade operations detected.
+    alembic downgrade base && alembic upgrade head: exit 0
+    lint.sh: mypy, ty, ruff check e ruff format passaram
+    tests-start.sh: 31 passed; coverage report --fail-under=90: 97%
+    generate-client.sh e bun run build: exit 0
+    docker compose build, prestart, up backend e Playwright: 34 passed
+    Chromium no Compose: cadastro, login, configurações e ausência do link Items verificados
+    rg: apenas Item de menu e componentes Radix, sem recurso do template
+
+O primeiro teste falhou porque JSONB serializava `None` como JSON null. A execução seguinte encontrou o usuário fixo deixado pela limpeza interrompida; a terceira passou após a limpeza normal do teste.
 
 ## Interfaces e Dependências
 

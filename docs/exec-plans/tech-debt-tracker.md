@@ -12,21 +12,9 @@ Cada entrada tem os mesmos campos:
 
 Quando um débito é pago, a entrada sai deste arquivo. O histórico do Git guarda a entrada removida.
 
-## A tabela `item` do template continua no banco e na interface
-
-**Onde**: `backend/app/models.py`, `backend/app/api/routes/items.py`, `frontend/src/routes/_layout/items.tsx` e as migrations em `backend/app/alembic/versions/`.
-
-**Por que existe**: o `commit` `d1ff5b6` trouxe a base do template full-stack-fastapi e manteve `Item` de propósito. `Item` é o único exemplo de recurso com dono, rota, CRUD e tela.
-
-**Custo de manter**: `docs/generated/db-schema.md` diz que `item` não faz parte do ERD. Quem lê o código encontra uma tabela que o produto não usa. `User` tem a relação `items` com `cascade_delete=True`, então apagar um usuário também apaga linhas de uma tabela morta.
-
-**Quando pagar**: quando a primeira tabela do ERD, como `course`, tiver model, migration, rota e tela. A partir desse ponto, `course` serve de exemplo e `Item` pode sair. Acaba quando nenhum arquivo fora de `backend/app/alembic/versions/` cita `Item` e uma migration remove a tabela.
-
-**Estado**: aberto.
-
 ## A coluna `embedding` não tem índice HNSW
 
-**Onde**: a tabela `document_chunk`, descrita em `docs/generated/db-schema.md`. A tabela ainda não tem model nem migration.
+**Onde**: a tabela `document_chunk`, descrita em `docs/generated/db-schema.md`. O model é `DocumentChunk` em `backend/app/models.py`.
 
 **Por que existe**: `docs/generated/db-schema.md` decide começar com busca exata por distância de cosseno. Um índice HNSW (índice aproximado de vizinhos mais próximos do pgvector) só entra depois de um benchmark.
 
