@@ -84,18 +84,18 @@ O repositório tem duas partes. `backend/` é uma API em Python 3.14 com FastAPI
 
 Arquivos que importam:
 
-- `backend/app/models.py`: todas as classes SQLModel. Hoje tem `User`, `Item` e os schemas de entrada e saída da API.
-- `backend/app/crud.py`: funções de acesso ao banco (`create_user`, `authenticate`, `create_item`).
-- `backend/app/api/main.py`: registra os routers. `backend/app/api/routes/` tem `login.py`, `users.py`, `utils.py`, `private.py` e `items.py`.
+- `backend/app/models.py`: models das sete tabelas do ERD, enums e schemas de entrada e saída da API para usuários.
+- `backend/app/crud.py`: funções de acesso a usuários, como `create_user` e `authenticate`.
+- `backend/app/api/main.py`: registra os routers de `login.py`, `users.py`, `utils.py` e `private.py` em `backend/app/api/routes/`. Ainda não há rotas de cursos ou nichos.
 - `backend/app/api/deps.py`: `SessionDep` (sessão do banco) e `CurrentUser` (usuário autenticado pelo token JWT).
 - `backend/app/core/config.py`: classe `Settings`, lida do arquivo `.env` na raiz.
-- `backend/app/alembic/`: Alembic, a ferramenta de migrations (scripts versionados que mudam o esquema do banco). `env.py` usa `SQLModel.metadata` como alvo. `versions/` tem seis migrations do template. `script.py.mako` é o molde de uma migration nova.
+- `backend/app/alembic/`: Alembic, a ferramenta de migrations (scripts versionados que mudam o esquema do banco). `env.py` usa `SQLModel.metadata` como alvo. `versions/` tem uma migration de base para as sete tabelas e o seed de nichos. `script.py.mako` é o molde de uma migration nova.
 - `backend/scripts/prestart.sh`: roda `alembic upgrade head`.
 - `backend/scripts/test.sh` e `lint.sh`: testes com cobertura e verificação de tipos e estilo.
-- `backend/tests/`: testes `pytest`. `conftest.py` abre uma sessão no banco real e, ao final, apaga `Item` e `User`.
-- `frontend/src/routes/`: rotas do TanStack Router. `_layout/items.tsx` é a tela de items. `frontend/src/components/Items/` tem os componentes dela. `frontend/src/components/Sidebar/AppSidebar.tsx` tem o link "Items".
+- `backend/tests/`: testes `pytest`. `conftest.py` abre uma sessão no banco real e, ao final, apaga `User`. `test_schema.py` verifica o esquema no catálogo e as restrições no banco.
+- `frontend/src/routes/`: rotas do TanStack Router para login, cadastro, painel e configurações. `frontend/src/components/Sidebar/AppSidebar.tsx` contém a navegação do painel. Ainda não há telas de cursos.
 - `frontend/src/client/`: cliente HTTP gerado a partir do OpenAPI do backend por `scripts/generate-client.sh`. Nunca edite à mão.
-- `frontend/tests/`: testes Playwright (navegador real). `items.spec.ts` testa a tela de items.
+- `frontend/tests/`: testes Playwright (navegador real) de login, cadastro e configurações.
 - `docs/generated/db-schema.md`: a referência do esquema. Este plano implementa esse documento. Em caso de conflito entre este plano e aquele documento, o documento vence e o conflito vai para `Surpresas e Descobertas`.
 
 O esquema tem sete tabelas. `user` é a conta de acesso. `niche` é o setor usado nos exemplos (Fintech, Saúde, E-commerce, Geral). `course` é o curso de um usuário, com um `audience_level` e um `status`. `source_document` guarda os metadados de um arquivo enviado. `document_chunk` guarda cada trecho do documento com o embedding de 768 dimensões. `course_content` guarda uma peça gerada, como um tutorial, com o JSON publicado em `content`. `content_citation` liga um conteúdo aos chunks que ele cita. Chaves estrangeiras compostas, como `document_chunk.(document_id, course_id)` apontando para `source_document.(id, course_id)`, impedem que um registro aponte para dados de outro curso.
@@ -377,3 +377,5 @@ Ao final do Marco 3:
     def generate_first_tutorial(course_id: uuid.UUID) -> None: ...
 
 Nota de revisão (2026-11-02): uma revisão do plano por um agente Codex apontou falhas que este texto corrige. O SQLModel recusa `foreign_key` e outras opções junto de `sa_column`. `user.is_active` não tinha padrão no banco. `alembic check` não prova CHECKs nem padrões, então entrou `test_schema_matches_erd`. Ficaram faltando `randomItemTitle`, `randomItemDescription` e `frontend/openapi.json` na remoção de `Item`. `docker compose down -v` apagaria também o volume do MinIO. Título e texto só com espaços violariam CHECKs. As citações não chegavam à API nem à tela. A tarefa de fundo não definia `rollback`. O Playwright dependia de uma chave Gemini.
+
+Nota de revisão (2026-11-02): o contexto foi atualizado após o Marco 1 para orientar a implementação do Marco 2 com os arquivos atuais.

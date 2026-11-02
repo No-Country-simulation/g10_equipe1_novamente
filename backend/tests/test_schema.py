@@ -25,9 +25,11 @@ def graph(
     user = User(email=f"{uuid.uuid4()}@example.com", hashed_password="hash")
     db.add(user)
     db.flush()
+    niche = db.exec(select(Niche).where(Niche.slug == "geral")).one()
+    assert niche.id is not None
     course = Course(
         owner_id=user.id,
-        niche_id=1,
+        niche_id=niche.id,
         title="Course",
         audience_level=AudienceLevel.non_technical,
     )
@@ -151,37 +153,39 @@ def test_delete_user_cascades(db: Session) -> None:
 
 def test_niche_in_use_cannot_be_deleted(db: Session) -> None:
     graph(db)
+    niche = db.exec(select(Niche).where(Niche.slug == "geral")).one()
     with pytest.raises(IntegrityError):
-        db.execute(text("DELETE FROM niche WHERE id = 1"))
+        db.delete(niche)
+        db.flush()
     db.rollback()
 
 
 def test_schema_matches_erd(db: Session) -> None:
-    checks = {
-        row[0]
-        for row in db.execute(
+    checks = dict(
+        db.execute(
             text(
-                "SELECT conname FROM pg_constraint WHERE contype = 'c' AND connamespace = 'public'::regnamespace"
+                "SELECT conname, pg_get_constraintdef(oid) FROM pg_constraint "
+                "WHERE contype = 'c' AND connamespace = 'public'::regnamespace"
             )
-        )
-    }
+        ).all()
+    )
     assert checks == {
-        "ck_source_document_size_positive",
-        "ck_source_document_sha256_hex",
-        "ck_document_chunk_position",
-        "ck_document_chunk_text_nonempty",
-        "ck_document_chunk_page",
-        "ck_document_chunk_tokens",
-        "ck_course_content_position",
-        "ck_course_content_focus_nonempty",
-        "ck_course_content_minutes",
-        "ck_course_content_grounding",
-        "ck_course_content_body_json",
-        "ck_course_content_key_concepts_array",
-        "ck_course_content_prerequisites_array",
-        "ck_course_content_published_pair",
-        "ck_course_content_successful_published",
-        "ck_content_citation_cosine_similarity",
+        "ck_content_citation_cosine_similarity": "CHECK (((similarity IS NULL) OR ((similarity >= ('-1'::integer)::numeric) AND (similarity <= (1)::numeric))))",
+        "ck_course_content_body_json": "CHECK (((content IS NULL) OR (jsonb_typeof(content) = 'object'::text)))",
+        "ck_course_content_focus_nonempty": "CHECK ((length(btrim(focus)) > 0))",
+        "ck_course_content_grounding": "CHECK (((grounding_score IS NULL) OR ((grounding_score >= (0)::numeric) AND (grounding_score <= (1)::numeric))))",
+        "ck_course_content_key_concepts_array": "CHECK (((key_concepts IS NULL) OR (jsonb_typeof(key_concepts) = 'array'::text)))",
+        "ck_course_content_minutes": "CHECK (((estimated_minutes IS NULL) OR (estimated_minutes > 0)))",
+        "ck_course_content_position": 'CHECK (("position" >= 0))',
+        "ck_course_content_prerequisites_array": "CHECK (((prerequisites IS NULL) OR (jsonb_typeof(prerequisites) = 'array'::text)))",
+        "ck_course_content_published_pair": "CHECK (((content IS NULL) = (oci_object_key IS NULL)))",
+        "ck_course_content_successful_published": "CHECK (((status <> 'succeeded'::generation_status) OR ((content IS NOT NULL) AND (oci_object_key IS NOT NULL))))",
+        "ck_document_chunk_page": "CHECK (((page_number IS NULL) OR (page_number >= 1)))",
+        "ck_document_chunk_position": "CHECK ((chunk_index >= 0))",
+        "ck_document_chunk_text_nonempty": "CHECK ((length(btrim(text)) > 0))",
+        "ck_document_chunk_tokens": "CHECK (((token_count IS NULL) OR (token_count > 0)))",
+        "ck_source_document_sha256_hex": "CHECK ((sha256 ~ '^[0-9a-f]{64}$'::text))",
+        "ck_source_document_size_positive": "CHECK ((size_bytes > 0))",
     }
     enums: dict[str, list[str]] = {}
     for name, value in db.execute(
