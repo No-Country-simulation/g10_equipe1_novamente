@@ -7,6 +7,7 @@ Create Date: ${create_date}
 """
 from alembic import op
 import sqlalchemy as sa
+import pgvector.sqlalchemy
 import sqlmodel.sql.sqltypes
 ${imports if imports else ""}
 

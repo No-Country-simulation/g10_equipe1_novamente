@@ -18,7 +18,7 @@ services:
       - --log
 
   db:
-    image: postgres:18
+    image: pgvector/pgvector:0.8.7-pg18
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d app"]
       interval: 10s

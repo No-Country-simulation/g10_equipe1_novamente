@@ -57,6 +57,8 @@ jobs:
         run: uv sync --all-packages
       - name: Install frontend dependencies
         run: bun ci
+      - name: Create env file
+        run: cp .env.example .env
       - name: Run prek - pre-commit
         id: precommit
         run: uv run prek run --from-ref origin/${GITHUB_BASE_REF} --to-ref HEAD --show-diff-on-failure
