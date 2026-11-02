@@ -100,3 +100,7 @@ Zinsser diz que escrever bem é reescrever. Antes de enviar, releia uma vez e co
 3. Cada afirmação sobre código ou testes foi verificada, ou está marcada como suposição?
 4. Uma pessoa que não viu a sessão entende o texto sem perguntar nada?
 5. O texto tem hífen simples no lugar de travessão longo e nenhuma abertura de cortesia?
+
+# ExecPlans
+
+Ao escrever funcionalidades complexas ou refatorações significativas, use um ExecPlan (conforme descrito em docs/PLANS.md) do design à implementação.
