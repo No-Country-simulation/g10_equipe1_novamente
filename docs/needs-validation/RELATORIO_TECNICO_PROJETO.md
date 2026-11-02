@@ -113,7 +113,7 @@ flowchart TD
 ### ADR-01: Adoção do `fastapi/full-stack-fastapi-template` (React 19 + TypeScript + Vite + FastAPI)
 * **Contexto:** Em um hackathon de tempo limitado, construir autenticação completa (OAuth2/JWT), arquitetura de cliente de API, Docker compose e CRUD de usuários do zero consome tempo precioso que deveria ser focado no pipeline de IA (RAG) e na experiência pedagógica.
 * **Decisão:** Adotar o template oficial de referência da comunidade Python: **`fastapi/full-stack-fastapi-template`** (criado por tiangolo).
-* **Consequência:** 
+* **Consequência:**
   1. A **Tela 1 (Login/Cadastro)** e a **Tela 9 (Dados Pessoais/Settings)** já vêm integradas com JWT real e persistência no banco;
   2. Sincronização automática de tipos via `openapi-ts` entre os endpoints FastAPI e o frontend TypeScript;
   3. Estrutura pronta com Docker, PostgreSQL e backend assíncrono perfeito para orquestração de LangChain e OCI SDK.
@@ -175,4 +175,3 @@ Para atender ao critério de apresentar no mínimo 3 exemplos práticos com docu
 | **27/10/2026** | Equipe Front | Implementação das 9 telas do ecossistema: Login Demo (T1), Home (T2), Wizard Novo Curso com Upload FormData (T3), Roadmap Interativo (T4), Ambiente Multiformato com Flip 3D e Exportador (T5), Finalização (T6), Dashboard com Gráficos Recharts (T7), Assistente IA Flutuante Global com RAG (T8) e Perfil/Settings (T9). |
 | **27/10/2026** | Equipe Front | **Validação Total de Compilação:** Execução de `tsc -p tsconfig.build.json` e `vite build` aprovados com **0 erros e 0 warnings**. |
 | **28/10/2026** | Marcos & Joel | **Frente A (Login & Autenticação Concluída):** Refatoração do `AuthLayout` com o split-hero escuro `#11151C` e card oficial do protótipo da Karina; tradução integral e validação com Zod em português das rotas `/login`, `/signup`, `/recover-password` e `/reset-password`; integração do seletor em abas `[Entrar | Criar conta]` e homologação do Modo Demonstração para a banca com validação visual completa. |
-

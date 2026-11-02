@@ -1,7 +1,7 @@
 """create erd v5 schema
 
 Revision ID: b23eaa5c1998
-Revises: 
+Revises:
 Create Date: 2026-11-02 04:13:08.206906
 
 """
