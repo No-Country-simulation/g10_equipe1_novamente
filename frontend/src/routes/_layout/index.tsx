@@ -7,7 +7,7 @@ export const Route = createFileRoute("/_layout/")({
   head: () => ({
     meta: [
       {
-        title: "Dashboard - FastAPI Template",
+        title: "Início - NovaMente",
       },
     ],
   }),
@@ -20,11 +20,9 @@ function Dashboard() {
     <div>
       <div>
         <h1 className="text-2xl truncate max-w-sm">
-          Hi, {currentUser?.full_name || currentUser?.email} 👋
+          Olá, {currentUser?.full_name || currentUser?.email} 👋
         </h1>
-        <p className="text-muted-foreground">
-          Welcome back, nice to see you again!!!
-        </p>
+        <p className="text-muted-foreground">Que bom ter você de volta!</p>
       </div>
     </div>
   )

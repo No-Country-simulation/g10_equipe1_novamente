@@ -12,7 +12,7 @@ import useAuth from "@/hooks/useAuth"
 import { type Item, Main } from "./Main"
 import { User } from "./User"
 
-const items: Item[] = [{ icon: Home, title: "Dashboard", path: "/" }]
+const items: Item[] = [{ icon: Home, title: "Início", path: "/" }]
 
 export function AppSidebar() {
   const { user: currentUser } = useAuth()
