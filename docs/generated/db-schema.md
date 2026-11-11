@@ -1,10 +1,10 @@
 # Esquema do banco de dados
 
-O NovaMente guarda usuários, cursos, metadados de documentos, chunks com embeddings de 768 dimensões e citações em PostgreSQL 18 com pgvector. Os arquivos originais e o JSON gerado de cada conteúdo ficam no OCI Object Storage. O banco guarda só a chave de cada objeto.
+O NovaMente guarda usuários, cursos, metadados de documentos, chunks com embeddings de 768 dimensões e citações em PostgreSQL 18 com pgvector. Os arquivos originais e o JSON gerado de cada conteúdo ficam no OCI Object Storage. O banco guarda a chave de cada objeto. O JSON publicado de cada conteúdo fica também em `course_content.content`, e a API lê o conteúdo dessa coluna.
 
 Este documento descreve a versão 5 do ERD. `backend/app/models.py` define as sete tabelas, e a migration de base fica em `backend/app/alembic/versions/`.
 
-O diagrama está em [`erd.svg`](erd.svg).
+O diagrama está em [`erd.svg`](erd.svg). O fluxo que usa estas tabelas está em [`ARCHITECTURE.md`](../../ARCHITECTURE.md).
 
 ## Sete tabelas formam o esquema
 
@@ -38,7 +38,7 @@ Toda chave estrangeira apaga em cascata, exceto `course.niche_id`, que bloqueia 
 
 A chave composta de `document_chunk` impede que um chunk aponte para um curso diferente do curso do seu documento. As duas chaves compostas de `content_citation` impedem que um conteúdo cite um chunk de outro curso. Cada destino composto tem um índice único em `(id, course_id)`.
 
-A cascata do SQL não apaga objetos no OCI. A exclusão de um curso exige uma limpeza separada dos objetos sob `courses/{course_id}/`.
+A cascata do SQL não apaga objetos no OCI. A exclusão de um curso exige uma limpeza separada dos objetos sob `courses/{course_id}/`. A exclusão de um usuário apaga os cursos dele em cascata e exige a mesma limpeza para cada curso.
 
 ## Enums
 
@@ -60,9 +60,9 @@ Os valores de `document_status` têm este significado:
 
 Os valores de `course_status` têm este significado:
 
-- `initializing`: o curso e o primeiro conteúdo existem, mas a primeira geração não terminou. Não é um rascunho.
+- `initializing`: o curso e os conteúdos criados com ele existem, mas nenhum foi publicado e a geração inicial não terminou. Não é um rascunho.
 - `ready`: pelo menos um conteúdo está publicado.
-- `failed`: a primeira geração falhou. Uma nova tentativa usa o mesmo primeiro conteúdo.
+- `failed`: nenhum conteúdo criado com o curso foi publicado. Uma nova tentativa usa as mesmas linhas de conteúdo.
 
 ## Tabelas
 
@@ -207,7 +207,7 @@ Cada linha guarda a última geração e o último resultado publicado de uma pe�
 | `estimated_minutes` | `int` | sim | | |
 | `key_concepts` | `jsonb` | sim | | Array de strings. |
 | `prerequisites` | `jsonb` | sim | | Array de strings. |
-| `grounding_score` | `numeric(3,2)` | sim | | Nota de qualidade de 0 a 1. Não é a similaridade de cosseno. |
+| `grounding_score` | `numeric(3,2)` | sim | | Fração das afirmações técnicas do conteúdo que têm apoio em um chunk, de 0 a 1. O backend calcula. Não é a similaridade de cosseno. |
 | `clarity` | `clarity_level` | sim | | |
 | `review_notes` | `text` | sim | | |
 | `oci_object_key` | `varchar(512)` | sim | | Única. Cada regeneração usa uma chave nova. |
@@ -261,10 +261,10 @@ CHECK:
 
 As chaves e os CHECKs não cobrem o ciclo de vida do curso. O backend aplica estas regras:
 
-1. O backend cria o `course` com `status = initializing` e o primeiro `course_content` com `status = pending` na mesma transação. Nenhum `endpoint` cria um curso sozinho.
+1. O backend cria o `course` com `status = initializing` e os conteúdos escolhidos na criação, cada um com `status = pending`, na mesma transação. Todo curso nasce com pelo menos um documento e um conteúdo. Nenhum `endpoint` cria um curso sozinho.
 2. O backend nunca apaga o último conteúdo de um curso sem apagar o curso.
 3. O backend marca o curso como `ready` só quando existe pelo menos um conteúdo com `content` e `oci_object_key` preenchidos.
-4. Se a primeira geração falha, o backend marca o curso como `failed`. A nova tentativa usa a mesma linha de `course_content`.
+4. Se nenhum conteúdo criado com o curso é publicado, o backend marca o curso como `failed`. A nova tentativa de um conteúdo usa a mesma linha de `course_content`.
 5. A geração usa os chunks de todos os documentos `indexed` do curso com `embedding_model` compatível.
 6. Uma regeneração com sucesso segue esta ordem: envia o JSON novo ao OCI com uma chave nova, atualiza o conteúdo e as citações em uma transação e depois apaga o objeto antigo no OCI. Se a exclusão do objeto antigo falha, o backend tenta de novo.
 7. Um mesmo `course_content` não tem duas gerações ao mesmo tempo.
