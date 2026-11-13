@@ -1,13 +1,118 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>NovaMente</title>
-    <link rel="icon" type="image/svg+xml" href="/assets/images/logo-novamente-escuro.svg" />
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="./src/main.tsx"></script>
-  </body>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NovaMente - Home</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="light-theme">
+
+  <header class="navbar">
+    <div class="nav-container">
+      <div class="brand">
+        <div class="logo-badge">
+          <div class="logo-node"></div>
+        </div>
+        <span class="brand-name">NovaMente</span>
+      </div>
+
+      <nav class="nav-links">
+        <button class="nav-btn active" data-target="home">
+          <i data-lucide="home"></i> Home
+        </button>
+        <button class="nav-btn" data-target="novo-curso">
+          <i data-lucide="plus-circle"></i> Novo curso
+        </button>
+        <button class="nav-btn" data-target="desempenho">
+          <i data-lucide="bar-chart-3"></i> Desempenho
+        </button>
+      </nav>
+
+      <div class="nav-actions">
+        <button id="themeToggle" class="theme-toggle-btn" title="Alternar tema">
+          <i data-lucide="sun" id="themeIcon"></i>
+        </button>
+        <div class="user-profile" id="userProfileBtn" title="Aceder aos dados pessoais">
+          <div class="avatar">JS</div>
+          <span class="user-name">João Silva</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-content">
+    
+    <section class="welcome-section">
+      <div class="welcome-text">
+        <h1>Olá, João! 👋</h1>
+        <p>Continua de onde paraste ou explora novos temas para gerar cursos personalizados.</p>
+      </div>
+
+      <div class="recent-card">
+        <div class="recent-badge">Último Estudo</div>
+        <h3>Estruturas de Dados Avançadas</h3>
+        <p>Módulo 3: Árvores Binárias e Grafos</p>
+        <div class="progress-bar-container">
+          <div class="progress-bar" style="width: 75%;"></div>
+        </div>
+        <div class="recent-footer">
+          <span>75% concluído</span>
+          <button class="btn-primary-sm" onclick="navigateTo('roadmap', 'Estruturas de Dados Avançadas')">
+            Continuar <i data-lucide="arrow-right"></i>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section class="suggestions-section">
+      <h2><i data-lucide="sparkles"></i> Sugestões de Temas</h2>
+      <div class="chips-container">
+        <button class="topic-chip" onclick="navigateTo('novo-curso', 'Inteligência Artificial para Iniciantes')">+ IA para Iniciantes</button>
+        <button class="topic-chip" onclick="navigateTo('novo-curso', 'Design System com Tailwind CSS')">+ Design System</button>
+        <button class="topic-chip" onclick="navigateTo('novo-curso', 'Arquitetura de Microsserviços')">+ Microsserviços</button>
+        <button class="topic-chip" onclick="navigateTo('novo-curso', 'Gestão de Tempo para Devs')">+ Produtividade</button>
+      </div>
+    </section>
+
+    <section class="filter-section">
+      <div class="search-box">
+        <i data-lucide="search"></i>
+        <input type="text" id="searchInput" placeholder="Buscar roadmaps por título ou tag...">
+      </div>
+      <div class="tabs">
+        <button class="tab-btn active" data-filter="all">Todos os Cursos</button>
+        <button class="tab-btn" data-filter="pending">Revisões Pendentes <span class="badge-count" id="pendingCount">0</span></button>
+        <button class="tab-btn" data-filter="progress">Em Andamento</button>
+        <button class="tab-btn" data-filter="completed">Concluídos</button>
+      </div>
+    </section>
+
+    <section class="section-container" id="pendingSection">
+      <div class="section-header">
+        <h2><i data-lucide="clock" class="text-orange"></i> Revisões Pendentes</h2>
+        <span class="subtext">Cursos com revisões periódicas solicitadas ainda não finalizadas.</span>
+      </div>
+      <div class="cards-grid" id="pendingGrid"></div>
+    </section>
+
+    <section class="section-container">
+      <div class="section-header">
+        <h2><i data-lucide="map"></i> Meus Roadmaps Gerados</h2>
+      </div>
+      <div class="cards-grid" id="roadmapsGrid"></div>
+    </section>
+
+  </main>
+
+  <div id="screenModal" class="modal-backdrop hidden">
+    <div class="modal-box">
+      <button class="modal-close" id="closeModal">&times;</button>
+      <div id="modalContent"></div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
 </html>
