@@ -16,13 +16,11 @@ Esta pasta descreve o que o produto faz e para quem. Cada arquivo trata de um as
 | [`pacote-json-e-armazenamento.md`](pacote-json-e-armazenamento.md) | Que JSON o produto entrega e onde ele fica guardado? |
 | [`telas.md`](telas.md) | Que telas a pessoa vê? |
 | [`demonstracao.md`](demonstracao.md) | O que a equipe mostra à banca? |
-| [`decisoes-pendentes.md`](decisoes-pendentes.md) | O que a equipe ainda precisa decidir? |
 
 ## Como ler o estado de cada item
 
 - **Existe**: está no branch `master`.
 - **A construir**: a equipe decidiu, mas o código ainda não existe.
-- **Pendente**: depende de uma decisão em [`decisoes-pendentes.md`](decisoes-pendentes.md).
 
 ## O que vale em caso de conflito
 
@@ -30,7 +28,7 @@ Esta pasta descreve o que o produto faz e para quem. Cada arquivo trata de um as
 2. `docs/generated/db-schema.md` define os dados que o produto guarda.
 3. Esta pasta define o comportamento do produto.
 
-Um conflito entre essas fontes vira um item em `decisoes-pendentes.md`. Ninguém resolve um conflito só no código.
+Um conflito entre essas fontes se resolve nos documentos, com a equipe. Ninguém resolve um conflito só no código.
 
 O JSON de exemplo do briefing é só um exemplo. O produto usa nomes em inglês e uma resposta própria.
 

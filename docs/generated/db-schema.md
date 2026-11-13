@@ -126,7 +126,7 @@ O seed não remove slugs antigos de tema, como `rag` ou `prompt-engineering`. A 
 | `course_id` | `uuid` | não | | Referencia `course.id`. |
 | `title` | `varchar(255)` | não | | |
 | `original_filename` | `varchar(255)` | não | | |
-| `mime_type` | `varchar(100)` | não | | `application/pdf`, `text/markdown` ou `text/plain`. |
+| `mime_type` | `varchar(100)` | não | | `application/pdf` ou `text/markdown`. |
 | `size_bytes` | `bigint` | não | | |
 | `sha256` | `char(64)` | não | | Hash hexadecimal em minúsculas. |
 | `oci_object_key` | `varchar(512)` | não | | Única. Formato `courses/{course_id}/documents/{id}.{ext}`. |

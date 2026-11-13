@@ -11,7 +11,7 @@ Estado: a construir.
 | Título | De 1 a 255 caracteres, sem contar espaços nas pontas |
 | Setor | Fintech, Saúde, E-commerce ou Geral |
 | Nível de público | Não técnico, técnico básico ou técnico avançado |
-| Documentos | De 1 a 3 arquivos `.txt`, Markdown ou PDF com texto. Cada arquivo tem até 5 MiB e até 150 mil caracteres de texto |
+| Documentos | De 1 a 3 documentos. Cada um é um arquivo `.md`, um arquivo PDF com texto, ou um texto digitado em um campo. Cada arquivo tem até 5 MiB. Cada documento tem até 150 mil caracteres de texto |
 | Saídas | De 1 a 3, uma de cada formato: tutorial, flashcards ou quiz |
 
 O conteúdo de todos os documentos vale para todas as saídas. A pessoa não liga um documento a uma saída.
@@ -22,11 +22,11 @@ A equipe mede o tempo de um curso com três saídas e ajusta os limites se for p
 
 O nível e o setor ficam fixos depois da primeira geração com sucesso. Para outro nível, a pessoa cria outro curso com os mesmos arquivos.
 
-O produto não aceita texto colado em um campo.
+O texto digitado em um campo conta como um documento. O navegador o envia como um arquivo `.md` (`texto-digitado.md`, com número se houver mais de um). A API recebe só arquivos e trata os três tipos da mesma forma.
 
 ## O que a pessoa vê
 
-1. A pessoa clica em "Novo curso", preenche o formulário e clica em "Criar curso".
+1. A pessoa clica em "Novo curso" e preenche os 3 passos de `/courses/new`: documentos, perfil (título, setor e nível) e formatos. O navegador confere tipo e tamanho dos arquivos. Ao clicar em "Criar curso", ele envia tudo em um só pedido.
 2. O curso aparece na lista com o estado "Gerando".
 3. A tela se atualiza sozinha a cada 3 segundos.
 4. O produto gera uma saída por vez, na ordem escolhida.
@@ -55,11 +55,11 @@ A tela não mostra um curso "Gerando" ou "Falhou" como produto pronto.
 | Nenhum documento ou nenhuma saída | HTTP 422 | Envie pelo menos um documento e escolha pelo menos uma saída. |
 | Mais de 3 documentos ou mais de 3 saídas | HTTP 422 | Envie até 3 documentos e escolha até 3 saídas. |
 | Duas saídas do mesmo formato | HTTP 422 | Escolha só uma saída de cada formato. |
-| Tipo de arquivo não aceito | HTTP 422 | Envie um arquivo `.txt`, Markdown ou PDF. |
+| Tipo de arquivo não aceito | HTTP 422 | Envie um arquivo `.md` ou PDF, ou digite o texto. |
 | Arquivo vazio ou só com espaços | HTTP 422 | O arquivo não tem texto. |
 | Arquivo maior que 5 MiB | HTTP 422 | O arquivo passa de 5 MiB. |
 | Texto com mais de 150 mil caracteres | HTTP 422 | O documento é longo demais. Envie um documento menor ou divida o arquivo. |
-| Arquivo de texto que não é UTF-8 | HTTP 422 | Não foi possível ler o arquivo como texto. |
+| Arquivo Markdown que não é UTF-8 | HTTP 422 | Não foi possível ler o arquivo como texto. |
 | PDF só com imagens | HTTP 422 | Este PDF não tem texto. Envie um PDF com texto. |
 | Mesmo arquivo duas vezes no curso | HTTP 422 | Este arquivo já está no curso. |
 | Setor inexistente | HTTP 404 | Setor não encontrado. |

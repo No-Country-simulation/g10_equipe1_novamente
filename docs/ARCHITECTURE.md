@@ -52,7 +52,7 @@ O CHECK `ck_course_content_published_pair` mantém as duas cópias em par: `cont
 | `backend/app/core/llm.py` | Único módulo que chama a API Gemini | A construir |
 | `backend/app/services/course_generation.py` | Indexação, busca, geração e publicação | A construir |
 | `backend/tests/` | Testes `pytest` contra um PostgreSQL real | Existe |
-| `frontend/src/routes/` | Rotas do TanStack Router | Existe para login, cadastro, painel e configurações |
+| `frontend/src/routes/` | Rotas do TanStack Router. A navegação fica no topo, com "Home" e "Novo curso" | Existe para login, cadastro, painel e configurações. A navegação no topo e `/courses/new` faltam |
 | `frontend/src/client/` | Cliente HTTP gerado do OpenAPI. Não edite à mão. | Existe |
 | `compose.yml`, `compose.override.yml`, `compose.deploy.yml` | Serviços `proxy`, `db`, `adminer` e `backend` | Existe |
 
@@ -97,7 +97,7 @@ A tarefa repete os passos 6 a 11 para cada conteúdo. Se nenhum conteúdo criado
 
 Todos os documentos do curso entram na busca de cada conteúdo. A busca devolve os 8 chunks mais próximos do `focus`, então um conteúdo pode citar só parte dos documentos.
 
-Nenhum dos doze passos tem código ainda. A ordem de construção sugerida começa por um arquivo `.txt` e um tutorial, de ponta a ponta.
+Nenhum dos doze passos tem código ainda. A ordem de construção sugerida começa por um arquivo `.md` e um tutorial, de ponta a ponta.
 
 ## Os estados tornam a tarefa de fundo observável
 
@@ -226,13 +226,11 @@ A equipe usa só recursos marcados como Always Free e não muda a conta para Pay
 | Nomes em inglês no JSON e na API | O exemplo do briefing é só um exemplo. O produto usa os nomes do esquema. | A construir |
 | Vários documentos e várias saídas por curso | A pessoa escolhe os documentos e as saídas na criação. Todos os documentos valem para todas as saídas. | A construir |
 | Até 3 documentos e até 3 saídas, uma de cada formato | Todas as saídas têm o mesmo foco. Cada saída usa até quatro chamadas ao modelo. | A construir |
-| Até 5 MiB e 150 mil caracteres de texto por arquivo | Mantém cada documento perto da escala prevista no esquema. | A construir |
+| Até 5 MiB por arquivo e 150 mil caracteres de texto por documento | Mantém cada documento perto da escala prevista no esquema. | A construir |
 | Arquivo no OCI com conteúdo, metadados e avaliação | Um sistema externo entende o arquivo sem consultar o banco. | A construir |
 | Nota mínima de 0,80 | Ponto de partida. A equipe mede com os casos de avaliação, ajusta e registra cada mudança. | A construir |
 
 Os limites de documentos, de saídas e de formato são regras da API. O banco não os impõe.
-
-Uma decisão nova em aberto entra em [`docs/product-specs/decisoes-pendentes.md`](docs/product-specs/decisoes-pendentes.md).
 
 ## O que fica fora desta arquitetura
 

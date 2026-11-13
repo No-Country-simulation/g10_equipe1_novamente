@@ -31,7 +31,7 @@ O briefing exige as três. O esquema guarda em `key_concepts`, `prerequisites` e
 Um guia passo a passo.
 
 - Título.
-- Resumo de abertura.
+- Resumo de abertura, no layout "Resumo" dos documentos de design.
 - Seções, cada uma com um título e um texto em Markdown.
 
 O texto das seções pode ter listas, tabelas e blocos de código.
@@ -44,7 +44,7 @@ Cartões para memorização.
 - Introdução curta, com o contexto do assunto.
 - Cartões, cada um com frente, verso e uma dica opcional.
 
-A quantidade de cartões por conjunto ainda não foi definida.
+Cada conjunto tem de 8 a 12 cartões.
 
 ## Quiz
 
@@ -53,7 +53,7 @@ Perguntas de múltipla escolha com justificativa.
 - Título.
 - Perguntas, cada uma com enunciado, opções, a opção correta e a justificativa.
 
-A justificativa explica a resposta com base no documento. A quantidade de perguntas e de opções ainda não foi definida.
+Cada quiz tem 5 perguntas, com 4 opções cada. A justificativa explica a resposta com base no documento.
 
 Responder ao quiz na tela, com correção imediata, é um diferencial opcional do briefing. O produto não guarda as respostas.
 

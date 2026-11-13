@@ -6,22 +6,22 @@ Hoje o branch `master` tem conta, login e o esquema do banco. Nenhuma função d
 
 ## O que entra
 
-A coluna "Ordem" sugere a sequência de construção. O primeiro passo é o caminho mais curto de ponta a ponta: um arquivo `.txt`, um tutorial e a gravação no OCI.
+A coluna "Ordem" sugere a sequência de construção. O primeiro passo é o caminho mais curto de ponta a ponta: um arquivo `.md`, um tutorial e a gravação no OCI.
 
 | Item | Pedido do briefing que atende | Estado | Ordem |
 | --- | --- | --- | --- |
 | Cadastro, login e edição dos dados da conta | Nenhum. Decisão da equipe | Existe | |
 | Esquema do banco com sete tabelas | RAG com vector store | Existe | |
-| Criar curso com um arquivo `.txt` | Ingestão de documentos e escolha de perfil, formato e nicho | A construir | 1 |
+| Criar curso com um arquivo `.md` | Ingestão de documentos e escolha de perfil, formato e nicho | A construir | 1 |
 | Indexação: chunks, embeddings e busca vetorial | RAG com chunking, embeddings e busca vetorial | A construir | 1 |
 | Tutorial gerado com Gemini | Orquestração com LLM e metadados de aprendizado | A construir | 1 |
 | Documento e JSON no OCI Object Storage | Integração com o OCI Object Storage | A construir | 1 |
-| Telas "Cursos", "Novo curso" e "Curso" | Interface interativa | A construir | 1 |
+| Navegação no topo e telas "Cursos", "Novo curso" (3 passos) e "Curso" | Interface interativa | A construir | 1 |
 | Revisão de fidelidade antes de publicar | Verificação de fidelidade e avaliação pedagógica | A construir | 2 |
 | Nota de fidelidade, clareza e trechos citados na tela | Avaliação pedagógica na saída | A construir | 2 |
 | Flashcards e quiz | Dois formatos para o mesmo conteúdo | A construir | 3 |
 | Várias saídas e vários documentos no mesmo curso | Geração de múltiplos formatos com poucos cliques | A construir | 3 |
-| Arquivos Markdown e PDF com texto | Ingestão de PDF, Markdown ou texto | A construir | 3 |
+| Arquivos PDF com texto e texto digitado em um campo | Ingestão de PDF, Markdown ou texto | A construir | 3 |
 | Nova tentativa depois de uma falha | Tratamento de exceções | A construir | 4 |
 | Exclusão de curso com limpeza no OCI | Nenhum. Evita arquivos sem uso | A construir | 4 |
 | Mensagens de erro em português claro | Mensagens de erro amigáveis | A construir | 4 |
@@ -52,7 +52,6 @@ Estes itens são diferenciais opcionais do briefing ou melhorias. A equipe só c
 | Materiais já disponíveis na plataforma | Todo curso parte de um arquivo enviado. |
 | Resumo executivo e roteiro de aula | A equipe decidiu manter três formatos. |
 | Nível de detalhe (`nivel_detalhe`) | O nível de público já define a profundidade. |
-| Texto colado em um campo | A pessoa envia um arquivo `.txt`, Markdown ou PDF. |
 | Trilha de conteúdos proposta pelo modelo | A pessoa escolhe as saídas. |
 | Nomes de campo do JSON de exemplo do briefing | O produto usa nomes em inglês. |
 | Histórico de versões de um conteúdo | Uma regeneração substitui a mesma linha. |
@@ -60,7 +59,7 @@ Estes itens são diferenciais opcionais do briefing ou melhorias. A equipe só c
 | Leitura de imagens e diagramas | Diferencial opcional do briefing, com alto custo de tempo. |
 | Bot no Telegram | A equipe escolheu um site próprio. |
 
-Alguns documentos de design no Drive mostram várias dessas telas. A equipe trabalha só com as telas de `telas.md`.
+Alguns documentos de design no Drive mostram várias dessas telas. A equipe usa o layout do Drive, mas só nas telas de `telas.md`. Em regras de produto, os documentos deste repositório valem.
 
 ## Limites do MVP
 
@@ -71,7 +70,8 @@ Alguns documentos de design no Drive mostram várias dessas telas. A equipe trab
 | Documentos por curso | 3 | Esquema e `criar-curso.md` |
 | Saídas por curso | 3, uma de cada formato | `criar-curso.md` |
 | Chunks por documento | Cerca de 100 | Esquema |
-| Tamanho do arquivo | 5 MiB e 150 mil caracteres de texto | `criar-curso.md` |
+| Tamanho do arquivo | 5 MiB | `criar-curso.md` |
+| Tamanho do texto de um documento | 150 mil caracteres | `criar-curso.md` |
 | Tempo de geração | Minutos. A equipe mede e registra o valor real. | Briefing |
 | Custo | Zero | Briefing |
 

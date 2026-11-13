@@ -52,7 +52,7 @@ Esta tabela serve para explicar à banca onde está cada informação que o brie
 
 ## Entrada pela API
 
-O produto recebe um formulário com arquivos (`multipart/form-data`): título, setor, nível de público, documentos e saídas. O briefing mostra o texto do documento dentro do JSON. O produto recebe arquivos, porque um documento pode ser um PDF.
+O produto recebe um formulário com arquivos (`multipart/form-data`): título, setor, nível de público, documentos e saídas. O briefing mostra o texto do documento dentro do JSON. O produto recebe arquivos, porque um documento pode ser um PDF. O texto digitado em um campo chega como um arquivo `.md`, criado pelo navegador.
 
 ## O que o produto guarda no OCI
 

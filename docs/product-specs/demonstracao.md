@@ -42,7 +42,7 @@ Os três temas vêm de `docs/needs-validation/RELATORIO_TECNICO_PROJETO.md`. A e
 - Só documentos públicos ou fictícios.
 - A equipe confere os termos de uso de cada documento.
 - Cada documento tem texto. Um PDF só com imagens não serve.
-- Cada documento é um arquivo `.txt`, Markdown ou PDF, dentro do limite de tamanho.
+- Cada documento é um arquivo `.md` ou PDF, ou um texto digitado, dentro do limite de tamanho.
 
 ## O que guardar no repositório
 
