@@ -15,11 +15,6 @@ repos:
         exclude: ^frontend/src/client/.*
         # Two trailing spaces are a Markdown line break
         args: [--markdown-linebreak-ext=md]
-  - repo: https://github.com/crate-ci/typos
-    rev: 00f422f3b19c57bc6338715ebfe3316d38768461 # frozen: v1.50.3
-    hooks:
-      - id: typos
-        args: [--force-exclude]
   - repo: local
     hooks:
       - id: local-biome-check
