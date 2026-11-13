@@ -9,3 +9,4 @@ backend/app/frontend/
 .env
 .env.*
 !.env.example
+.DS_Store
