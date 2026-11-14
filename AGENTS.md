@@ -55,7 +55,7 @@ Tickets escritos (onda 1):
 | --- | --- |
 | [`T02`](docs/tickets/T02-api-de-leitura-de-cursos.md) | API de leitura de setores e cursos, e seed de desenvolvimento |
 | [`T03`](docs/tickets/T03-busca-vetorial.md) | Busca vetorial dos 8 chunks mais próximos |
-| [`T04`](docs/tickets/T04-nota-de-fidelidade.md) | Nota de fidelidade e decisão de publicar |
+| [`T04`](docs/tickets/completed/T04-nota-de-fidelidade.md) | Nota de fidelidade e decisão de publicar |
 | [`T05`](docs/tickets/T05-modelos-do-json-de-conteudo.md) | Modelos do JSON de tutorial, flashcards e quiz |
 | [`T06`](docs/tickets/T06-navegacao-no-topo.md) | Navegação no topo, fontes, cores e base da tela "Novo curso" |
 | [`T12`](docs/tickets/T12-medir-gemini-e-conferir-oci.md) | Medir o plano gratuito do Gemini e conferir o bucket da OCI |

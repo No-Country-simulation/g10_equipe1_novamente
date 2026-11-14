@@ -99,9 +99,9 @@ Regras:
 
 ## Critérios de aceite
 
-- [ ] As três funções cumprem o contrato.
-- [ ] Nenhum caminho devolve `publish` com `passed` falso.
-- [ ] Os hooks e os testes passam, com cobertura de 90% ou mais.
+- [x] As três funções cumprem o contrato.
+- [x] Nenhum caminho devolve `publish` com `passed` falso.
+- [x] Os hooks e os testes passam, com cobertura de 90% ou mais.
 
 ## Cenários de teste
 
@@ -113,3 +113,10 @@ Regras:
 6. Duas afirmações com o mesmo chunk geram um só item em `cited_chunk_ids`.
 7. `failure_message` lista cada afirmação reprovada em uma linha.
 8. `decide` com `attempt=0` levanta `ValueError`.
+
+## Verificação do aceite
+
+- PR revisado: [#10](https://github.com/No-Country-simulation/g10_equipe1_novamente/pull/10), integrado no commit `b1e0467`.
+- Contrato e oito cenários conferidos no código e nos testes; `decide` só publica quando `passed` é verdadeiro.
+- [CI do backend](https://github.com/No-Country-simulation/g10_equipe1_novamente/actions/runs/43552019283): 45 testes passaram, cobertura total de 98% e 100% em `grounding.py`.
+- Hooks executados localmente sobre as alterações do PR: todos passaram. Os 14 testes do T04 passaram localmente; a suíte completa falhou porque o banco local está sem tabelas.
