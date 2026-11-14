@@ -2,7 +2,7 @@
 
 O NovaMente recebe um documento técnico e gera conteúdos de estudo fiéis a ele. A aplicação é um backend FastAPI que serve um frontend React, guarda dados em PostgreSQL com pgvector, guarda arquivos no OCI Object Storage e usa a API Gemini.
 
-Este documento descreve as partes do sistema, o caminho de uma geração e as regras que o código deve manter. O esquema do banco fica em [`docs/generated/db-schema.md`](docs/generated/db-schema.md). O comportamento do produto fica em [`docs/product-specs/`](docs/product-specs/index.md).
+Este documento descreve as partes do sistema, o caminho de uma geração e as regras que o código deve manter. O esquema do banco fica em [`generated/db-schema.md`](generated/db-schema.md). O comportamento do produto fica em [`product-specs/`](product-specs/index.md).
 
 Cada item traz um estado:
 
@@ -11,9 +11,9 @@ Cada item traz um estado:
 
 ## O sistema tem cinco partes
 
-![Arquitetura do MVP](docs/assets/arquitetura.png)
+![Arquitetura do MVP](system-diagram/arquitetura.png)
 
-O arquivo editável do diagrama é [`docs/assets/arquitetura.excalidraw`](docs/assets/arquitetura.excalidraw). Abra em https://excalidraw.com.
+O arquivo editável do diagrama é [`system-diagram/arquitetura.excalidraw`](system-diagram/arquitetura.excalidraw). Abra em https://excalidraw.com.
 
 | Parte | Papel | Estado |
 | --- | --- | --- |
@@ -111,7 +111,7 @@ Uma geração `running` ou `failed` não altera o resultado publicado antes. As 
 
 ## Regras que o código mantém
 
-As dez regras de ciclo de vida do curso ficam em [`docs/generated/db-schema.md`](docs/generated/db-schema.md), na seção "O backend garante as regras que o banco não expressa". Esta lista traz só as regras de arquitetura que aquele documento não cobre.
+As dez regras de ciclo de vida do curso ficam em [`generated/db-schema.md`](generated/db-schema.md), na seção "O backend garante as regras que o banco não expressa". Esta lista traz só as regras de arquitetura que aquele documento não cobre.
 
 1. Só `backend/app/core/storage.py` chama o OCI Python SDK. Só `backend/app/core/llm.py` chama a API Gemini.
 2. Os agentes só produzem texto e avaliações. O backend busca os dados, calcula a nota, decide o próximo passo e publica.

@@ -4,7 +4,7 @@ O NovaMente guarda usuários, cursos, metadados de documentos, chunks com embedd
 
 Este documento descreve a versão 5 do ERD. `backend/app/models.py` define as sete tabelas, e a migration de base fica em `backend/app/alembic/versions/`.
 
-O diagrama está em [`erd.svg`](erd.svg). O fluxo que usa estas tabelas está em [`ARCHITECTURE.md`](../../ARCHITECTURE.md).
+O diagrama está em [`erd.svg`](erd.svg). O fluxo que usa estas tabelas está em [`ARCHITECTURE.md`](../ARCHITECTURE.md).
 
 ## Sete tabelas formam o esquema
 

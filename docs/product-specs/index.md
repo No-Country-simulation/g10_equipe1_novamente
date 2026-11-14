@@ -2,7 +2,7 @@
 
 O NovaMente transforma um documento técnico em conteúdos de estudo adaptados a um público, em minutos, sem inventar fatos que o documento não traz.
 
-Esta pasta descreve o que o produto faz e para quem. Cada arquivo trata de um assunto. A forma como o sistema é construído fica em [`ARCHITECTURE.md`](../../ARCHITECTURE.md), e o esquema do banco fica em [`docs/generated/db-schema.md`](../generated/db-schema.md).
+Esta pasta descreve o que o produto faz e para quem. Cada arquivo trata de um assunto. A forma como o sistema é construído fica em [`ARCHITECTURE.md`](../ARCHITECTURE.md), e o esquema do banco fica em [`generated/db-schema.md`](../generated/db-schema.md).
 
 ## Leia nesta ordem
 
