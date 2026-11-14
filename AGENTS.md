@@ -1,106 +1,71 @@
-# Diretrizes de comunicação para agentes
+# Mapa da base de conhecimento
 
-Este arquivo vale para toda sessão de agente neste repositório. Ele define como você escreve: respostas, relatórios, mensagens de commit, descrições de PR e documentação. Ele não define como você programa.
+Este arquivo indica onde achar cada informação do NovaMente. Leia só o documento que a tarefa pede. Arquivos fora de `docs/` não valem (veja o fim deste arquivo).
 
-O leitor é uma pessoa engenheira de software. Ela entende o código, mas não viu o seu raciocínio. Escreva para ela, que está cansada e lê uma vez.
+O NovaMente transforma um documento técnico em conteúdos de estudo fiéis a ele. A base de conhecimento fica em `docs/`.
 
-Duas fontes sustentam as regras:
+## Por onde começar
 
-- William Zinsser, *On Writing Well*: clareza, simplicidade, brevidade e humanidade.
-- ISO 24495-1 (linguagem simples): o texto é relevante, fácil de encontrar, fácil de entender e fácil de usar.
+| Se você precisa de... | Leia |
+| --- | --- |
+| Escrever uma resposta, relatório, `commit` ou PR | [`docs/WRITING.md`](docs/WRITING.md) |
+| Executar um ticket | [`docs/tickets/README.md`](docs/tickets/README.md), depois o ticket |
+| Entender o que o produto faz | [`docs/product-specs/index.md`](docs/product-specs/index.md) |
+| Entender como o sistema é construído | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) |
+| Saber que dados o banco guarda | [`docs/generated/db-schema.md`](docs/generated/db-schema.md) |
 
-## Antes de escrever
+## Escrita
 
-1. Decida o que a pessoa precisa saber ou fazer depois de ler. Escreva só isso.
-2. Resuma a ideia central em uma frase. Se não conseguir, ainda não entendeu o assunto. Volte à pesquisa, não ao texto.
-3. Escolha o que fica de fora. Cada fato verdadeiro que não ajuda a decisão do leitor é ruído.
+- [`docs/WRITING.md`](docs/WRITING.md): regras de escrita para respostas, relatórios, mensagens de `commit`, descrições de PR e documentação. Vale para toda sessão de agente.
 
-## Estrutura
+## Arquitetura
 
-- Comece pela conclusão: o resultado, a decisão pedida ou o bloqueio. O contexto vem depois.
-- Dê o caso comum primeiro. Dê as exceções depois.
-- Coloque a condição antes da ação: "Para limpar o cache, rode `make clean`."
-- Use títulos que carregam a informação ("Dois testes falham por timeout"), não só o tema ("Resultados").
-- Use lista numerada para sequências e marcadores para o resto. Apresente a lista com uma frase completa. Mantenha os itens paralelos.
-- Use tabela só para comparar dados com várias dimensões.
-- Pare quando terminar. Não feche com resumo do que acabou de dizer, oferta genérica de ajuda ou agradecimento.
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md): as cinco partes do sistema, o caminho de uma geração e as regras que o código mantém.
+- [`docs/system-diagram/arquitetura.png`](docs/system-diagram/arquitetura.png): diagrama da arquitetura. A fonte editável é `arquitetura.excalidraw`, na mesma pasta.
 
-## Frases
+## Esquema do banco (gerado)
 
-- Use a voz ativa e diga quem faz o quê: "o teste falha porque `get_user` retorna `None`", não "é observado que há uma falha".
-- Escreva uma ideia por frase. Divida a frase que passa de cerca de 25 palavras.
-- Varie o tamanho das frases. Frases curtas fixam um ponto. Frases mais longas levam um fato com sua condição.
-- Prefira verbos fortes a substantivos abstratos: "validar", não "realizar a validação".
-- Use a palavra curta e comum: "usar", não "utilizar". "Ajudar", não "viabilizar".
-- Chame cada coisa por um único nome, do início ao fim. Se o texto diz "o job", "a pipeline" e "o workflow" para a mesma coisa, o leitor entende três coisas.
-- Use o nome real do símbolo, do arquivo, da flag ou do comando, em fonte de código. Não o descreva com sinônimos.
-- Deixe cada "isso", "ele" e "que" apontar para um único referente óbvio. Na dúvida, repita o substantivo.
-- Mantenha "só", "apenas" e "não" junto da palavra que modificam.
-- Escreva em português do Brasil. Mantenha em inglês os termos técnicos que a equipe já usa em inglês, como `commit`, `rebase` e `endpoint`.
+- [`docs/generated/db-schema.md`](docs/generated/db-schema.md): as sete tabelas, o que cada uma guarda e as regras de integridade.
+- [`docs/generated/erd.svg`](docs/generated/erd.svg): diagrama entidade-relacionamento.
 
-## Corte o que não trabalha
+Não edite estes arquivos para mudar o esquema. O código em `backend/app/models.py` define as tabelas.
 
-Zinsser chama de "entulho" tudo o que não carrega informação. Remova:
+## Especificações de produto
 
-- Aberturas e fechamentos de cortesia ("Claro!", "Ótima pergunta!", "Espero ter ajudado").
-- Anúncios do que você vai fazer ("Agora vou analisar..."). Faça e mostre o resultado.
-- Reafirmações do pedido do usuário.
-- Advérbios de intensidade e adjetivos vazios: "muito", "bastante", "robusto", "poderoso", "simples", "fácil".
-- Ressalvas empilhadas. Se há incerteza, diga uma vez, onde ela existe: "Não verifiquei X."
-- Metáforas, expressões feitas e jargão inventado.
-- Travessão longo. Use hífen simples ou, melhor, uma nova frase.
+O índice [`docs/product-specs/index.md`](docs/product-specs/index.md) lista os arquivos na ordem de leitura e define o que vale em caso de conflito.
 
-## Seja honesto sobre o que você sabe
+| Arquivo | Responde a |
+| --- | --- |
+| [`visao-e-publico.md`](docs/product-specs/visao-e-publico.md) | Que problema o produto resolve e para quem? |
+| [`escopo-do-mvp.md`](docs/product-specs/escopo-do-mvp.md) | O que entra na entrega do hackathon e o que fica fora? |
+| [`criar-curso.md`](docs/product-specs/criar-curso.md) | Como uma pessoa cria um curso a partir de um documento? |
+| [`conteudos-e-formatos.md`](docs/product-specs/conteudos-e-formatos.md) | O que é um tutorial, um conjunto de flashcards e um quiz? |
+| [`fidelidade-e-qualidade.md`](docs/product-specs/fidelidade-e-qualidade.md) | Como o produto garante que o conteúdo é fiel ao documento? |
+| [`pacote-json-e-armazenamento.md`](docs/product-specs/pacote-json-e-armazenamento.md) | Que JSON o produto entrega e onde ele fica guardado? |
+| [`telas.md`](docs/product-specs/telas.md) | Que telas a pessoa vê? |
+| [`demonstracao.md`](docs/product-specs/demonstracao.md) | O que a equipe mostra à banca? |
 
-- Separe o que você verificou do que você supõe. "Rodei `pytest` e 42 testes passaram" é diferente de "deve funcionar".
-- Relate falhas e etapas puladas com as mesmas palavras que relata sucessos. Inclua a saída relevante do erro.
-- Nunca declare algo concluído sem ter checado o resultado real.
-- Aponte uma suposição fraca no pedido em uma frase. Dê a sua recomendação, não uma lista de opções sem opinião.
+## Tickets
 
-## Seja humano
+Cada ticket `TNN-*.md` é uma unidade de trabalho que um agente executa do branch ao PR. [`docs/tickets/README.md`](docs/tickets/README.md) traz o fluxo, as verificações, as regras de conflito e a tabela de ondas com as dependências.
 
-- Escreva como uma pessoa experiente falaria com um colega: direto, sem formalidade burocrática e sem entusiasmo forçado.
-- Use "você" e o presente.
-- Tenha uma posição quando o assunto pede escolha. Diga o que você recomenda e por quê.
-- Não elogie nem peça desculpas por reflexo. Corrija o erro e siga.
+Tickets escritos (onda 1):
 
-## Facilite achar e usar
+| Ticket | Entrega |
+| --- | --- |
+| [`T02`](docs/tickets/T02-api-de-leitura-de-cursos.md) | API de leitura de setores e cursos, e seed de desenvolvimento |
+| [`T03`](docs/tickets/T03-busca-vetorial.md) | Busca vetorial dos 8 chunks mais próximos |
+| [`T04`](docs/tickets/T04-nota-de-fidelidade.md) | Nota de fidelidade e decisão de publicar |
+| [`T05`](docs/tickets/T05-modelos-do-json-de-conteudo.md) | Modelos do JSON de tutorial, flashcards e quiz |
+| [`T06`](docs/tickets/T06-navegacao-no-topo.md) | Navegação no topo, fontes, cores e base da tela "Novo curso" |
+| [`T12`](docs/tickets/T12-medir-gemini-e-conferir-oci.md) | Medir o plano gratuito do Gemini e conferir o bucket da OCI |
+| [`T13`](docs/tickets/T13-documentos-da-demonstracao.md) | Escolher os três documentos da demonstração |
+| [`T14`](docs/tickets/T14-armazenamento-na-oci.md) | Módulo de armazenamento na OCI |
+| [`T15`](docs/tickets/T15-acesso-ao-gemini.md) | Módulo de acesso ao Gemini |
+| [`T16`](docs/tickets/T16-leitura-de-documentos-md.md) | Leitura e validação de documentos `.md` |
 
-- Coloque no topo o que a pessoa precisa fazer, como uma decisão, uma aprovação ou um comando.
-- Dê comandos copiáveis, em bloco de código, um por bloco, sem prompt `$` e sem saída misturada.
-- Referencie arquivos e linhas como links: `backend/app/main.py:42`.
-- Para evidência importante, linke a fonte primária. Não cole logs longos. Cite as linhas que provam o ponto e indique onde está o resto.
-- Pergunte só quando a decisão for ambígua, arriscada ou exigir aprovação. Faça uma pergunta por vez, com a sua recomendação.
+Os tickets das ondas 2 a 5 estão só na tabela de ondas do README dos tickets.
 
-## Por tipo de saída
+## Fora de `docs/`
 
-**Resposta no chat.** Conclusão em uma ou duas frases. Depois, só o detalhe que muda uma decisão. Respostas simples cabem em um parágrafo.
-
-**Relatório de tarefa.** Quatro itens, nesta ordem: o que mudou, como você verificou, o que ficou de fora, o que depende da pessoa. Omita o item que não se aplica.
-
-**Mensagem de commit.** A primeira linha diz o que muda e tem até 72 caracteres, no imperativo e no estilo do histórico (`feat:`, `fix:`, `docs:`). O corpo, se existir, diz por que a mudança é necessária, não o que o diff já mostra.
-
-**Descrição de PR.** Um leitor deve entendê-la em menos de um minuto. Diga o problema, a solução em poucas frases e como testar. Linke logs, listas de SHA e tabelas de métricas em vez de colá-los.
-
-**Documentação.** Escolha um modo por documento e não misture:
-
-- Tutorial: leva a pessoa a construir algo, com resultado visível a cada passo.
-- Guia prático: resolve um problema, só com ações, em passos.
-- Referência: descreve fatos, sem opinião nem instrução.
-- Explicação: trata do porquê, e só aqui cabe opinião.
-
-**Comentário de código.** Escreva só o que o código não diz: o porquê, uma restrição, um risco. Não repita o que a linha faz.
-
-## Revise antes de enviar
-
-Zinsser diz que escrever bem é reescrever. Antes de enviar, releia uma vez e confira:
-
-1. A primeira frase traz a conclusão?
-2. Cada frase passa no teste "se eu cortar esta palavra, o sentido muda?" Se não muda, corte.
-3. Cada afirmação sobre código ou testes foi verificada, ou está marcada como suposição?
-4. Uma pessoa que não viu a sessão entende o texto sem perguntar nada?
-5. O texto tem hífen simples no lugar de travessão longo e nenhuma abertura de cortesia?
-
-# ExecPlans
-
-Ao escrever funcionalidades complexas ou refatorações significativas, use um ExecPlan (conforme descrito em docs/PLANS.md) do design à implementação.
+Ignore os arquivos fora de `docs/`, como `README.md`, `CONTRIBUTING.md`, `development.md` e `deployment.md`. Eles vêm do template ou estão velhos e não descrevem o projeto. Só o código em `backend/` e `frontend/` e os documentos de `docs/` valem.

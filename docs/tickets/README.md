@@ -116,7 +116,6 @@ Os tickets da onda 1 estão escritos. Os demais são escritos quando a onda ante
 | 1 | T04 | Nota de fidelidade e decisão de publicar | - |
 | 1 | T05 | Modelos do JSON de tutorial, flashcards e quiz | - |
 | 1 | T06 | Navegação no topo, fontes, cores e base da tela "Novo curso" | - |
-| 1 | T11 | Limpeza do repositório para agentes | - |
 | 1 | T12 | Medir o plano gratuito do Gemini e conferir o bucket da OCI | - |
 | 1 | T13 | Escolher os três documentos da demonstração | - |
 | 1 | T14 | Módulo de armazenamento na OCI | - |
@@ -148,6 +147,6 @@ Os tickets da onda 1 estão escritos. Os demais são escritos quando a onda ante
 | 5 | T35 | README, diagrama e guia de instalação | T28 |
 | 5 | T36 | Deploy na VM da OCI (opcional) | T28 |
 
-O `id` T01 foi retirado. As dependências e as configurações que ele traria entram em T14 e T15.
+O `id` T01 foi retirado. As dependências e as configurações que ele traria entram em T14 e T15. O `id` T11 também foi retirado: as correções de links e de instruções já estão feitas.
 
 O caminho mais longo é T15, T20, T24, T28, T34. Quando vários PRs esperam revisão, revise esses primeiro.
