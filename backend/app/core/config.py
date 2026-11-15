@@ -24,6 +24,11 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8
     FRONTEND_HOST: str = "http://localhost:5173"
     FASTAPI_ENV: Literal["development"] | None = None
+    OCI_BUCKET: str | None = None
+    OCI_NAMESPACE: str | None = None
+    OCI_AUTH: Literal["api_key", "instance_principal"] = "api_key"
+    OCI_CONFIG_FILE: str = "~/.oci/config"
+    OCI_CONFIG_PROFILE: str = "DEFAULT"
 
     PROJECT_NAME: str
     SENTRY_DSN: HttpUrl | None = None
