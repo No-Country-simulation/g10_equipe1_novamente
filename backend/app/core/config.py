@@ -40,6 +40,10 @@ class Settings(BaseSettings):
 
     EMAIL_TEST_USER: EmailStr = "test@example.com"
 
+    GEMINI_API_KEY: str | None = None
+    GEMINI_EMBEDDING_MODEL: str = "gemini-embedding-2"
+    GEMINI_GENERATION_MODEL: str | None = None
+
     def _check_default_secret(self, var_name: str, value: str | None) -> None:
         if value == "changethis":
             message = (
