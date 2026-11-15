@@ -1,0 +1,171 @@
+import hashlib
+
+import pytest
+
+from app.services.documents import (
+    MAX_FILE_BYTES,
+    MAX_TEXT_CHARS,
+    DocumentError,
+    DocumentErrorCode,
+    read_document,
+    read_documents,
+)
+
+TOO_LONG = "O documento é longo demais. Envie um documento menor ou divida o arquivo."
+
+
+def error(filename: str, data: bytes) -> DocumentError:
+    with pytest.raises(DocumentError) as raised:
+        read_document(filename, data)
+    return raised.value
+
+
+@pytest.mark.parametrize("filename", ["guia.md", "texto-digitado.md"])
+def test_valid_markdown_returns_text_and_metadata(filename: str) -> None:
+    data = "# Guia\n\nAção de reembolso.\n".encode()
+
+    document = read_document(filename, data)
+
+    assert document.filename == filename
+    assert document.extension == "md"
+    assert document.mime_type == "text/markdown"
+    assert document.size_bytes == len(data)
+    assert document.sha256 == hashlib.sha256(data).hexdigest()
+    assert document.text == "# Guia\n\nAção de reembolso.\n"
+
+
+def test_extension_ignores_case() -> None:
+    document = read_document("GUIA.MD", b"texto")
+
+    assert document.filename == "GUIA.MD"
+    assert document.extension == "md"
+
+
+@pytest.mark.parametrize("filename", ["guia.txt", "guia.pdf", "guia", ".md", ""])
+def test_other_extensions_are_unsupported(filename: str) -> None:
+    raised = error(filename, b"texto")
+
+    assert raised.code == DocumentErrorCode.unsupported_type
+    assert raised.message == "Envie um arquivo .md ou PDF, ou digite o texto."
+    assert str(raised) == raised.message
+    assert raised.filename == filename
+
+
+def test_file_size_limit() -> None:
+    # A limpeza remove os nulos, então o texto fica abaixo do limite de caracteres.
+    data = b"a" + b"\x00" * (MAX_FILE_BYTES - 1)
+
+    assert read_document("a.md", data).size_bytes == MAX_FILE_BYTES
+    assert error("a.md", b"a" * MAX_FILE_BYTES).code == DocumentErrorCode.too_long
+
+    raised = error("a.md", data + b"\x00")
+
+    assert raised.code == DocumentErrorCode.too_large
+    assert raised.message == "O arquivo passa de 5 MiB."
+    assert raised.filename == "a.md"
+
+
+def test_latin1_bytes_are_not_utf8() -> None:
+    raised = error("a.md", "ação".encode("latin-1"))
+
+    assert raised.code == DocumentErrorCode.not_utf8
+    assert raised.message == "Não foi possível ler o arquivo como texto."
+    assert raised.filename == "a.md"
+
+
+@pytest.mark.parametrize("data", [b"", b" \n\r\n\t ", b"\xef\xbb\xbf\x00\n"])
+def test_file_without_text_is_empty(data: bytes) -> None:
+    raised = error("a.md", data)
+
+    assert raised.code == DocumentErrorCode.empty
+    assert raised.message == "O arquivo não tem texto."
+    assert raised.filename == "a.md"
+
+
+def test_text_length_limit() -> None:
+    # "é" ocupa 2 bytes: o limite conta caracteres, não bytes.
+    assert len(read_document("a.md", ("é" * MAX_TEXT_CHARS).encode()).text) == (
+        MAX_TEXT_CHARS
+    )
+
+    raised = error("a.md", ("é" * (MAX_TEXT_CHARS + 1)).encode())
+
+    assert raised.code == DocumentErrorCode.too_long
+    assert raised.message == TOO_LONG
+    assert raised.filename == "a.md"
+
+
+def test_text_length_counts_cleaned_text() -> None:
+    data = ("a" * MAX_TEXT_CHARS + "\x00").encode()
+
+    assert len(read_document("a.md", data).text) == MAX_TEXT_CHARS
+
+
+def test_text_is_cleaned_and_hash_uses_original_bytes() -> None:
+    data = b"\xef\xbb\xbflinha 1\r\nlinha\x00 2\rlinha 3\n"
+
+    document = read_document("a.md", data)
+
+    assert document.text == "linha 1\nlinha 2\nlinha 3\n"
+    assert document.size_bytes == len(data)
+    assert document.sha256 == hashlib.sha256(data).hexdigest()
+
+
+@pytest.mark.parametrize("filename", ["pasta/guia.md", "C:\\pasta\\guia.md"])
+def test_filename_drops_folder(filename: str) -> None:
+    assert read_document(filename, b"texto").filename == "guia.md"
+
+
+def test_filename_keeps_255_chars_and_extension() -> None:
+    document = read_document("a" * 300 + ".md", b"texto")
+
+    assert document.filename == "a" * 252 + ".md"
+
+
+def test_checks_run_in_contract_order() -> None:
+    big_latin1 = b"\xe7" * (MAX_FILE_BYTES + 1)
+
+    assert error("a.txt", big_latin1).code == DocumentErrorCode.unsupported_type
+    assert error("a.md", big_latin1).code == DocumentErrorCode.too_large
+
+
+def test_read_documents_returns_documents_in_order() -> None:
+    documents = read_documents([("a.md", b"um"), ("pasta/b.md", b"dois")])
+
+    assert [d.filename for d in documents] == ["a.md", "b.md"]
+    assert [d.text for d in documents] == ["um", "dois"]
+
+
+@pytest.mark.parametrize(
+    "count,message",
+    [
+        (0, "Envie pelo menos um documento e escolha pelo menos uma saída."),
+        (4, "Envie até 3 documentos e escolha até 3 saídas."),
+    ],
+)
+def test_read_documents_checks_count(count: int, message: str) -> None:
+    files = [(f"{i}.md", str(i).encode()) for i in range(count)]
+
+    with pytest.raises(DocumentError) as raised:
+        read_documents(files)
+
+    assert raised.value.code == DocumentErrorCode.count
+    assert raised.value.message == message
+    assert raised.value.filename is None
+
+
+def test_read_documents_rejects_duplicate_content() -> None:
+    with pytest.raises(DocumentError) as raised:
+        read_documents([("a.md", b"igual"), ("b.md", b"igual")])
+
+    assert raised.value.code == DocumentErrorCode.duplicate
+    assert raised.value.message == "Este arquivo já está no curso."
+    assert raised.value.filename == "b.md"
+
+
+def test_read_documents_reports_invalid_file() -> None:
+    with pytest.raises(DocumentError) as raised:
+        read_documents([("a.md", b"um"), ("b.txt", b"dois")])
+
+    assert raised.value.code == DocumentErrorCode.unsupported_type
+    assert raised.value.filename == "b.txt"
