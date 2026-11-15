@@ -20,9 +20,13 @@ from app.core.storage import (
     get_storage,
 )
 
+SECRET = "conteudo-secreto"
 
-def service_error(status: int, code: str) -> oci.exceptions.ServiceError:
-    return oci.exceptions.ServiceError(status, code, {}, "mensagem do serviço")
+
+def service_error(
+    status: int, code: str, message: str = "mensagem do serviço"
+) -> oci.exceptions.ServiceError:
+    return oci.exceptions.ServiceError(status, code, {}, message)
 
 
 class FakeObjectStorageClient:
@@ -166,6 +170,9 @@ def test_oci_404_becomes_not_found(fake_client: FakeObjectStorageClient) -> None
         service_error(500, "InternalServerError"),
         service_error(404, "BucketNotFound"),
         ConnectionError("sem rede"),
+        # Erros do SDK que trazem o conteúdo do objeto na própria mensagem.
+        service_error(500, "InternalServerError", f"corpo recusado: {SECRET}"),
+        RuntimeError(f"corpo recusado: {SECRET}"),
     ],
 )
 @pytest.mark.parametrize("operation", ["put", "get", "delete", "list"])
@@ -175,7 +182,7 @@ def test_oci_other_failures_become_storage_error(
     fake_client.fail_with = error
     oci_storage = OCIStorage(fake_client, "ns", "bucket")
     calls = {
-        "put": lambda: oci_storage.put("a/1.txt", b"conteudo-secreto", "text/plain"),
+        "put": lambda: oci_storage.put("a/1.txt", SECRET.encode(), "text/plain"),
         "get": lambda: oci_storage.get("a/1.txt"),
         "delete": lambda: oci_storage.delete("a/1.txt"),
         "list": lambda: oci_storage.list("a/1.txt"),
@@ -188,7 +195,7 @@ def test_oci_other_failures_become_storage_error(
     message = str(raised.value)
     assert operation in message
     assert "a/1.txt" in message
-    assert "conteudo-secreto" not in message
+    assert SECRET not in message
 
 
 @pytest.mark.usefixtures("clean_get_storage")
