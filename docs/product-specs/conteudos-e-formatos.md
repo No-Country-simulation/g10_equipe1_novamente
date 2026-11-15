@@ -33,6 +33,9 @@ Um guia passo a passo.
 - Título.
 - Resumo de abertura, no layout "Resumo" dos documentos de design.
 - Seções, cada uma com um título e um texto em Markdown.
+- Lista "Para levar", com os pontos que a pessoa deve guardar. Ela também vem do layout "Resumo".
+
+Cada tutorial tem de 1 a 8 seções e de 1 a 5 itens na lista "Para levar".
 
 O texto das seções pode ter listas, tabelas e blocos de código.
 
