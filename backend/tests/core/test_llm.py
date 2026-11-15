@@ -89,9 +89,13 @@ def test_embed_texts_splits_batches_and_keeps_order(
 ) -> None:
     models = use(monkeypatch, embeddings_for())
 
-    vectors = llm.embed_texts([f"t{i}" for i in range(45)], task="document")
+    texts = [f"t{i}" for i in range(45)]
+
+    vectors = llm.embed_texts(texts, task="document")
 
     assert [len(call["contents"]) for call in models.calls] == [20, 20, 5]
+    sent = [text for call in models.calls for text in sent_texts(call)]
+    assert sent == [f"title: none | text: {text}" for text in texts]
     assert [vector[0] for vector in vectors] == [float(i) for i in range(45)]
     assert all(len(vector) == 768 for vector in vectors)
     assert models.calls[0]["model"] == "gemini-embedding-2"
