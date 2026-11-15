@@ -353,3 +353,18 @@ def test_content_package_rejects_invalid_field(field: str, value: Any) -> None:
 
     with pytest.raises(ValidationError):
         ContentPackage.model_validate(data)
+
+
+@pytest.mark.parametrize(
+    "path",
+    [("title",), ("niche",), ("key_concepts", 0), ("prerequisites", 0)],
+)
+@pytest.mark.parametrize("blank", ["", "   ", "\n\t"])
+def test_content_package_rejects_blank_text(
+    path: tuple[str | int, ...], blank: str
+) -> None:
+    data = package()
+    set_path(data, path, blank)
+
+    with pytest.raises(ValidationError):
+        ContentPackage.model_validate(data)
