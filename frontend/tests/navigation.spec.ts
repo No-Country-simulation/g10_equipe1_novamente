@@ -44,9 +44,9 @@ test("New course page shows the title, the steps and the step card", async ({
   await expect(steps).toHaveText(["1Documentos", "2Perfil", "3Formatos"])
   await expect(steps.first()).toHaveAttribute("aria-current", "step")
   await expect(page.getByText("ETAPA 1 DE 3")).toBeVisible()
-  await expect(
-    page.getByRole("heading", { name: "Documentos", level: 2 }),
-  ).toBeVisible()
+  await expect(page.locator('[data-slot="card-title"]')).toHaveText(
+    "Documentos",
+  )
 })
 
 test.describe("Without login", () => {

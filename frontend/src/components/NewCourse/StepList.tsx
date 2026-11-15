@@ -1,5 +1,6 @@
 import { Check } from "lucide-react"
 
+import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 
 export const STEPS = ["Documentos", "Perfil", "Formatos"] as const
@@ -25,9 +26,9 @@ export function StepList({ current, completed }: StepListProps) {
             aria-current={isCurrent ? "step" : undefined}
             className="flex items-center gap-3"
           >
-            <span
+            <Badge
               className={cn(
-                "flex size-8 shrink-0 items-center justify-center rounded-full text-sm font-semibold",
+                "size-8 border-transparent p-0 text-sm font-semibold",
                 isCompleted
                   ? "bg-success text-primary-foreground"
                   : isCurrent
@@ -40,7 +41,7 @@ export function StepList({ current, completed }: StepListProps) {
               ) : (
                 step
               )}
-            </span>
+            </Badge>
             <span
               className={cn(
                 isCurrent && "font-semibold",

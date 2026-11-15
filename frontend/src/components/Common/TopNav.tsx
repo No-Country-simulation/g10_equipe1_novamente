@@ -3,6 +3,12 @@ import { Link } from "@tanstack/react-router"
 import { Appearance } from "@/components/Common/Appearance"
 import { Logo } from "@/components/Common/Logo"
 import { UserMenu } from "@/components/Common/UserMenu"
+import {
+  NavigationMenu,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+} from "@/components/ui/navigation-menu"
 import useAuth from "@/hooks/useAuth"
 
 const tabs = [
@@ -19,22 +25,22 @@ export function TopNav() {
         <Logo variant="icon" asLink={false} className="sm:hidden" />
         <Logo asLink={false} className="hidden sm:block" />
       </Link>
-      <nav aria-label="Principal" className="flex items-center gap-1">
-        {tabs.map((tab) => (
-          <Link
-            key={tab.to}
-            to={tab.to}
-            activeOptions={{ exact: true }}
-            className="whitespace-nowrap rounded-[6px] px-3.5 py-2 text-base"
-            activeProps={{
-              className: "bg-muted font-semibold text-foreground",
-            }}
-            inactiveProps={{ className: "text-muted-foreground" }}
-          >
-            {tab.title}
-          </Link>
-        ))}
-      </nav>
+      <NavigationMenu viewport={false} aria-label="Principal">
+        <NavigationMenuList className="gap-1">
+          {tabs.map((tab) => (
+            <NavigationMenuItem key={tab.to}>
+              <NavigationMenuLink
+                asChild
+                className="h-auto flex-row rounded-[6px] bg-transparent px-3.5 py-2 text-base font-normal text-muted-foreground data-[status=active]:bg-muted data-[status=active]:font-semibold data-[status=active]:text-foreground"
+              >
+                <Link to={tab.to} activeOptions={{ exact: true }}>
+                  {tab.title}
+                </Link>
+              </NavigationMenuLink>
+            </NavigationMenuItem>
+          ))}
+        </NavigationMenuList>
+      </NavigationMenu>
       <div className="ml-auto flex items-center gap-2">
         <Appearance />
         {user && <UserMenu user={user} />}
