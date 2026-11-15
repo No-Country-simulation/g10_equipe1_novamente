@@ -5,6 +5,11 @@ export type ClientOptions = {
 };
 
 /**
+ * AudienceLevel
+ */
+export type AudienceLevel = 'non_technical' | 'technical_basic' | 'technical_advanced';
+
+/**
  * Body_login-login_access_token
  */
 export type Body_login_login_access_token = {
@@ -35,6 +40,251 @@ export type Body_login_login_access_token = {
 };
 
 /**
+ * CitationPublic
+ */
+export type CitationPublic = {
+    /**
+     * Chunk Id
+     */
+    chunk_id: string;
+    /**
+     * Document Id
+     */
+    document_id: string;
+    /**
+     * Document Title
+     */
+    document_title: string;
+    /**
+     * Text
+     */
+    text: string;
+    /**
+     * Page Number
+     */
+    page_number: number | null;
+    /**
+     * Similarity
+     */
+    similarity: number | null;
+};
+
+/**
+ * ClarityLevel
+ */
+export type ClarityLevel = 'low' | 'medium' | 'high';
+
+/**
+ * ContentFormat
+ */
+export type ContentFormat = 'tutorial' | 'flashcards' | 'quiz';
+
+/**
+ * ContentPublic
+ */
+export type ContentPublic = {
+    /**
+     * Id
+     */
+    id: string;
+    format: ContentFormat;
+    status: GenerationStatus;
+    /**
+     * Position
+     */
+    position: number;
+    /**
+     * Title
+     */
+    title: string | null;
+    /**
+     * Content
+     */
+    content: {
+        [key: string]: unknown;
+    } | null;
+    /**
+     * Estimated Minutes
+     */
+    estimated_minutes: number | null;
+    /**
+     * Key Concepts
+     */
+    key_concepts: Array<string> | null;
+    /**
+     * Prerequisites
+     */
+    prerequisites: Array<string> | null;
+    /**
+     * Grounding Score
+     */
+    grounding_score: number | null;
+    clarity: ClarityLevel | null;
+    /**
+     * Review Notes
+     */
+    review_notes: string | null;
+    /**
+     * Oci Object Key
+     */
+    oci_object_key: string | null;
+    /**
+     * Error Message
+     */
+    error_message: string | null;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+    /**
+     * Citations
+     */
+    citations: Array<CitationPublic>;
+};
+
+/**
+ * ContentSummary
+ */
+export type ContentSummary = {
+    /**
+     * Id
+     */
+    id: string;
+    format: ContentFormat;
+    status: GenerationStatus;
+    /**
+     * Position
+     */
+    position: number;
+    /**
+     * Title
+     */
+    title: string | null;
+};
+
+/**
+ * CourseDetail
+ */
+export type CourseDetail = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Title
+     */
+    title: string;
+    audience_level: AudienceLevel;
+    status: CourseStatus;
+    niche: NichePublic;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+    /**
+     * Contents
+     */
+    contents: Array<ContentPublic>;
+    /**
+     * Documents
+     */
+    documents: Array<DocumentPublic>;
+};
+
+/**
+ * CourseStatus
+ */
+export type CourseStatus = 'initializing' | 'ready' | 'failed';
+
+/**
+ * CourseSummary
+ */
+export type CourseSummary = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Title
+     */
+    title: string;
+    audience_level: AudienceLevel;
+    status: CourseStatus;
+    niche: NichePublic;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+    /**
+     * Contents
+     */
+    contents: Array<ContentSummary>;
+};
+
+/**
+ * CoursesPublic
+ */
+export type CoursesPublic = {
+    /**
+     * Data
+     */
+    data: Array<CourseSummary>;
+    /**
+     * Count
+     */
+    count: number;
+};
+
+/**
+ * DocumentPublic
+ */
+export type DocumentPublic = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Title
+     */
+    title: string;
+    /**
+     * Original Filename
+     */
+    original_filename: string;
+    /**
+     * Mime Type
+     */
+    mime_type: string;
+    /**
+     * Size Bytes
+     */
+    size_bytes: number;
+    status: DocumentStatus;
+    /**
+     * Error Message
+     */
+    error_message: string | null;
+};
+
+/**
+ * DocumentStatus
+ */
+export type DocumentStatus = 'uploaded' | 'processing' | 'indexed' | 'failed';
+
+/**
+ * GenerationStatus
+ */
+export type GenerationStatus = 'pending' | 'running' | 'succeeded' | 'failed';
+
+/**
  * HTTPValidationError
  */
 export type HTTPValidationError = {
@@ -52,6 +302,118 @@ export type Message = {
      * Message
      */
     message: string;
+};
+
+/**
+ * NichePublic
+ */
+export type NichePublic = {
+    /**
+     * Id
+     */
+    id: number;
+    /**
+     * Slug
+     */
+    slug: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Description
+     */
+    description: string | null;
+};
+
+/**
+ * PrivateContentCreate
+ */
+export type PrivateContentCreate = {
+    format: ContentFormat;
+    status?: GenerationStatus;
+    /**
+     * Title
+     */
+    title?: string | null;
+    /**
+     * Content
+     */
+    content?: {
+        [key: string]: unknown;
+    } | null;
+    /**
+     * Estimated Minutes
+     */
+    estimated_minutes?: number | null;
+    /**
+     * Key Concepts
+     */
+    key_concepts?: Array<string> | null;
+    /**
+     * Prerequisites
+     */
+    prerequisites?: Array<string> | null;
+    /**
+     * Grounding Score
+     */
+    grounding_score?: number | null;
+    clarity?: ClarityLevel | null;
+    /**
+     * Review Notes
+     */
+    review_notes?: string | null;
+    /**
+     * Error Message
+     */
+    error_message?: string | null;
+    /**
+     * Cited Chunks
+     */
+    cited_chunks?: Array<number>;
+};
+
+/**
+ * PrivateCourseCreate
+ */
+export type PrivateCourseCreate = {
+    /**
+     * Owner Email
+     */
+    owner_email: string;
+    /**
+     * Title
+     */
+    title: string;
+    /**
+     * Niche Slug
+     */
+    niche_slug?: string;
+    audience_level: AudienceLevel;
+    status?: CourseStatus;
+    /**
+     * Documents
+     */
+    documents: Array<PrivateDocumentCreate>;
+    /**
+     * Contents
+     */
+    contents: Array<PrivateContentCreate>;
+};
+
+/**
+ * PrivateDocumentCreate
+ */
+export type PrivateDocumentCreate = {
+    /**
+     * Original Filename
+     */
+    original_filename?: string;
+    status?: DocumentStatus;
+    /**
+     * Chunks
+     */
+    chunks?: Array<string>;
 };
 
 /**
@@ -356,6 +718,70 @@ export type utilsHealthCheckResponses = {
 
 export type utilsHealthCheckResponse = utilsHealthCheckResponses[keyof utilsHealthCheckResponses];
 
+export type nichesReadNichesData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/niches/';
+};
+
+export type nichesReadNichesResponses = {
+    /**
+     * Response Niches-Read Niches
+     *
+     * Successful Response
+     */
+    200: Array<NichePublic>;
+};
+
+export type nichesReadNichesResponse = nichesReadNichesResponses[keyof nichesReadNichesResponses];
+
+export type coursesReadCoursesData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/courses/';
+};
+
+export type coursesReadCoursesResponses = {
+    /**
+     * Successful Response
+     */
+    200: CoursesPublic;
+};
+
+export type coursesReadCoursesResponse = coursesReadCoursesResponses[keyof coursesReadCoursesResponses];
+
+export type coursesReadCourseData = {
+    body?: never;
+    path: {
+        /**
+         * Course Id
+         */
+        course_id: string;
+    };
+    query?: never;
+    url: '/api/v1/courses/{course_id}';
+};
+
+export type coursesReadCourseErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type coursesReadCourseError = coursesReadCourseErrors[keyof coursesReadCourseErrors];
+
+export type coursesReadCourseResponses = {
+    /**
+     * Successful Response
+     */
+    200: CourseDetail;
+};
+
+export type coursesReadCourseResponse = coursesReadCourseResponses[keyof coursesReadCourseResponses];
+
 export type privateCreateUserData = {
     body: PrivateUserCreate;
     path?: never;
@@ -380,3 +806,28 @@ export type privateCreateUserResponses = {
 };
 
 export type privateCreateUserResponse = privateCreateUserResponses[keyof privateCreateUserResponses];
+
+export type privateCreateCourseData = {
+    body: PrivateCourseCreate;
+    path?: never;
+    query?: never;
+    url: '/api/v1/private/courses/';
+};
+
+export type privateCreateCourseErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type privateCreateCourseError = privateCreateCourseErrors[keyof privateCreateCourseErrors];
+
+export type privateCreateCourseResponses = {
+    /**
+     * Successful Response
+     */
+    200: CourseDetail;
+};
+
+export type privateCreateCourseResponse = privateCreateCourseResponses[keyof privateCreateCourseResponses];
