@@ -1,2 +1,0 @@
-workflows:
-  - .github/workflows/bump-pre-commit-hooks.yml
