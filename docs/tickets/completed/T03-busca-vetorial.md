@@ -77,9 +77,9 @@ Regras:
 
 ## Critérios de aceite
 
-- [ ] `search_chunks` cumpre o contrato.
-- [ ] Nenhum chunk de outro curso, de documento não indexado ou de outro modelo aparece no resultado.
-- [ ] Os hooks e os testes passam, com cobertura de 90% ou mais.
+- [x] `search_chunks` cumpre o contrato.
+- [x] Nenhum chunk de outro curso, de documento não indexado ou de outro modelo aparece no resultado.
+- [x] Os hooks e os testes passam, com cobertura de 90% ou mais.
 
 ## Cenários de teste
 
@@ -93,3 +93,9 @@ Use vetores feitos à mão. Com `e0` e `e1` como vetores com 1.0 em uma só posi
 6. Outro `owner_id` e um `course_id` inexistente levantam `CourseNotFoundError`.
 7. Um vetor com 767 valores levanta `ValueError`.
 8. Um curso sem documentos indexados devolve lista vazia.
+
+## Verificação do aceite
+
+- PR revisado: [#13](https://github.com/No-Country-simulation/g10_equipe1_novamente/pull/13), integrado no commit `ebd24f6`.
+- CI do PR: todos os checks passaram, com escopo dentro de `touches`.
+- Revisão automática publicada no PR e triada.

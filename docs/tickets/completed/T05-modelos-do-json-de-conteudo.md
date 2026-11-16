@@ -164,11 +164,11 @@ Os exemplos de flashcards e de quiz estão curtos para caber aqui. Um JSON váli
 
 ## Critérios de aceite
 
-- [ ] Os modelos cumprem o contrato, com os limites de quantidade.
-- [ ] `CONTENT_MODELS` e `GENERATED_MODELS` têm uma entrada para cada valor de `ContentFormat`.
-- [ ] `ContentPackage` serializa para um JSON com exatamente onze chaves.
-- [ ] `conteudos-e-formatos.md` cita a lista "Para levar".
-- [ ] Os hooks e os testes passam, com cobertura de 90% ou mais.
+- [x] Os modelos cumprem o contrato, com os limites de quantidade.
+- [x] `CONTENT_MODELS` e `GENERATED_MODELS` têm uma entrada para cada valor de `ContentFormat`.
+- [x] `ContentPackage` serializa para um JSON com exatamente onze chaves.
+- [x] `conteudos-e-formatos.md` cita a lista "Para levar".
+- [x] Os hooks e os testes passam, com cobertura de 90% ou mais.
 
 ## Cenários de teste
 
@@ -181,3 +181,9 @@ Os exemplos de flashcards e de quiz estão curtos para caber aqui. Um JSON váli
 7. Um campo extra falha em qualquer modelo.
 8. `hint` ausente e `hint` nulo passam.
 9. `ContentPackage` vai para JSON e volta sem perder dados.
+
+## Verificação do aceite
+
+- PR revisado: [#11](https://github.com/No-Country-simulation/g10_equipe1_novamente/pull/11), integrado no commit `7861b71`.
+- CI do PR: todos os checks passaram, com escopo dentro de `touches`.
+- Revisão automática triada; testes de texto em branco adicionados no commit `f52b78c`. O modo estrito do Pydantic fica para decidir no T20.

@@ -129,11 +129,11 @@ Outros pontos:
 
 ## Critérios de aceite
 
-- [ ] `OCIStorage` e `InMemoryStorage` cumprem as mesmas regras do contrato.
-- [ ] O backend sobe e os testes passam sem nenhuma variável `OCI_*`.
-- [ ] Só `backend/app/core/storage.py` importa `oci`.
-- [ ] `.env.example` documenta as variáveis sem nenhum valor secreto.
-- [ ] Os hooks e os testes passam, com cobertura de 90% ou mais.
+- [x] `OCIStorage` e `InMemoryStorage` cumprem as mesmas regras do contrato.
+- [x] O backend sobe e os testes passam sem nenhuma variável `OCI_*`.
+- [x] Só `backend/app/core/storage.py` importa `oci`.
+- [x] `.env.example` documenta as variáveis sem nenhum valor secreto.
+- [x] Os hooks e os testes passam, com cobertura de 90% ou mais.
 
 ## Cenários de teste
 
@@ -147,3 +147,9 @@ Rode os cenários 1 a 4 contra as duas implementações.
 6. Um erro 404 do SDK vira `ObjectNotFoundError`, e um erro 500 vira `StorageError`.
 7. `get_storage` sem configuração levanta `StorageNotConfiguredError`.
 8. As três funções de chave devolvem o formato do contrato, e duas chamadas de `content_key` devolvem chaves diferentes.
+
+## Verificação do aceite
+
+- PR revisado: [#14](https://github.com/No-Country-simulation/g10_equipe1_novamente/pull/14), integrado no commit `a08234f`.
+- CI do PR: todos os checks passaram, com escopo dentro de `touches`.
+- Revisão automática triada; teste de vazamento reforçado no commit `b6e7253`. Não verificado: chamada real ao bucket da OCI (fica no T12).
