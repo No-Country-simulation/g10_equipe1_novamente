@@ -116,13 +116,13 @@ Neste ticket a etapa 1 é a atual e as outras são futuras. Em janelas estreitas
 
 ## Critérios de aceite
 
-- [ ] Nenhuma tela mostra a barra lateral.
-- [ ] As abas levam às rotas certas e a aba ativa segue a rota.
-- [ ] O menu da conta abre as configurações e faz o logout.
-- [ ] As três famílias de fonte carregam sem pedido a outro domínio.
-- [ ] `/courses/new` mostra o título, as três etapas e o cartão, e manda para `/login` sem login.
-- [ ] Os testes Playwright que já existem passam.
-- [ ] `bun run lint` e `bun run build` passam.
+- [x] Nenhuma tela mostra a barra lateral.
+- [x] As abas levam às rotas certas e a aba ativa segue a rota.
+- [x] O menu da conta abre as configurações e faz o logout.
+- [x] As três famílias de fonte carregam sem pedido a outro domínio.
+- [x] `/courses/new` mostra o título, as três etapas e o cartão, e manda para `/login` sem login.
+- [x] Os testes Playwright que já existem passam.
+- [x] `bun run lint` e `bun run build` passam.
 
 ## Cenários de teste
 
@@ -135,3 +135,9 @@ Em `frontend/tests/navigation.spec.ts`:
 5. Em `/settings`, nenhuma aba está ativa.
 
 Em `frontend/tests/user-settings.spec.ts`, ajuste o nome do teste que cita a barra lateral.
+
+## Verificação do aceite
+
+- PR revisado: [#15](https://github.com/No-Country-simulation/g10_equipe1_novamente/pull/15), integrado no commit `fe50b9d`.
+- CI do PR: todos os checks passaram, com escopo dentro de `touches`.
+- Revisão automática sobre o commit `d0ae721`: sem achados.

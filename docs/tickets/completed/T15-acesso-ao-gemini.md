@@ -124,12 +124,12 @@ Outros pontos:
 
 ## Critérios de aceite
 
-- [ ] As duas funções cumprem o contrato.
-- [ ] O backend sobe e os testes passam sem nenhuma variável `GEMINI_*`.
-- [ ] Só `backend/app/core/llm.py` importa o SDK.
-- [ ] `.env.example` documenta as variáveis sem nenhum valor secreto.
-- [ ] Os hooks e os testes passam, com cobertura de 90% ou mais.
-- [ ] Se você tiver uma chave, rode uma chamada real de cada função e relate o resultado no PR. Sem chave, diga que não rodou.
+- [x] As duas funções cumprem o contrato.
+- [x] O backend sobe e os testes passam sem nenhuma variável `GEMINI_*`.
+- [x] Só `backend/app/core/llm.py` importa o SDK.
+- [x] `.env.example` documenta as variáveis sem nenhum valor secreto.
+- [x] Os hooks e os testes passam, com cobertura de 90% ou mais.
+- [x] Se você tiver uma chave, rode uma chamada real de cada função e relate o resultado no PR. Sem chave, diga que não rodou.
 
 ## Cenários de teste
 
@@ -143,3 +143,9 @@ Outros pontos:
 8. Quatro erros temporários levantam `LLMError`.
 9. Sem chave, as duas funções levantam `LLMNotConfiguredError`. Sem modelo de texto, `generate_structured` também.
 10. A mensagem de erro e o log não trazem o texto enviado.
+
+## Verificação do aceite
+
+- PR revisado: [#16](https://github.com/No-Country-simulation/g10_equipe1_novamente/pull/16), integrado no commit `290f4c1`.
+- CI do PR: todos os checks passaram, com escopo dentro de `touches`.
+- Revisão automática triada; teste de ordem do lote reforçado no commit `4df72d4`. Não verificado: chamada real ao Gemini, por falta de chave (fica no T12).

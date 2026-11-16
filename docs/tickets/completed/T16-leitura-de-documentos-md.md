@@ -110,10 +110,10 @@ Outras regras:
 
 ## Critérios de aceite
 
-- [ ] As duas funções cumprem o contrato, com a ordem das conferências.
-- [ ] Cada erro traz o código, a mensagem da especificação e o nome do arquivo.
-- [ ] Nenhuma função grava em disco, banco ou rede.
-- [ ] Os hooks e os testes passam, com cobertura de 90% ou mais.
+- [x] As duas funções cumprem o contrato, com a ordem das conferências.
+- [x] Cada erro traz o código, a mensagem da especificação e o nome do arquivo.
+- [x] Nenhuma função grava em disco, banco ou rede.
+- [x] Os hooks e os testes passam, com cobertura de 90% ou mais.
 
 ## Cenários de teste
 
@@ -128,3 +128,9 @@ Outras regras:
 9. `read_documents` com zero e com quatro arquivos levanta `count`, com a mensagem de cada caso.
 10. `read_documents` com dois arquivos de mesmo conteúdo e nomes diferentes levanta `duplicate`, com o nome do segundo arquivo.
 11. `texto-digitado.md` segue as mesmas regras de qualquer `.md`.
+
+## Verificação do aceite
+
+- PR revisado: [#12](https://github.com/No-Country-simulation/g10_equipe1_novamente/pull/12), integrado no commit `edc59de`.
+- CI do PR: todos os checks passaram, com escopo dentro de `touches`.
+- Revisão automática publicada no PR e triada.

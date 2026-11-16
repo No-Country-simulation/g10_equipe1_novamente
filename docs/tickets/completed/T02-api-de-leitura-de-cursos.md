@@ -174,12 +174,12 @@ class PrivateCourseCreate(BaseModel):
 
 ## Critérios de aceite
 
-- [ ] As quatro rotas respondem conforme o contrato.
-- [ ] Um usuário nunca recebe um curso de outro usuário, na lista ou no detalhe.
-- [ ] As rotas de leitura respondem HTTP 401 ou 403 sem token.
-- [ ] `POST /api/v1/private/courses/` não existe sem `FASTAPI_ENV=development`.
-- [ ] `frontend/src/client/` tem `NichesService`, `CoursesService` e o método de seed em `PrivateService`.
-- [ ] Os hooks e os testes passam, com cobertura de 90% ou mais.
+- [x] As quatro rotas respondem conforme o contrato.
+- [x] Um usuário nunca recebe um curso de outro usuário, na lista ou no detalhe.
+- [x] As rotas de leitura respondem HTTP 401 ou 403 sem token.
+- [x] `POST /api/v1/private/courses/` não existe sem `FASTAPI_ENV=development`.
+- [x] `frontend/src/client/` tem `NichesService`, `CoursesService` e o método de seed em `PrivateService`.
+- [x] Os hooks e os testes passam, com cobertura de 90% ou mais.
 
 ## Cenários de teste
 
@@ -190,3 +190,9 @@ class PrivateCourseCreate(BaseModel):
 5. `GET /courses/{id}` de outro usuário e de um `id` inexistente respondem HTTP 404.
 6. O seed cria um curso `initializing` com um conteúdo `pending`, e um curso `ready` com um conteúdo `succeeded` e citações.
 7. O seed recusa cada caso de erro listado em "Detalhes técnicos".
+
+## Verificação do aceite
+
+- PR revisado: [#17](https://github.com/No-Country-simulation/g10_equipe1_novamente/pull/17), integrado no commit `4269109`.
+- CI do PR: todos os checks passaram, com escopo dentro de `touches`.
+- Revisão automática apontou duas falhas no seed e um teste de ordenação fraco; corrigidos no commit `2ebcb10`.

@@ -53,16 +53,16 @@ Tickets escritos (onda 1):
 
 | Ticket | Entrega |
 | --- | --- |
-| [`T02`](docs/tickets/T02-api-de-leitura-de-cursos.md) | API de leitura de setores e cursos, e seed de desenvolvimento |
-| [`T03`](docs/tickets/T03-busca-vetorial.md) | Busca vetorial dos 8 chunks mais próximos |
+| [`T02`](docs/tickets/completed/T02-api-de-leitura-de-cursos.md) | API de leitura de setores e cursos, e seed de desenvolvimento |
+| [`T03`](docs/tickets/completed/T03-busca-vetorial.md) | Busca vetorial dos 8 chunks mais próximos |
 | [`T04`](docs/tickets/completed/T04-nota-de-fidelidade.md) | Nota de fidelidade e decisão de publicar |
-| [`T05`](docs/tickets/T05-modelos-do-json-de-conteudo.md) | Modelos do JSON de tutorial, flashcards e quiz |
-| [`T06`](docs/tickets/T06-navegacao-no-topo.md) | Navegação no topo, fontes, cores e base da tela "Novo curso" |
+| [`T05`](docs/tickets/completed/T05-modelos-do-json-de-conteudo.md) | Modelos do JSON de tutorial, flashcards e quiz |
+| [`T06`](docs/tickets/completed/T06-navegacao-no-topo.md) | Navegação no topo, fontes, cores e base da tela "Novo curso" |
 | [`T12`](docs/tickets/T12-medir-gemini-e-conferir-oci.md) | Medir o plano gratuito do Gemini e conferir o bucket da OCI |
 | [`T13`](docs/tickets/T13-documentos-da-demonstracao.md) | Escolher os três documentos da demonstração |
-| [`T14`](docs/tickets/T14-armazenamento-na-oci.md) | Módulo de armazenamento na OCI |
-| [`T15`](docs/tickets/T15-acesso-ao-gemini.md) | Módulo de acesso ao Gemini |
-| [`T16`](docs/tickets/T16-leitura-de-documentos-md.md) | Leitura e validação de documentos `.md` |
+| [`T14`](docs/tickets/completed/T14-armazenamento-na-oci.md) | Módulo de armazenamento na OCI |
+| [`T15`](docs/tickets/completed/T15-acesso-ao-gemini.md) | Módulo de acesso ao Gemini |
+| [`T16`](docs/tickets/completed/T16-leitura-de-documentos-md.md) | Leitura e validação de documentos `.md` |
 
 Os tickets das ondas 2 a 5 estão só na tabela de ondas do README dos tickets.
 
