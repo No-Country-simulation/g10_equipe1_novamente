@@ -2,7 +2,7 @@
 
 import { type Client, type Options as Options2, type TDataShape, urlSearchParamsBodySerializer } from './client';
 import { client } from './client.gen';
-import type { loginLoginAccessTokenData, loginLoginAccessTokenErrors, loginLoginAccessTokenResponses, loginTestTokenData, loginTestTokenResponses, privateCreateUserData, privateCreateUserErrors, privateCreateUserResponses, usersDeleteUserMeData, usersDeleteUserMeResponses, usersReadUserMeData, usersReadUserMeResponses, usersRegisterUserData, usersRegisterUserErrors, usersRegisterUserResponses, usersUpdatePasswordMeData, usersUpdatePasswordMeErrors, usersUpdatePasswordMeResponses, usersUpdateUserMeData, usersUpdateUserMeErrors, usersUpdateUserMeResponses, utilsHealthCheckData, utilsHealthCheckResponses } from './types.gen';
+import type { coursesReadCourseData, coursesReadCourseErrors, coursesReadCourseResponses, coursesReadCoursesData, coursesReadCoursesResponses, loginLoginAccessTokenData, loginLoginAccessTokenErrors, loginLoginAccessTokenResponses, loginTestTokenData, loginTestTokenResponses, nichesReadNichesData, nichesReadNichesResponses, privateCreateCourseData, privateCreateCourseErrors, privateCreateCourseResponses, privateCreateUserData, privateCreateUserErrors, privateCreateUserResponses, usersDeleteUserMeData, usersDeleteUserMeResponses, usersReadUserMeData, usersReadUserMeResponses, usersRegisterUserData, usersRegisterUserErrors, usersRegisterUserResponses, usersUpdatePasswordMeData, usersUpdatePasswordMeErrors, usersUpdatePasswordMeResponses, usersUpdateUserMeData, usersUpdateUserMeErrors, usersUpdateUserMeResponses, utilsHealthCheckData, utilsHealthCheckResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -148,6 +148,46 @@ export class UtilsService {
     }
 }
 
+export class NichesService {
+    /**
+     * Read Niches
+     */
+    public static readNiches<ThrowOnError extends boolean = true>(options?: Options<nichesReadNichesData, ThrowOnError>) {
+        return (options?.client ?? client).get<nichesReadNichesResponses, unknown, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/niches/',
+            ...options
+        });
+    }
+}
+
+export class CoursesService {
+    /**
+     * Read Courses
+     */
+    public static readCourses<ThrowOnError extends boolean = true>(options?: Options<coursesReadCoursesData, ThrowOnError>) {
+        return (options?.client ?? client).get<coursesReadCoursesResponses, unknown, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/courses/',
+            ...options
+        });
+    }
+    
+    /**
+     * Read Course
+     */
+    public static readCourse<ThrowOnError extends boolean = true>(options: Options<coursesReadCourseData, ThrowOnError>) {
+        return (options.client ?? client).get<coursesReadCourseResponses, coursesReadCourseErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/courses/{course_id}',
+            ...options
+        });
+    }
+}
+
 export class PrivateService {
     /**
      * Create User
@@ -158,6 +198,21 @@ export class PrivateService {
         return (options.client ?? client).post<privateCreateUserResponses, privateCreateUserErrors, ThrowOnError>({
             responseType: 'json',
             url: '/api/v1/private/users/',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
+    /**
+     * Create Course
+     */
+    public static createCourse<ThrowOnError extends boolean = true>(options: Options<privateCreateCourseData, ThrowOnError>) {
+        return (options.client ?? client).post<privateCreateCourseResponses, privateCreateCourseErrors, ThrowOnError>({
+            responseType: 'json',
+            url: '/api/v1/private/courses/',
             ...options,
             headers: {
                 'Content-Type': 'application/json',

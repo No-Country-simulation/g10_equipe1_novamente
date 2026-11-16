@@ -398,3 +398,79 @@ class ContentCitation(SQLModel, table=True):
     similarity: Decimal | None = Field(
         default=None, sa_column=sa.Column(sa.Numeric(4, 3))
     )
+
+
+class NichePublic(SQLModel):
+    id: int
+    slug: str
+    name: str
+    description: str | None
+
+
+class ContentSummary(SQLModel):
+    id: uuid.UUID
+    format: ContentFormat
+    status: GenerationStatus
+    position: int
+    title: str | None
+
+
+class CourseSummary(SQLModel):
+    id: uuid.UUID
+    title: str
+    audience_level: AudienceLevel
+    status: CourseStatus
+    niche: NichePublic
+    created_at: datetime
+    updated_at: datetime
+    contents: list[ContentSummary]
+
+
+class CoursesPublic(SQLModel):
+    data: list[CourseSummary]
+    count: int
+
+
+class DocumentPublic(SQLModel):
+    id: uuid.UUID
+    title: str
+    original_filename: str
+    mime_type: str
+    size_bytes: int
+    status: DocumentStatus
+    error_message: str | None
+
+
+class CitationPublic(SQLModel):
+    chunk_id: uuid.UUID
+    document_id: uuid.UUID
+    document_title: str
+    text: str
+    page_number: int | None
+    similarity: float | None
+
+
+class ContentPublic(ContentSummary):
+    content: dict[str, Any] | None
+    estimated_minutes: int | None
+    key_concepts: list[str] | None
+    prerequisites: list[str] | None
+    grounding_score: float | None
+    clarity: ClarityLevel | None
+    review_notes: str | None
+    oci_object_key: str | None
+    error_message: str | None
+    updated_at: datetime
+    citations: list[CitationPublic]
+
+
+class CourseDetail(SQLModel):
+    id: uuid.UUID
+    title: str
+    audience_level: AudienceLevel
+    status: CourseStatus
+    niche: NichePublic
+    created_at: datetime
+    updated_at: datetime
+    contents: list[ContentPublic]
+    documents: list[DocumentPublic]
