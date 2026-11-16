@@ -120,9 +120,7 @@ def _content_public(
 
 
 @router.get("/", response_model=CoursesPublic)
-def read_courses(
-    *, session: SessionDep, current_user: CurrentUser
-) -> CoursesPublic:
+def read_courses(*, session: SessionDep, current_user: CurrentUser) -> CoursesPublic:
     statement = (
         select(Course, Niche)
         .join(Niche, col(Course.niche_id) == col(Niche.id))
@@ -171,8 +169,7 @@ def read_course(
     )
     documents = list(
         session.exec(
-            select(SourceDocument)
-            .where(col(SourceDocument.course_id) == course.id)
+            select(SourceDocument).where(col(SourceDocument.course_id) == course.id)
         ).all()
     )
 
@@ -184,9 +181,7 @@ def read_course(
         niche=_niche_public(niche),
         created_at=course.created_at,
         updated_at=course.updated_at,
-        contents=[
-            _content_public(session, course.id, content) for content in contents
-        ],
+        contents=[_content_public(session, course.id, content) for content in contents],
         documents=[
             DocumentPublic(
                 id=document.id,

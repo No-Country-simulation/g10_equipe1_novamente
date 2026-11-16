@@ -1,18 +1,18 @@
+import uuid
+from decimal import Decimal
+
 from fastapi.testclient import TestClient
-from sqlmodel import Session
+from sqlmodel import Session, select
 
 from app.core.config import settings
+from app.models import ContentCitation, CourseContent
 from tests.utils.course import create_course
 from tests.utils.user import authentication_token_from_email, create_random_user
 
 
-def test_read_courses_empty_for_new_user(
-    client: TestClient, db: Session
-) -> None:
+def test_read_courses_empty_for_new_user(client: TestClient, db: Session) -> None:
     user = create_random_user(db)
-    headers = authentication_token_from_email(
-        client=client, email=user.email, db=db
-    )
+    headers = authentication_token_from_email(client=client, email=user.email, db=db)
 
     response = client.get(
         f"{settings.API_V1_STR}/courses/",
@@ -59,9 +59,7 @@ def test_read_course_returns_documents_contents_and_citations(
     client: TestClient, db: Session
 ) -> None:
     user = create_random_user(db)
-    headers = authentication_token_from_email(
-        client=client, email=user.email, db=db
-    )
+    headers = authentication_token_from_email(client=client, email=user.email, db=db)
     course = create_course(
         client=client,
         owner_email=user.email,
@@ -80,10 +78,36 @@ def test_read_course_returns_documents_contents_and_citations(
                 "format": "tutorial",
                 "title": "Tutorial principal",
                 "content": {"body": "Conteúdo principal"},
-                "cited_chunks": [1],
-            }
+                "cited_chunks": [0, 1],
+            },
+            {"format": "quiz", "title": "Quiz", "content": {}, "cited_chunks": [0, 1]},
+            {
+                "format": "flashcards",
+                "title": "Flashcards",
+                "content": {},
+                "cited_chunks": [0, 1],
+            },
         ],
     )
+    # A ordem esperada difere da ordem de criação e de inserção das citações.
+    for index, seeded_content in enumerate(course["contents"]):
+        content_id = uuid.UUID(seeded_content["id"])
+        content = db.get(CourseContent, content_id)
+        assert content is not None
+        content.position = [2, 0, 1][index]
+        db.add(content)
+        citations = db.exec(
+            select(ContentCitation).where(ContentCitation.content_id == content_id)
+        ).all()
+        for citation in citations:
+            first_chunk = seeded_content["citations"][0]["chunk_id"]
+            citation.similarity = (
+                Decimal("0.2")
+                if str(citation.chunk_id) == first_chunk
+                else Decimal("0.8")
+            )
+            db.add(citation)
+    db.commit()
 
     response = client.get(
         f"{settings.API_V1_STR}/courses/{course['id']}",
@@ -92,14 +116,28 @@ def test_read_course_returns_documents_contents_and_citations(
 
     assert response.status_code == 200
     data = response.json()
-    assert {
-        document["original_filename"] for document in data["documents"]
-    } == {"primeiro.md", "segundo.md"}
-    assert [content["position"] for content in data["contents"]] == [0]
-    citation = data["contents"][0]["citations"][0]
-    assert citation["document_title"] == "segundo.md"
-    assert citation["text"] == "segundo trecho"
-    assert citation["similarity"] == 0.9
+    assert {document["original_filename"] for document in data["documents"]} == {
+        "primeiro.md",
+        "segundo.md",
+    }
+    assert [content["position"] for content in data["contents"]] == [0, 1, 2]
+    assert [content["title"] for content in data["contents"]] == [
+        "Quiz",
+        "Flashcards",
+        "Tutorial principal",
+    ]
+    for content in data["contents"]:
+        assert [citation["similarity"] for citation in content["citations"]] == [
+            0.8,
+            0.2,
+        ]
+        assert {
+            (citation["document_title"], citation["text"])
+            for citation in content["citations"]
+        } == {
+            ("primeiro.md", "primeiro trecho"),
+            ("segundo.md", "segundo trecho"),
+        }
 
 
 def test_read_course_returns_404_for_other_user_and_missing_course(

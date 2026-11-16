@@ -88,9 +88,7 @@ def create_user(user_in: PrivateUserCreate, session: SessionDep) -> User:
 
 
 @router.post("/courses/", response_model=CourseDetail)
-def create_course(
-    course_in: PrivateCourseCreate, session: SessionDep
-) -> CourseDetail:
+def create_course(course_in: PrivateCourseCreate, session: SessionDep) -> CourseDetail:
     owner = session.exec(
         select(User).where(col(User.email) == course_in.owner_email)
     ).first()
@@ -108,8 +106,7 @@ def create_course(
     if not course_in.contents:
         raise HTTPException(status_code=422, detail="contents não pode ser vazio.")
     if any(
-        content.status == GenerationStatus.succeeded
-        and content.content is None
+        content.status == GenerationStatus.succeeded and content.content is None
         for content in course_in.contents
     ):
         raise HTTPException(
@@ -139,6 +136,18 @@ def create_course(
             detail="chunks não pode conter texto vazio.",
         )
 
+    document_hashes = [
+        hashlib.sha256("\n".join(document.chunks).encode("utf-8")).hexdigest()
+        if document.chunks
+        else hashlib.sha256(str(uuid.uuid4()).encode("utf-8")).hexdigest()
+        for document in course_in.documents
+    ]
+    if len(set(document_hashes)) != len(document_hashes):
+        raise HTTPException(
+            status_code=422,
+            detail="documents contém documentos com texto repetido.",
+        )
+
     course = Course(
         owner_id=owner.id,
         niche_id=niche.id,
@@ -149,10 +158,11 @@ def create_course(
     session.add(course)
 
     all_chunks: list[DocumentChunk] = []
-    for document_in in course_in.documents:
+    for document_in, document_hash in zip(
+        course_in.documents, document_hashes, strict=True
+    ):
         document_id = uuid.uuid4()
         document_text = "\n".join(document_in.chunks).encode("utf-8")
-        hash_input = document_text or str(document_id).encode("utf-8")
         document = SourceDocument(
             id=document_id,
             course_id=course.id,
@@ -160,10 +170,8 @@ def create_course(
             original_filename=document_in.original_filename,
             mime_type="text/markdown",
             size_bytes=max(1, len(document_text)),
-            sha256=hashlib.sha256(hash_input).hexdigest(),
-            oci_object_key=(
-                f"courses/{course.id}/documents/{document_id}.md"
-            ),
+            sha256=document_hash,
+            oci_object_key=(f"courses/{course.id}/documents/{document_id}.md"),
             status=document_in.status,
         )
         session.add(document)
@@ -213,7 +221,7 @@ def create_course(
         session.add(content)
         session.flush()
 
-        for chunk_index in content_in.cited_chunks:
+        for chunk_index in dict.fromkeys(content_in.cited_chunks):
             cited_chunk = all_chunks[chunk_index]
             session.add(
                 ContentCitation(

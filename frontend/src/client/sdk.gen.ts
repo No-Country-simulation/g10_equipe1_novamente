@@ -36,7 +36,7 @@ export class LoginService {
             }
         });
     }
-
+    
     /**
      * Test Token
      *
@@ -66,7 +66,7 @@ export class UsersService {
             ...options
         });
     }
-
+    
     /**
      * Read User Me
      *
@@ -174,7 +174,7 @@ export class CoursesService {
             ...options
         });
     }
-
+    
     /**
      * Read Course
      */
@@ -205,7 +205,7 @@ export class PrivateService {
             }
         });
     }
-
+    
     /**
      * Create Course
      */

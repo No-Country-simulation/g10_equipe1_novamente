@@ -90,9 +90,7 @@ def test_seed_returns_404_for_unknown_owner_or_niche(
     assert niche_response.status_code == 404
 
 
-def test_seed_returns_422_for_invalid_payloads(
-    client: TestClient, db: Session
-) -> None:
+def test_seed_returns_422_for_invalid_payloads(client: TestClient, db: Session) -> None:
     user = create_random_user(db)
     base_payload = {
         "owner_email": user.email,
@@ -129,3 +127,40 @@ def test_seed_returns_422_for_invalid_payloads(
     ]
 
     assert [response.status_code for response in responses] == [422, 422, 422, 422]
+
+
+def test_seed_deduplicates_cited_chunks(client: TestClient, db: Session) -> None:
+    user = create_random_user(db)
+    course = create_course(
+        client=client,
+        owner_email=user.email,
+        documents=[{"chunks": ["primeiro", "segundo"]}],
+        contents=[{"format": "tutorial", "content": {}, "cited_chunks": [1, 0, 1, 0]}],
+    )
+    citations = course["contents"][0]["citations"]
+    assert len(citations) == 2
+    assert {citation["text"] for citation in citations} == {"primeiro", "segundo"}
+
+
+def test_seed_rejects_documents_with_identical_text(
+    client: TestClient, db: Session
+) -> None:
+    user = create_random_user(db)
+    payload = {
+        "owner_email": user.email,
+        "title": "Documentos repetidos",
+        "audience_level": "technical_basic",
+        "documents": [
+            {"original_filename": "a.md", "chunks": ["igual"]},
+            {"original_filename": "b.md", "chunks": ["igual"]},
+        ],
+        "contents": [{"format": "tutorial", "content": {}}],
+    }
+    response = client.post(f"{settings.API_V1_STR}/private/courses/", json=payload)
+    assert response.status_code == 422
+    assert (
+        response.json()["detail"] == "documents contém documentos com texto repetido."
+    )
+    payload["documents"] = [{"chunks": ["válido"]}]
+    response = client.post(f"{settings.API_V1_STR}/private/courses/", json=payload)
+    assert response.status_code == 200
