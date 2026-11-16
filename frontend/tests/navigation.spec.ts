@@ -49,6 +49,19 @@ test("New course page shows the title, the steps and the step card", async ({
   )
 })
 
+test("On a narrow screen the tabs open from the menu button", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 375, height: 700 })
+  await page.goto("/")
+
+  await page.getByRole("button", { name: "Abrir menu" }).click()
+  await page.getByRole("link", { name: "Novo curso" }).click()
+
+  await page.waitForURL("/courses/new")
+  await expect(page.getByRole("dialog")).not.toBeVisible()
+})
+
 test.describe("Without login", () => {
   test.use({ storageState: { cookies: [], origins: [] } })
 
