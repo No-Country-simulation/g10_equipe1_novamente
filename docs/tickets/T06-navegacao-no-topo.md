@@ -63,7 +63,7 @@ A aba da rota atual tem fundo `#E3E6E1`, texto `#11151C` e peso 600. As outras t
 
 Abaixo de 1024 px de largura, as abas saem da faixa e abrem em um painel lateral (`Sheet`), pelo botão de menu. Abaixo de 640 px, o nome da conta some e o avatar fica.
 
-O documento de design da navegação (História 1) não estava acessível quando este ticket foi escrito. Use estes valores: altura de 64 px, padding lateral de 40 px, abas com 16 px, padding de 8 px por 14 px e raio de 6 px. Uma pessoa confere com o design na revisão.
+O documento de design da navegação (História 1) não estava acessível quando este ticket foi escrito. A faixa tem 64 px de altura, e o conteúdo dela fica na mesma coluna da página (largura máxima de `max-w-7xl`, padding lateral de 40 px). As abas seguem o bloco `navbar1`: altura de 40 px, texto `text-sm`, padding de 16 px por 8 px e raio `rounded-md`. Uma pessoa confere com o design na revisão.
 
 ### Fontes
 
