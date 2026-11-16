@@ -15,6 +15,7 @@ touches:
   - frontend/src/components/Common/Appearance.tsx
   - frontend/src/components/NewCourse/StepList.tsx
   - frontend/src/components/Sidebar/
+  - frontend/src/components/ui/navigation-menu.tsx
   - frontend/tests/navigation.spec.ts
   - frontend/tests/user-settings.spec.ts
 executor: agente
@@ -60,7 +61,7 @@ Uma faixa no topo de toda tela com login, com fundo `#FFFFFF` e borda inferior d
 
 A aba da rota atual tem fundo `#E3E6E1`, texto `#11151C` e peso 600. As outras têm texto `#3D434D`, peso 400 e nenhum fundo. Em `/settings`, nenhuma aba fica ativa.
 
-Abaixo de 640 px de largura, o nome some e o avatar fica. As abas continuam visíveis.
+Abaixo de 1024 px de largura, as abas saem da faixa e abrem em um painel lateral (`Sheet`), pelo botão de menu. Abaixo de 640 px, o nome da conta some e o avatar fica.
 
 O documento de design da navegação (História 1) não estava acessível quando este ticket foi escrito. Use estes valores: altura de 64 px, padding lateral de 40 px, abas com 16 px, padding de 8 px por 14 px e raio de 6 px. Uma pessoa confere com o design na revisão.
 
@@ -104,6 +105,7 @@ Neste ticket a etapa 1 é a atual e as outras são futuras. Em janelas estreitas
 
 ## Detalhes técnicos
 
+- Use componentes shadcn em toda a interface, sem HTML cru para elementos que têm componente. A navegação segue a estrutura do bloco `navbar1` (`https://www.shadcnblocks.com/r/navbar1`): `NavigationMenu` no desktop e `Sheet` no celular. Adicione os componentes com `bunx shadcn@latest add`.
 - Carregue as fontes com os pacotes `@fontsource/space-grotesk`, `@fontsource/ibm-plex-sans` e `@fontsource/ibm-plex-mono`, importados em `frontend/src/main.tsx`. A demonstração não pode depender de um servidor de fontes externo.
 - Em `frontend/src/index.css`, mapeie as cores para as variáveis que os componentes já usam (`--background`, `--foreground`, `--card`, `--border`, `--input`, `--muted`, `--muted-foreground`, `--primary`, `--primary-foreground`, `--destructive`) e crie variáveis para as cores sem equivalente. Declare as famílias de fonte no bloco `@theme`.
 - `StepList` recebe a etapa atual e a lista de etapas concluídas. T07 e T27 usam o mesmo componente.
