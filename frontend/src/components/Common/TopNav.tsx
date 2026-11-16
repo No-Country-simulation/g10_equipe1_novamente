@@ -11,6 +11,7 @@ import {
   NavigationMenuLink,
   NavigationMenuList,
 } from "@/components/ui/navigation-menu"
+import { Separator } from "@/components/ui/separator"
 import {
   Sheet,
   SheetClose,
@@ -61,10 +62,14 @@ export function TopNav() {
 
         <div className="ml-auto flex items-center gap-2">
           <Appearance />
+          <Separator
+            orientation="vertical"
+            className="data-[orientation=vertical]:h-4"
+          />
           {user && <UserMenu user={user} />}
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="outline" size="icon" className="lg:hidden">
+              <Button variant="ghost" size="icon" className="lg:hidden">
                 <Menu />
                 <span className="sr-only">Abrir menu</span>
               </Button>
