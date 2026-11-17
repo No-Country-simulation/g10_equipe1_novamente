@@ -42,7 +42,14 @@ async function setup(
 
 test("mostra conteúdo publicado e materiais", async ({ page }) => {
   const course = await setup(page)
+  const responsePromise = page.waitForResponse((response) =>
+    response.url().endsWith(`/api/v1/courses/${course.id}`),
+  )
   await page.goto(`/courses/${course.id}`)
+  const response = await responsePromise
+  const data = (await response.json()) as {
+    documents: Array<{ original_filename: string }>
+  }
   for (const text of [
     "Curso de teste",
     "Técnico básico",
@@ -68,7 +75,10 @@ test("mostra conteúdo publicado e materiais", async ({ page }) => {
   const materials = page
     .locator("section")
     .filter({ has: page.getByRole("heading", { name: "MATERIAIS USADOS" }) })
-  await expect(materials.locator("span")).toHaveText(["guia.md", "notas.md"])
+  const filenames = data.documents.map((document) => document.original_filename)
+  expect(filenames).toHaveLength(2)
+  expect(filenames).toEqual(expect.arrayContaining(["guia.md", "notas.md"]))
+  await expect(materials.locator("span")).toHaveText(filenames)
   await expect(page.getByRole("tab")).toHaveCount(0)
 })
 
