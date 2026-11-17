@@ -138,7 +138,7 @@ test("curso de outra pessoa não aparece", async ({ page }) => {
     title: "Outro curso",
     audience_level: "non_technical",
     documents: [{ original_filename: "outro.md" }],
-    contents: [{ format: "tutorial" }],
+    contents: [{ format: "tutorial", status: "pending" }],
   })
   await setup(page)
   await page.goto(`/courses/${otherCourse.id}`)
