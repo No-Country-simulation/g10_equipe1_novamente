@@ -59,6 +59,16 @@ test("mostra conteúdo publicado e materiais", async ({ page }) => {
     "notas.md",
   ])
     await expect(page.getByText(text, { exact: true })).toBeVisible()
+  await expect(
+    page.getByRole("heading", { name: "Curso de teste", level: 1 }),
+  ).toBeVisible()
+  await expect(
+    page.getByRole("heading", { name: "Introdução", level: 2 }),
+  ).toBeVisible()
+  const materials = page
+    .locator("section")
+    .filter({ has: page.getByRole("heading", { name: "MATERIAIS USADOS" }) })
+  await expect(materials.locator("span")).toHaveText(["guia.md", "notas.md"])
   await expect(page.getByRole("tab")).toHaveCount(0)
 })
 
@@ -83,7 +93,11 @@ test("mostra abas, estados e erro preservando linhas", async ({ page }) => {
   await expect(page.getByText("Nenhum")).toBeVisible()
   await page.getByRole("tab", { name: "Quiz Falhou" }).click()
   await expect(page.getByText("A geração falhou")).toBeVisible()
-  await expect(page.getByText("linha um linha dois")).toBeVisible()
+  const error = page
+    .getByRole("alert")
+    .locator('[data-slot="alert-description"]')
+  await expect(error).toHaveCSS("white-space", "pre-wrap")
+  await expect(error).toHaveJSProperty("innerText", "linha um\nlinha dois")
   await page.getByRole("tab", { name: "Flashcards Na fila" }).click()
   await expect(page.getByText(/Na fila\./)).toBeVisible()
 })
@@ -119,7 +133,9 @@ test("documento com falha e curso inexistente", async ({ page }) => {
     documents: [{ original_filename: "guia.md", status: "failed" }],
   })
   await page.goto(`/courses/${course.id}`)
-  await expect(page.getByRole("alert").getByText("guia.md")).toBeVisible()
+  const alert = page.getByRole("alert")
+  await expect(alert.getByText("Um documento falhou")).toBeVisible()
+  await expect(alert.getByText("guia.md")).toBeVisible()
   await expect(page.getByText("MATERIAIS USADOS")).toHaveCount(0)
   await page.goto("/courses/00000000-0000-0000-0000-000000000000")
   await expect(page.getByText("Curso não encontrado.")).toBeVisible()
