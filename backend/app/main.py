@@ -1,12 +1,15 @@
+import logging
 from pathlib import Path
 
 import sentry_sdk
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 from fastapi.routing import APIRoute
 from starlette.middleware.cors import CORSMiddleware
 
 from app.api.main import api_router
 from app.core.config import settings
+from app.core.storage import StorageError
 
 FRONTEND_DIR = Path(__file__).parent / "frontend"
 
@@ -31,6 +34,18 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.exception_handler(StorageError)
+def storage_error_handler(_request: Request, exc: StorageError) -> JSONResponse:
+    logging.error("Erro de armazenamento: %s", type(exc).__name__)
+    return JSONResponse(
+        status_code=503,
+        content={
+            "detail": "O armazenamento de arquivos não está disponível. Tente novamente mais tarde."
+        },
+    )
+
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
 app.frontend("/", directory=FRONTEND_DIR)

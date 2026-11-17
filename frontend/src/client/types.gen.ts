@@ -10,6 +10,29 @@ export type ClientOptions = {
 export type AudienceLevel = 'non_technical' | 'technical_basic' | 'technical_advanced';
 
 /**
+ * Body_courses-create_course
+ */
+export type Body_courses_create_course = {
+    /**
+     * Niche Id
+     */
+    niche_id: number;
+    audience_level: AudienceLevel;
+    /**
+     * Title
+     */
+    title?: string;
+    /**
+     * Formats
+     */
+    formats?: Array<ContentFormat> | null;
+    /**
+     * Files
+     */
+    files?: Array<Blob | File> | null;
+};
+
+/**
  * Body_login-login_access_token
  */
 export type Body_login_login_access_token = {
@@ -751,6 +774,31 @@ export type coursesReadCoursesResponses = {
 };
 
 export type coursesReadCoursesResponse = coursesReadCoursesResponses[keyof coursesReadCoursesResponses];
+
+export type coursesCreateCourseData = {
+    body: Body_courses_create_course;
+    path?: never;
+    query?: never;
+    url: '/api/v1/courses/';
+};
+
+export type coursesCreateCourseErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type coursesCreateCourseError = coursesCreateCourseErrors[keyof coursesCreateCourseErrors];
+
+export type coursesCreateCourseResponses = {
+    /**
+     * Successful Response
+     */
+    201: CourseDetail;
+};
+
+export type coursesCreateCourseResponse = coursesCreateCourseResponses[keyof coursesCreateCourseResponses];
 
 export type coursesReadCourseData = {
     body?: never;
