@@ -97,6 +97,8 @@ Estes arquivos são gerados. Em um conflito, nunca junte as duas versões à mã
 
 Vários tickets criam `backend/app/services/__init__.py`, `backend/tests/services/__init__.py` e `backend/tests/core/__init__.py`. Crie cada um vazio. Arquivos idênticos não geram conflito.
 
+T17 e T18 criam `frontend/src/lib/courses.ts` e `frontend/tests/utils/course.ts`. Os dois tickets trazem o mesmo conteúdo para cada arquivo. Crie cada um exatamente como o ticket manda.
+
 ## Regras de escrita de tickets
 
 - Não existe ticket só de testes. Os testes entram no ticket do código.
@@ -107,7 +109,7 @@ Vários tickets criam `backend/app/services/__init__.py`, `backend/tests/service
 
 ## Ondas
 
-Os tickets da onda 1 estão escritos. Os demais são escritos quando a onda anterior termina, porque a onda anterior muda detalhes.
+Os tickets das ondas 1 e 2 estão escritos. Os demais são escritos quando a onda anterior termina, porque a onda anterior muda detalhes.
 
 | Onda | Ticket | Entrega | Bloqueado por |
 | --- | --- | --- | --- |
@@ -123,11 +125,11 @@ Os tickets da onda 1 estão escritos. Os demais são escritos quando a onda ante
 | 1 | T16 | Leitura e validação de documentos `.md` | - |
 | 2 | T07 | Novo curso, passo 1: documentos e texto digitado | T06 |
 | 2 | T17 | Tela "Cursos" | T02, T06 |
-| 2 | T18 | Tela "Curso": estados, metadados, fidelidade e trechos citados | T02, T06 |
+| 2 | T18 | Tela "Curso": lista de conteúdos, estados e metadados | T02, T06 |
 | 2 | T19 | Indexação: chunks e embeddings | T14, T15, T16 |
-| 2 | T20 | Agente `escreve`: tutorial | T05, T15 |
-| 2 | T21 | Agente `revisa` | T04, T15 |
-| 2 | T22 | Publicação: JSON na OCI e transação no banco | T04, T05, T14 |
+| 2 | T20 | Agente `escreve`: tutorial | T03, T05, T15 |
+| 2 | T21 | Agente `revisa` | T03, T04, T05, T15 |
+| 2 | T22 | Publicação: JSON na OCI e transação no banco | T03, T04, T05, T14 |
 | 2 | T23 | API de criação de curso | T02, T14, T16 |
 | 2 | T37 | Leitura de PDF com texto | T16 |
 | 3 | T08 | Leitor de tutorial | T18 |
@@ -137,15 +139,18 @@ Os tickets da onda 1 estão escritos. Os demais são escritos quando a onda ante
 | 3 | T25 | Agente `escreve`: flashcards | T20 |
 | 3 | T26 | Agente `escreve`: quiz | T20 |
 | 3 | T27 | Novo curso, passos 2 e 3, e envio | T07, T23 |
+| 3 | T38 | Tela "Curso": fidelidade, clareza e trechos citados | T18 |
 | 4 | T28 | Tarefa de fundo, de ponta a ponta | T03, T19, T22, T23, T24 |
 | 4 | T29 | Etapa `planeja` | T24 |
 | 4 | T30 | Casos de avaliação da busca e do revisor | T03, T24 |
-| 4 | T31 | Teste da jornada completa no navegador | T08, T09, T10, T17, T27 |
+| 4 | T31 | Teste da jornada completa no navegador | T08, T09, T10, T17, T27, T38 |
 | 5 | T32 | Nova tentativa e regra dos 10 minutos | T28 |
 | 5 | T33 | Exclusão de curso com limpeza na OCI | T28 |
 | 5 | T34 | Rodar os cenários da demonstração e guardar os JSON | T13, T25, T26, T28, T37 |
 | 5 | T35 | README, diagrama e guia de instalação | T28 |
 | 5 | T36 | Deploy na VM da OCI (opcional) | T28 |
+
+T38 saiu de T18, que passava de 5 pontos: T18 ficou com a página, os estados e os metadados, e T38 com a avaliação. T20, T21 e T22 passaram a listar T03, porque recebem o `RetrievedChunk` da busca. T21 passou a listar T05, porque recebe o conteúdo gerado.
 
 O `id` T01 foi retirado. As dependências e as configurações que ele traria entram em T14 e T15. O `id` T11 também foi retirado: as correções de links e de instruções já estão feitas.
 
