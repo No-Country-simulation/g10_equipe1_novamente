@@ -2,7 +2,12 @@ import hashlib
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from enum import StrEnum
+from io import BytesIO
 from pathlib import PurePosixPath
+
+from pypdf import PdfReader
+
+PAGE_BREAK = "\f"
 
 MAX_FILE_BYTES = 5 * 1024 * 1024
 MAX_TEXT_CHARS = 150_000
@@ -18,6 +23,7 @@ class DocumentErrorCode(StrEnum):
     not_utf8 = "not_utf8"
     duplicate = "duplicate"
     count = "count"  # type: ignore[assignment]  # o contrato fixa o nome, que coincide com str.count
+    unreadable = "unreadable"
 
 
 class DocumentError(ValueError):
@@ -51,6 +57,27 @@ def _read_markdown(filename: str, data: bytes) -> str:
         ) from None
 
 
+def _read_pdf(filename: str, data: bytes) -> str:
+    try:
+        reader = PdfReader(BytesIO(data))
+        if reader.is_encrypted:
+            raise ValueError("PDF protegido")
+        pages = [page.extract_text().replace(PAGE_BREAK, "\n") for page in reader.pages]
+    except Exception:
+        raise DocumentError(
+            DocumentErrorCode.unreadable,
+            "Não foi possível abrir o PDF. Envie um PDF sem senha.",
+            filename,
+        ) from None
+    if not any(page.strip() for page in pages):
+        raise DocumentError(
+            DocumentErrorCode.empty,
+            "Este PDF não tem texto. Envie um PDF com texto.",
+            filename,
+        )
+    return PAGE_BREAK.join(pages)
+
+
 @dataclass(frozen=True, slots=True)
 class _Reader:
     mime_type: str
@@ -58,7 +85,10 @@ class _Reader:
 
 
 # Um leitor por extensão. Um formato novo entra com uma linha aqui.
-_READERS = {"md": _Reader("text/markdown", _read_markdown)}
+_READERS = {
+    "md": _Reader("text/markdown", _read_markdown),
+    "pdf": _Reader("application/pdf", _read_pdf),
+}
 
 
 def _clean_filename(filename: str) -> str:
