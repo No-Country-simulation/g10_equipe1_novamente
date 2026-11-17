@@ -10,8 +10,8 @@ export const POLL_INTERVAL_MS = 3000
 
 export const coursesQueryKey = ["courses"] as const
 
-export const courseQueryKey = (userId: string, courseId: string) =>
-  [...coursesQueryKey, userId, courseId] as const
+export const courseQueryKey = (courseId: string) =>
+  ["courses", courseId] as const
 
 export const AUDIENCE_LABELS: Record<AudienceLevel, string> = {
   non_technical: "Não técnico",

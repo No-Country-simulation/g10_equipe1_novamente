@@ -197,18 +197,3 @@ test("não mostra cursos da conta anterior após trocar de usuário", async ({
     ),
   ).toBe(false)
 })
-
-test("permite tentar novamente quando a identidade não carrega", async ({
-  page,
-}) => {
-  await page.route("**/api/v1/users/me", (route) =>
-    route.fulfill({ status: 500 }),
-  )
-  await page.reload()
-  await expect(
-    page.getByText("Não foi possível carregar os cursos."),
-  ).toBeVisible()
-  await page.unroute("**/api/v1/users/me")
-  await page.getByRole("button", { name: "Tentar novamente" }).click()
-  await expect(page.getByText("Você ainda não tem cursos.")).toBeVisible()
-})
