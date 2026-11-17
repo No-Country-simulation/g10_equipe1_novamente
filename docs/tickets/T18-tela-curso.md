@@ -35,6 +35,7 @@ Leia antes: `docs/product-specs/telas.md`, `docs/product-specs/criar-curso.md`, 
 - Lista de conteúdos em ordem, com um conteúdo aberto por vez.
 - Estado de cada conteúdo: na fila, gerando, pronto ou falhou.
 - Metadados de estudo de um conteúdo publicado: tempo, conceitos-chave e pré-requisitos.
+- Bloco "Materiais usados", com os nomes dos documentos do curso.
 - Ponto de encaixe dos leitores, com um arquivo por formato.
 - Atualização a cada 3 segundos enquanto algum conteúdo está na fila ou em geração.
 
@@ -248,6 +249,10 @@ A página funciona com e sem a moldura de T17 no `master`.
 
 ## Comportamento esperado
 
+### Largura da página
+
+O conteúdo da página fica em uma coluna centralizada, com largura máxima de 880 px. A medida vem do documento de design "NovaMente História 4 - Conteúdo: resumo", do Drive.
+
 ### Cabeçalho do curso
 
 - O título do curso (`h1`, Space Grotesk, 40 px, peso 700).
@@ -282,6 +287,16 @@ O resultado publicado mostra:
 - "Pré-requisitos", com uma lista de itens. Com a lista vazia ou nula, o texto "Nenhum".
 - `ContentReader`, com o formato e o conteúdo.
 
+### Materiais usados
+
+No fim da página, depois dos conteúdos, um bloco separado por uma linha de 1 px (`--muted`):
+
+- O rótulo "MATERIAIS USADOS": 12 px, peso 600, caixa alta, espaçamento de 0,08 em, cor `--foreground-tertiary`.
+- Um item por documento de `course.documents` com `status` diferente de `failed`, na ordem da API, lado a lado e com quebra de linha. Cada item mostra o `original_filename` em IBM Plex Mono (`font-mono`), 13 px, com padding de 6 na vertical e 12 na horizontal, borda de 1 px (`--border`) e raio 6.
+- Sem nenhum documento para mostrar, o bloco não aparece.
+
+O bloco vem do design, que lista só os arquivos enviados sem falha.
+
 ### Estados da página
 
 | Estado | O que a tela mostra |
@@ -294,9 +309,9 @@ O resultado publicado mostra:
 
 A consulta se repete a cada `POLL_INTERVAL_MS` enquanto `hasActiveContent(course.contents)` é verdadeiro. Depois disso, ela para de se repetir.
 
-Pendência: os documentos de design do Drive não estavam acessíveis quando este ticket foi escrito. As abas para a lista de conteúdos, a disposição dos metadados e os textos dos avisos são uma leitura conservadora de `telas.md`. Uma pessoa confere com o design na revisão.
+Pendência: o design do Drive só desenha a leitura de um conteúdo ("História 4"). A largura da página e o bloco "Materiais usados" vêm dele. O design não desenha um curso com vários conteúdos nem os estados na fila, gerando e falhou. As abas, a disposição dos metadados e os textos dos avisos são uma proposta deste ticket, a partir de `telas.md`. O botão "Concluir conteúdo" do design não entra, porque `telas.md` deixa a tela de finalização fora do MVP.
 
-Pendência: `telas.md` diz que a tela de um conteúdo que falhou mostra o botão "Tentar novamente". Este ticket mostra só o motivo, porque a rota de nova tentativa entra em T32, na onda 5. A equipe decide se o botão entra antes.
+Decisão: `telas.md` diz que a tela de um conteúdo que falhou mostra o botão "Tentar novamente". Este ticket mostra só o motivo. O botão entra em T32, junto com a rota de nova tentativa.
 
 ## Detalhes técnicos
 
@@ -314,6 +329,7 @@ Pendência: `telas.md` diz que a tela de um conteúdo que falhou mostra o botão
 - [ ] Um curso com um só conteúdo mostra o conteúdo direto.
 - [ ] Um conteúdo que falhou mostra o motivo, e um conteúdo na fila ou em geração não aparece como pronto.
 - [ ] Um conteúdo publicado mostra tempo, conceitos-chave e pré-requisitos.
+- [ ] "Materiais usados" lista os documentos que não falharam, e só eles.
 - [ ] A tela se atualiza a cada 3 segundos só enquanto há conteúdo na fila ou em geração.
 - [ ] Um curso inexistente ou de outra pessoa mostra "Curso não encontrado."
 - [ ] Os três leitores, `ContentReader`, `ContentView` e os dois arquivos divididos com T17 cumprem o contrato.
@@ -330,6 +346,7 @@ Em `frontend/tests/course.spec.ts`, com um usuário novo por teste:
 4. Curso com três conteúdos, nesta ordem: tutorial `succeeded`, flashcards `pending` e quiz `failed` com `error_message` de duas linhas. As abas aparecem na ordem "Tutorial Pronto", "Flashcards Na fila" e "Quiz Falhou". A aba do quiz mostra "A geração falhou" e as duas linhas. A aba dos flashcards mostra "Na fila."
 5. Curso `initializing` com um tutorial `pending`: a tela faz pelo menos 2 pedidos a `/api/v1/courses/{id}` em 8 segundos. Conte os pedidos com `page.on("request")`.
 6. Curso com todos os conteúdos `succeeded`: a tela não faz nenhum pedido a `/api/v1/courses/{id}` nos 5 segundos seguintes ao primeiro.
-7. Curso `failed` com um documento `failed` chamado `guia.md`: o alerta "Um documento falhou" mostra `guia.md`.
+7. Curso `failed` com um documento `failed` chamado `guia.md`: o alerta "Um documento falhou" mostra `guia.md`. A tela não mostra "MATERIAIS USADOS".
 8. Um `id` que não existe mostra "Curso não encontrado." O curso de outro usuário mostra o mesmo texto.
 9. Sem login, `/courses/{id}` redireciona para `/login`.
+10. Curso com os documentos `guia.md` e `notas.md`, os dois `indexed`: o bloco "MATERIAIS USADOS" mostra os dois nomes, nessa ordem.

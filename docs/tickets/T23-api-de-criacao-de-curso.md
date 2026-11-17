@@ -154,9 +154,9 @@ Se um `put` ou o `commit` falha, a rota faz `rollback`, apaga com `storage.delet
 
 Em `backend/app/main.py`, registre um tratador de exceção para `StorageError`. Ele responde HTTP 503, com `{"detail": "O armazenamento de arquivos não está disponível. Tente novamente mais tarde."}`, e registra no log o tipo do erro. O tratador cobre também `StorageNotConfiguredError`, que `get_storage` levanta sem `OCI_BUCKET` ou `OCI_NAMESPACE`.
 
-Pendência: `criar-curso.md` não traz mensagem para três casos desta rota. Este ticket usa "O título passa de 255 caracteres.", o nome do arquivo antes da mensagem de um documento recusado e a mensagem do HTTP 503 acima. A equipe fecha a redação.
+Decisão: `criar-curso.md` traz as mensagens desta rota, incluindo "O título passa de 255 caracteres.", o nome do arquivo antes da mensagem de um documento recusado e a mensagem do HTTP 503 acima.
 
-Pendência: a especificação diz que a pessoa informa o "setor" e não diz o nome do campo. Este ticket usa `niche_id`, o `id` que `GET /api/v1/niches/` devolve. A alternativa é `niche_slug`, como na rota de seed.
+Decisão: o campo do setor é `niche_id`, o `id` que `GET /api/v1/niches/` devolve. A tela sempre escolhe o setor dessa lista. A rota de seed continua com `niche_slug`.
 
 ## Detalhes técnicos
 

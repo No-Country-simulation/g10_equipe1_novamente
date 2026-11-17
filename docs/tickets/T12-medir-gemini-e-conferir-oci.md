@@ -41,6 +41,13 @@ Anote, para o modelo de embeddings e para cada modelo de texto candidato:
 
 Escolha o modelo de texto do plano gratuito que aceita saída em JSON com schema e comporta 12 chamadas por curso. Esse valor vai para `GEMINI_GENERATION_MODEL`.
 
+Confira o schema com uma chamada real. T05 e T15 já estão no `master`: com a chave e o modelo no `.env`, chame `app.core.llm.generate_structured` com `response_model=GeneratedTutorial`, de `app.services.content_schemas`, e um prompt curto. Anote:
+
+- se a API aceitou o schema de `GeneratedTutorial`;
+- se a resposta validou no model sem erro de tipo.
+
+T20 e T21 foram escritos sem essa conferência. Se a API recusa o schema, avise a equipe antes de T24 começar. A segunda resposta decide o modo estrito do Pydantic (`strict=True`), que T05 e T20 deixaram em aberto.
+
 ### 4. O bucket funciona?
 
 1. Crie o bucket privado `novamente-dev` em uma conta Always Free.
@@ -71,6 +78,7 @@ Depois que T15 estiver no `master`, abra um PR de uma linha com o modelo escolhi
 
 - [ ] `docs/ARCHITECTURE.md` traz o modelo de texto, os limites medidos e a data.
 - [ ] O nome do modelo de embeddings e as 768 dimensões estão confirmados, ou a equipe foi avisada do erro.
+- [ ] Uma chamada real com `GeneratedTutorial` foi feita, e o resultado está anotado.
 - [ ] Um arquivo foi enviado, lido, listado e apagado em `novamente-dev`.
 - [ ] Cada pessoa que desenvolve tem uma chave própria, fora do repositório.
 - [ ] Se algum limite não comporta um curso com três saídas, a equipe sabe antes de T19 começar.

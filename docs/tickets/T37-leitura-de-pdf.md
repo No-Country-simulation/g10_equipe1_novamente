@@ -85,13 +85,13 @@ Erros novos de `read_document`, com `DocumentError.filename` preenchido:
 | Condição | Código | Mensagem |
 | --- | --- | --- |
 | O PDF abre e nenhuma página tem texto | `empty` | Este PDF não tem texto. Envie um PDF com texto. |
-| O arquivo não abre como PDF, está corrompido ou pede senha | `unreadable` | Não foi possível ler o arquivo como texto. |
+| O arquivo não abre como PDF, está corrompido ou pede senha | `unreadable` | Não foi possível abrir o PDF. Envie um PDF sem senha. |
 
 O erro de PDF sem texto sai do leitor de PDF, antes da conferência geral de arquivo vazio, para a pessoa receber a mensagem do PDF e não "O arquivo não tem texto."
 
 A mensagem de tipo não aceito não muda: "Envie um arquivo .md ou PDF, ou digite o texto."
 
-Pendência: `criar-curso.md` não traz mensagem para um PDF corrompido ou com senha. Este ticket usa a mensagem do Markdown que não é UTF-8, "Não foi possível ler o arquivo como texto.", com o código novo `unreadable`. A equipe decide se quer uma mensagem própria.
+Decisão: um PDF corrompido ou com senha tem mensagem própria, com o código novo `unreadable`. A mensagem do Markdown que não é UTF-8 não diz o que a pessoa pode fazer com um PDF. `criar-curso.md` traz a mensagem.
 
 ## Detalhes técnicos
 
@@ -124,8 +124,8 @@ Em `backend/tests/services/test_documents.py`:
 3. Um PDF de 3 páginas com a segunda em branco devolve `"A\f\fC"`, sem contar espaços e quebras de linha das pontas de cada página.
 4. `GUIA.PDF` é aceito.
 5. Um PDF só com páginas em branco levanta `empty`, com "Este PDF não tem texto. Envie um PDF com texto." e o nome do arquivo.
-6. Bytes que não são um PDF, com o nome `guia.pdf`, levantam `unreadable`, com "Não foi possível ler o arquivo como texto."
-7. Um PDF com senha levanta `unreadable`.
+6. Bytes que não são um PDF, com o nome `guia.pdf`, levantam `unreadable`, com "Não foi possível abrir o PDF. Envie um PDF sem senha."
+7. Um PDF com senha levanta `unreadable`, com a mesma mensagem.
 8. Um arquivo `.pdf` com 5 MiB mais 1 byte levanta `too_large`, sem abrir o PDF.
 9. Um PDF cujo texto passa de 150 mil caracteres levanta `too_long`. Troque o leitor por uma função que devolve o texto longo.
 10. `read_documents` com um `.md` e um `.pdf` devolve os dois, e com o mesmo PDF duas vezes levanta `duplicate`.

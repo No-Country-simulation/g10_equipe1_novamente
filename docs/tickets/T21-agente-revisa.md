@@ -161,9 +161,9 @@ O texto exato dos prompts é seu. Estas regras valem para qualquer redação.
 - Nenhum teste chama o Gemini. A função falsa guarda os argumentos que recebeu e devolve um `_ReviewOut` fixo.
 - Se você tiver uma chave e um modelo configurados, rode uma chamada real e relate o resultado no PR. Sem chave, diga que não rodou.
 
-Pendência: T12 não está feito. Nenhum modelo de texto foi escolhido e nenhum limite foi medido. Este ticket não fixa modelo, não limita o tamanho do prompt e não foi conferido contra a API real.
+Pendência: T12 não está feito. Nenhum modelo de texto foi escolhido e nenhum limite foi medido. Este ticket não fixa modelo, não limita o tamanho do prompt e não foi conferido contra a API real. T12 faz a primeira chamada real. Este ticket não espera T12, porque o resultado muda `llm.py`, não este módulo.
 
-Pendência: `fidelidade-e-qualidade.md` define a clareza só como "baixa, média ou alta". Este ticket liga a clareza ao nível de público do curso. A equipe confere o critério quando medir a nota de clareza (T30).
+Decisão: a clareza mede se o texto serve ao nível de público do curso. `fidelidade-e-qualidade.md` traz essa regra. A equipe confere o critério quando medir a nota de clareza (T30).
 
 ## Critérios de aceite
 

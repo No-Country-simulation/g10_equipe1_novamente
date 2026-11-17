@@ -9,7 +9,7 @@ Estado: a construir.
 | Informação | Significado | No esquema |
 | --- | --- | --- |
 | Fidelidade ao documento | Porcentagem das afirmações técnicas com apoio no documento | `course_content.grounding_score` |
-| Clareza | Baixa, média ou alta | `course_content.clarity` |
+| Clareza | Baixa, média ou alta, conforme o texto serve ao nível de público do curso | `course_content.clarity` |
 | Observações da revisão | Um texto curto sobre a adequação ao público | `course_content.review_notes` |
 | Trechos citados | Os trechos do documento que sustentam o conteúdo | `content_citation` |
 

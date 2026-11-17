@@ -183,7 +183,7 @@ A consulta da lista usa a chave `coursesQueryKey`. T27 invalida essa chave depoi
 - Em `TopNav.tsx`, a aba "Home" leva a `/courses`. A aba fica ativa só em `/courses`, com a mesma regra exata de hoje. Mude só o valor de `to`.
 - O login, o cadastro e o logo continuam navegando para `/`. O redirecionamento leva a pessoa a `/courses`.
 
-Pendência: `telas.md` diz que "Home" é a lista de cursos e não lista uma tela de saudação. Este ticket remove a saudação de `/`. O PR #8 ("tela de home") está aberto com outra proposta para essa tela. A equipe decide se a saudação volta.
+Decisão: `telas.md` diz que "Home" é a lista de cursos e não lista uma tela de saudação. Este ticket remove a saudação de `/`. O PR #8 ("tela de home") propõe outra tela, com busca, sugestão de temas, progresso e desempenho, que `telas.md` deixa fora do MVP. Este ticket não usa nada do PR #8.
 
 ### Tela
 
@@ -217,7 +217,7 @@ As cores do `Badge` de estado vêm das variáveis de T06: "Pronto" usa `--succes
 
 A consulta se repete a cada `POLL_INTERVAL_MS` enquanto `hasActiveContent` é verdadeiro para os conteúdos de algum curso da lista. Quando nenhum conteúdo está `pending` ou `running`, a consulta para de se repetir.
 
-Pendência: os documentos de design do Drive não estavam acessíveis quando este ticket foi escrito. A grade, o conteúdo do cartão e os textos dos estados vazio e de erro são uma leitura conservadora de `telas.md`. Uma pessoa confere com o design na revisão.
+Pendência: os documentos de design lidos no Drive não desenham a lista de cursos. O modelo de telas que mostra a Home não estava acessível quando este ticket foi escrito. A grade, o conteúdo do cartão e os textos dos estados vazio e de erro são uma proposta deste ticket, a partir de `telas.md`. Uma pessoa confere com o modelo na revisão.
 
 ## Detalhes técnicos
 

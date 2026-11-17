@@ -167,9 +167,9 @@ Na primeira escrita, o prompt não fala em reescrita.
 - Nenhum teste chama o Gemini. A função falsa guarda os argumentos que recebeu e devolve um `GeneratedTutorial` fixo.
 - Se você tiver uma chave e um modelo configurados, rode uma chamada real e relate no PR o resultado e se a API aceitou o schema de `GeneratedTutorial`. Sem chave, diga que não rodou.
 
-Pendência: T12 não está feito. Nenhum modelo de texto foi escolhido e nenhum limite foi medido. Este ticket não fixa modelo, não limita o tamanho do prompt e não foi conferido contra a API real. Oito trechos de 1.000 caracteres somam cerca de 8 mil caracteres de documento por chamada.
+Pendência: T12 não está feito. Nenhum modelo de texto foi escolhido e nenhum limite foi medido. Este ticket não fixa modelo, não limita o tamanho do prompt e não foi conferido contra a API real. Oito trechos de 1.000 caracteres somam cerca de 8 mil caracteres de documento por chamada. T12 faz a primeira chamada real com `GeneratedTutorial`. Este ticket não espera T12, porque o resultado muda `llm.py` ou `content_schemas.py`, não este módulo.
 
-Pendência: a revisão de T05 deixou em aberto o modo estrito do Pydantic (`strict=True`) nos modelos de conteúdo, para decidir aqui. Este ticket não muda `content_schemas.py`. A equipe decide depois da primeira chamada real, quando souber se o modelo devolve os tipos certos.
+Pendência: a revisão de T05 deixou em aberto o modo estrito do Pydantic (`strict=True`) nos modelos de conteúdo, para decidir aqui. Este ticket não muda `content_schemas.py`. A equipe decide com o resultado da chamada real de T12, que mostra se o modelo devolve os tipos certos.
 
 ## Critérios de aceite
 

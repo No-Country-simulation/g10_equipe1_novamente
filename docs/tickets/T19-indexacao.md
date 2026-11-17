@@ -187,9 +187,9 @@ A função faz os próprios `commit`. Quem chama entrega uma sessão sem mudanç
 - Nos testes, crie o curso com `tests.utils.course.create_course`, com um documento `uploaded` e sem chunks: `documents=[{"original_filename": "guia.md", "status": "uploaded", "chunks": []}]`. Grave os bytes do arquivo em um `InMemoryStorage`, na chave `oci_object_key` do documento.
 - Nenhum teste chama o Gemini nem a OCI. A função falsa de embeddings devolve um vetor de 768 valores por texto.
 
-Pendência: T12 não está feito. Os limites do plano gratuito do Gemini não foram medidos. Este ticket não espera entre os pedidos nem limita o número de chunks. Um documento de 150 mil caracteres gera cerca de 150 chunks e 8 pedidos de embeddings. Se T12 mostrar que isso não cabe no plano, o controle de ritmo entra em `app.core.llm`, não aqui.
+Pendência: T12 não está feito. Os limites do plano gratuito do Gemini não foram medidos. Este ticket não espera entre os pedidos nem limita o número de chunks. Um documento de 150 mil caracteres gera cerca de 150 chunks e 8 pedidos de embeddings. Se T12 mostrar que isso não cabe no plano, o controle de ritmo entra em `app.core.llm`, e o contrato deste ticket não muda. Por isso este ticket não espera T12.
 
-Pendência: `docs/ARCHITECTURE.md` fala em chunks de cerca de 1.000 caracteres e não fala em sobreposição. Este ticket não sobrepõe chunks. A equipe decide se quer sobreposição depois de medir a busca (T30).
+Decisão: `docs/ARCHITECTURE.md` fala em chunks de cerca de 1.000 caracteres e não fala em sobreposição. Este ticket não sobrepõe chunks. O corte cai em fim de parágrafo ou de frase, então poucas ideias ficam divididas. A equipe revê a decisão com a medida da busca (T30).
 
 ## Critérios de aceite
 
