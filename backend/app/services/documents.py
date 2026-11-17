@@ -1,4 +1,5 @@
 import hashlib
+import logging
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from enum import StrEnum
@@ -58,6 +59,11 @@ def _read_markdown(filename: str, data: bytes) -> str:
 
 
 def _read_pdf(filename: str, data: bytes) -> str:
+    # Diagnósticos do pypdf podem conter bytes do documento.
+    logger = logging.getLogger("pypdf")
+    logger.handlers.clear()
+    logger.addHandler(logging.NullHandler())
+    logger.propagate = False
     try:
         reader = PdfReader(BytesIO(data))
         if reader.is_encrypted:

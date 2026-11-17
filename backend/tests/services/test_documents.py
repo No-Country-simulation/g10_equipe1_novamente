@@ -211,7 +211,7 @@ def test_pdf_pages_and_metadata():
     assert doc.mime_type == "application/pdf"
     assert doc.size_bytes == len(data)
     assert doc.sha256 == hashlib.sha256(data).hexdigest()
-    assert [page.strip() for page in doc.text.split(PAGE_BREAK)] == ["A", "", "C"]
+    assert doc.text == "A\f\fC"
     assert PAGE_BREAK not in read_document("a.pdf", pdf_bytes("A")).text
     assert len(read_documents([("a.md", b"texto"), ("a.pdf", data)])) == 2
     with pytest.raises(DocumentError) as exc:
@@ -249,7 +249,42 @@ def test_pdf_errors(data, code, message):
     )
 
 
-def test_pdf_size_limit():
+def test_pdf_size_limit(monkeypatch):
+    from app.services import documents
+
+    def fail_if_opened(*_args, **_kwargs):
+        pytest.fail("PDF não deveria ser aberto")
+
+    monkeypatch.setattr(documents, "PdfReader", fail_if_opened)
     with pytest.raises(DocumentError) as exc:
         read_document("guia.pdf", b"x" * (5 * 1024 * 1024 + 1))
     assert exc.value.code == DocumentErrorCode.too_large
+
+
+def test_pdf_input_does_not_enter_logs(caplog):
+    error("segredo.pdf", b"SECRET DOCUMENT CONTENT")
+    assert "SECRE" not in caplog.text
+
+
+def test_pdf_three_text_pages():
+    from app.services.documents import PAGE_BREAK
+
+    text = read_document("a.pdf", pdf_bytes("A", "B", "C")).text
+    assert text == "A\fB\fC"
+    assert text.count(PAGE_BREAK) == 2
+
+
+def test_pdf_extracted_text_limit(monkeypatch):
+    from app.services import documents
+
+    monkeypatch.setitem(
+        documents._READERS,
+        "pdf",
+        documents._Reader(
+            "application/pdf", lambda filename, data: "x" * (MAX_TEXT_CHARS + 1)
+        ),
+    )
+    raised = error("a.pdf", b"pdf")
+    assert raised.code == DocumentErrorCode.too_long
+    assert raised.message == TOO_LONG
+    assert raised.filename == "a.pdf"
