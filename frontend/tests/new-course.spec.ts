@@ -5,7 +5,7 @@ test.beforeEach(async ({ page }) => {
 })
 
 test("valida arquivos, limite e navegação", async ({ page }) => {
-  const input = page.getByLabel("Arquivos")
+  const input = page.getByLabel("Arquivos", { exact: true })
   const next = page.getByRole("button", { name: "Continuar" })
   await expect(next).toBeDisabled()
   await input.setInputFiles([
@@ -49,7 +49,7 @@ test("valida arquivos, limite e navegação", async ({ page }) => {
   await page.getByRole("button", { name: "Voltar" }).click()
   await expect(page.getByText("guia.md")).toBeVisible()
   await next.click()
-  await page.getByRole("button", { name: "1 Documentos" }).click()
+  await page.getByRole("button", { name: "1Documentos" }).click()
   await expect(page.getByText("guia.md")).toBeVisible()
 })
 

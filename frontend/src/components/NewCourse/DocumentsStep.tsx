@@ -13,6 +13,17 @@ import {
   typedTextFile,
 } from "./documents"
 
+function documentId(): string {
+  if (crypto.randomUUID) return crypto.randomUUID()
+  const bytes = crypto.getRandomValues(new Uint8Array(16))
+  bytes[6] = (bytes[6] & 0x0f) | 0x40
+  bytes[8] = (bytes[8] & 0x3f) | 0x80
+  const hex = Array.from(bytes, (byte) =>
+    byte.toString(16).padStart(2, "0"),
+  ).join("")
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`
+}
+
 interface DocumentsStepProps {
   documents: DraftDocument[]
   onChange: (documents: DraftDocument[]) => void
@@ -41,11 +52,11 @@ export function DocumentsStep({
           : checkFile(file)
       if (message)
         failures.push({
-          id: crypto.randomUUID(),
+          id: documentId(),
           name: file.name,
           error: message,
         })
-      else accepted.push({ id: crypto.randomUUID(), file, source: "upload" })
+      else accepted.push({ id: documentId(), file, source: "upload" })
     }
     onChange(accepted)
     setRejected((previous) => [...previous, ...failures])
@@ -57,7 +68,7 @@ export function DocumentsStep({
       onChange([
         ...documents,
         {
-          id: crypto.randomUUID(),
+          id: documentId(),
           file: typedTextFile(text, documents),
           source: "typed",
         },
