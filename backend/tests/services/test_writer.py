@@ -4,7 +4,7 @@ import pytest
 
 from app.core import llm
 from app.models import AudienceLevel, ContentFormat
-from app.services.content_schemas import GeneratedBase, GeneratedTutorial
+from app.services.content_schemas import GeneratedFlashcards, GeneratedTutorial
 from app.services.retrieval import RetrievedChunk
 from app.services.writer import (
     PROMPT_VERSION,
@@ -47,6 +47,7 @@ def test_writer(monkeypatch):
         return WriteRequest(format, "foco", level, "setor", "dica", chunks)
 
     assert write_content(request()) is tutorial
+    assert len(calls) == 1
     assert calls[-1]["response_model"] is GeneratedTutorial
     prompt = calls[-1]["prompt"]
     assert "foco" in prompt and prompt.index("texto 0") < prompt.index(
@@ -76,8 +77,20 @@ def test_writer(monkeypatch):
         write_content(
             request(),
             rewrite=Rewrite(
-                GeneratedBase(
-                    title="x", estimated_minutes=1, key_concepts=["x"], prerequisites=[]
+                GeneratedFlashcards.model_validate(
+                    {
+                        "title": "x",
+                        "estimated_minutes": 1,
+                        "key_concepts": ["x"],
+                        "prerequisites": [],
+                        "content": {
+                            "introduction": "Introdução",
+                            "cards": [
+                                {"front": f"Pergunta {i}", "back": "Resposta"}
+                                for i in range(8)
+                            ],
+                        },
+                    }
                 ),
                 [],
             ),
