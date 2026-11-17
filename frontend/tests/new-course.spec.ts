@@ -49,7 +49,7 @@ test("valida arquivos, limite e navegação", async ({ page }) => {
   await page.getByRole("button", { name: "Voltar" }).click()
   await expect(page.getByText("guia.md")).toBeVisible()
   await next.click()
-  await page.getByRole("button", { name: "1Documentos" }).click()
+  await page.getByRole("button", { name: /Documentos/ }).click()
   await expect(page.getByText("guia.md")).toBeVisible()
 })
 
