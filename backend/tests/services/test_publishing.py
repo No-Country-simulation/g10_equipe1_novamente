@@ -39,7 +39,7 @@ def publication(client, db, normal_user_token_headers):  # noqa: ARG001
             chunk_index=row.chunk_index,
             text=row.text,
             page_number=row.page_number,
-            similarity=0.9123,
+            similarity=0.9123 + row.chunk_index * 0.02,
         )
         for row in rows
     ]
@@ -77,25 +77,66 @@ def publication(client, db, normal_user_token_headers):  # noqa: ARG001
 
 def test_publish_and_regenerate(publication, client, normal_user_token_headers):
     args, course_id = publication
+    before = args["session"].get(CourseContent, args["content_id"])
+    before.error_message = "Erro anterior"
+    old_content_updated = before.updated_at
+    course_before = args["session"].get(Course, course_id)
+    old_course_updated = course_before.updated_at
+    args["session"].commit()
     content = publish_content(**args)
+    args["session"].refresh(content)
     key = content.oci_object_key
     package = ContentPackage.model_validate_json(args["storage"].get(key))
-    assert package.content == content.content
+    assert package.model_dump(mode="json") == {
+        "format": "tutorial",
+        "audience_level": "technical_basic",
+        "niche": "geral",
+        "title": "Tutorial",
+        "content": args["generated"].content.model_dump(mode="json"),
+        "estimated_minutes": 5,
+        "key_concepts": ["conceito"],
+        "prerequisites": [],
+        "grounding_score": 0.9,
+        "clarity": "high",
+        "review_notes": "Aprovado",
+    }
+    assert content.content == args["generated"].content.model_dump(mode="json")
+    assert content.error_message is None
+    assert content.updated_at > old_content_updated
     assert package.niche == "geral"
-    assert key.startswith(f"courses/{course_id}/contents/{content.id}/")
+    course = args["session"].get(Course, course_id)
+    assert course.updated_at > old_course_updated
+    generated = args["generated"]
+    assert package.format == content.format
+    assert package.audience_level == course.audience_level
+    assert content.status == "succeeded"
+    assert content.title == generated.title
+    assert content.estimated_minutes == generated.estimated_minutes
+    assert content.key_concepts == generated.key_concepts
+    assert content.prerequisites == generated.prerequisites
+    assert content.grounding_score == Decimal("0.90")
+    assert content.clarity == args["review"].clarity
+    assert content.review_notes == args["review"].review_notes
+    prefix = f"courses/{course_id}/contents/{content.id}/"
+    assert key.startswith(prefix) and key.endswith(".json")
+    uuid.UUID(key[len(prefix) : -5])
     assert args["session"].get(Course, course_id).status == "ready"
     citations = (
         args["session"]
         .exec(select(ContentCitation).where(ContentCitation.content_id == content.id))
         .all()
     )
-    assert len(citations) == 2
-    assert all(c.similarity == Decimal("0.912") for c in citations)
+    assert {c.chunk_id: c.similarity for c in citations} == {
+        args["chunks"][0].chunk_id: Decimal("0.912"),
+        args["chunks"][1].chunk_id: Decimal("0.932"),
+    }
     response = client.get(
         f"/api/v1/courses/{course_id}", headers=normal_user_token_headers
     )
     assert response.status_code == 200
-    assert len(response.json()["contents"][0]["citations"]) == 2
+    assert {
+        uuid.UUID(c["chunk_id"]) for c in response.json()["contents"][0]["citations"]
+    } == {args["chunks"][0].chunk_id, args["chunks"][1].chunk_id}
     args["report"] = GroundingReport(
         score=Decimal("1"),
         passed=True,
@@ -103,18 +144,36 @@ def test_publish_and_regenerate(publication, client, normal_user_token_headers):
         unsupported=[],
         cited_chunk_ids=[args["chunks"][2].chunk_id],
     )
+    args["generated"].content.summary = "Novo resumo"
     content = publish_content(**args)
+    assert content.content["summary"] == "Novo resumo"
+    assert (
+        ContentPackage.model_validate_json(
+            args["storage"].get(content.oci_object_key)
+        ).content["summary"]
+        == "Novo resumo"
+    )
+    assert args["session"].get(Course, course_id).status == "ready"
     assert content.oci_object_key != key
     assert key not in args["storage"].list("")
+    citations = (
+        args["session"]
+        .exec(select(ContentCitation).where(ContentCitation.content_id == content.id))
+        .all()
+    )
+    assert {citation.chunk_id for citation in citations} == {args["chunks"][2].chunk_id}
+
+
+def assert_unpublished(args):
+    args["session"].expire_all()
+    content = args["session"].get(CourseContent, args["content_id"])
+    assert content.status == "pending"
+    assert content.content is None and content.oci_object_key is None
+    assert not args["storage"].list("")
     assert (
-        len(
-            args["session"]
-            .exec(
-                select(ContentCitation).where(ContentCitation.content_id == content.id)
-            )
-            .all()
-        )
-        == 1
+        not args["session"]
+        .exec(select(ContentCitation).where(ContentCitation.content_id == content.id))
+        .all()
     )
 
 
@@ -130,6 +189,7 @@ def test_validation_failures(publication):
     )
     with pytest.raises(ValueError):
         publish_content(**args)
+    assert_unpublished(args)
     args["report"] = GroundingReport(
         score=report.score,
         passed=True,
@@ -139,12 +199,12 @@ def test_validation_failures(publication):
     )
     with pytest.raises(ValueError):
         publish_content(**args)
+    assert_unpublished(args)
     args["report"] = report
     args["review"].review_notes = ""
     with pytest.raises(ValidationError):
         publish_content(**args)
-    assert not args["storage"].list("")
-    assert args["session"].get(CourseContent, args["content_id"]).status == "pending"
+    assert_unpublished(args)
 
 
 def test_storage_and_commit_failures(publication):
@@ -152,11 +212,11 @@ def test_storage_and_commit_failures(publication):
     with patch.object(args["storage"], "put", side_effect=StorageError):
         with pytest.raises(PublishError, match="armazenamento"):
             publish_content(**args)
+    assert_unpublished(args)
     with patch.object(args["session"], "commit", side_effect=RuntimeError):
         with pytest.raises(PublishError, match="publicar"):
             publish_content(**args)
-    assert not args["storage"].list("")
-    assert args["session"].get(CourseContent, args["content_id"]).status == "pending"
+    assert_unpublished(args)
 
 
 def test_missing_content(publication):
@@ -173,7 +233,8 @@ def test_wrong_format_and_failed_course(publication):
     args["session"].commit()
     with pytest.raises(ValueError):
         publish_content(**args)
-    assert not args["storage"].list("")
+    assert_unpublished(args)
+    content = args["session"].get(CourseContent, args["content_id"])
     content.format = "tutorial"
     course = args["session"].get(Course, course_id)
     course.status = "failed"
@@ -184,8 +245,10 @@ def test_wrong_format_and_failed_course(publication):
 
 def test_old_object_delete_failure(publication, caplog):
     args, course_id = publication
-    publish_content(**args)
+    old = publish_content(**args).oci_object_key
     with patch.object(args["storage"], "delete", side_effect=StorageError) as delete:
-        publish_content(**args)
+        content = publish_content(**args)
+    assert content.status == "succeeded"
+    assert content.oci_object_key != old
     assert delete.call_count == 2
     assert str(course_id) in caplog.text
