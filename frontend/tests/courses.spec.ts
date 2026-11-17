@@ -138,3 +138,77 @@ test("botão Novo curso abre o formulário", async ({ page }) => {
   await page.getByRole("link", { name: "Novo curso" }).last().click()
   await expect(page).toHaveURL("/courses/new")
 })
+
+test("não mostra cursos da conta anterior após trocar de usuário", async ({
+  page,
+}) => {
+  await seed("Curso privado de A", "ready", "succeeded")
+  await page.reload()
+  await expect(
+    page.getByRole("link", { name: "Curso privado de A" }),
+  ).toBeVisible()
+  const other = randomEmail()
+  const password = randomPassword()
+  await createUser({ email: other, password })
+  await seed("Curso de B", "ready", "succeeded", "non_technical", other)
+  await page.getByTestId("user-menu").click()
+  await page.getByRole("menuitem", { name: "Sair" }).click()
+  await page.waitForURL("/login")
+  let release!: () => void
+  const gate = new Promise<void>((resolve) => {
+    release = resolve
+  })
+  let requested!: () => void
+  const requestStarted = new Promise<void>((resolve) => {
+    requested = resolve
+  })
+  await page.route("**/api/v1/courses/", async (route) => {
+    requested()
+    await gate
+    await route.continue()
+  })
+  await page.evaluate(() => {
+    const seen = { value: false }
+    Object.assign(window, { previousCourseSeen: seen })
+    new MutationObserver(() => {
+      if (document.body.textContent?.includes("Curso privado de A"))
+        seen.value = true
+    }).observe(document.body, {
+      childList: true,
+      subtree: true,
+      characterData: true,
+    })
+  })
+  await page.getByTestId("email-input").fill(other)
+  await page.getByTestId("password-input").fill(password)
+  await page.getByRole("button", { name: "Entrar" }).click()
+  await page.waitForURL("/courses")
+  await requestStarted
+  await expect(
+    page.getByRole("link", { name: "Curso privado de A" }),
+  ).toHaveCount(0)
+  release()
+  await expect(page.getByRole("link", { name: "Curso de B" })).toBeVisible()
+  expect(
+    await page.evaluate(
+      () =>
+        (window as unknown as { previousCourseSeen: { value: boolean } })
+          .previousCourseSeen.value,
+    ),
+  ).toBe(false)
+})
+
+test("permite tentar novamente quando a identidade não carrega", async ({
+  page,
+}) => {
+  await page.route("**/api/v1/users/me", (route) =>
+    route.fulfill({ status: 500 }),
+  )
+  await page.reload()
+  await expect(
+    page.getByText("Não foi possível carregar os cursos."),
+  ).toBeVisible()
+  await page.unroute("**/api/v1/users/me")
+  await page.getByRole("button", { name: "Tentar novamente" }).click()
+  await expect(page.getByText("Você ainda não tem cursos.")).toBeVisible()
+})
