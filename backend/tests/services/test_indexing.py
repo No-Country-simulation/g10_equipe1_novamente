@@ -21,17 +21,34 @@ from tests.utils.user import create_random_user
 
 
 def test_split_text() -> None:
-    assert split_text("a" * 300)[0].text == "a" * 300
+    assert [(c.index, c.text, c.page_number) for c in split_text("a" * 300)] == [
+        (0, "a" * 300, None)
+    ]
     assert [len(c.text) for c in split_text("a" * 2500)] == [1000, 1000, 500]
     text = "\n\n".join(["a" * 400] * 6)
     chunks = split_text(text)
+    assert [c.text for c in chunks] == ["\n\n".join(["a" * 400] * 2)] * 3
+    assert [c.index for c in chunks] == [0, 1, 2]
     assert all(len(c.text) <= 1000 for c in chunks)
     assert "".join("".join(c.text.split()) for c in chunks) == "".join(text.split())
     assert [c.text for c in split_text("A. B. C. D.", chunk_size=6)] == [
         "A. B.",
         "C. D.",
     ]
+    sentence = "Uma frase curta. "
+    long_text = sentence * 90
+    sentence_chunks = split_text(long_text)
+    assert len(sentence_chunks) > 1
+    assert all(c.text.endswith(".") and len(c.text) <= 1000 for c in sentence_chunks)
+    assert "".join("".join(c.text.split()) for c in sentence_chunks) == "".join(
+        long_text.split()
+    )
+    assert split_text("") == []
     assert split_text(" \n ") == []
+    assert [(c.text, c.page_number) for c in split_text("A\fB", paged=True)] == [
+        ("A", 1),
+        ("B", 2),
+    ]
     assert [(c.text, c.page_number) for c in split_text("A\f\fC", paged=True)] == [
         ("A", 1),
         ("C", 3),
@@ -58,7 +75,9 @@ def setup_document(
     doc = db.get(SourceDocument, uuid.UUID(course["documents"][0]["id"]))
     assert doc is not None
     storage = InMemoryStorage()
-    storage.put(doc.oci_object_key, b"a" * 2500, "text/markdown")
+    storage.put(
+        doc.oci_object_key, b"a" * 1000 + b"b" * 1000 + b"c" * 500, "text/markdown"
+    )
     return doc, storage
 
 
@@ -82,11 +101,17 @@ def test_index_and_retry(
 
     def embed(texts, *, task):
         calls.append((texts, task))
-        return [[0.1] * 768 for _ in texts]
+        return [[float(i + 1)] * 768 for i, _ in enumerate(texts)]
 
     monkeypatch.setattr(llm, "embed_texts", embed)
     assert index_document(session=db, storage=storage, document_id=doc.id) == 3
-    assert len(calls) == 1 and calls[0][1] == "document"
+    assert calls == [(["a" * 1000, "b" * 1000, "c" * 500], "document")]
+    assert [(c.text, list(c.embedding)) for c in rows(db, doc)] == [
+        ("a" * 1000, [1.0] * 768),
+        ("b" * 1000, [2.0] * 768),
+        ("c" * 500, [3.0] * 768),
+    ]
+    old_ids = {c.id for c in rows(db, doc)}
     assert [c.chunk_index for c in rows(db, doc)] == [0, 1, 2]
     assert all(
         c.course_id == doc.course_id and len(c.embedding) == 768 for c in rows(db, doc)
@@ -95,25 +120,35 @@ def test_index_and_retry(
         doc.status == DocumentStatus.indexed
         and doc.embedding_model == settings.GEMINI_EMBEDDING_MODEL
     )
+    storage.delete(doc.oci_object_key)
     assert index_document(session=db, storage=storage, document_id=doc.id) == 3
     assert len(calls) == 1
     doc.status = DocumentStatus.failed
     doc.error_message = "erro"
     db.add(doc)
     db.commit()
-    assert index_document(session=db, storage=storage, document_id=doc.id) == 3
-    assert doc.error_message is None and len(rows(db, doc)) == 3
+    storage.put(doc.oci_object_key, b"novo documento", "text/markdown")
+    assert index_document(session=db, storage=storage, document_id=doc.id) == 1
+    assert doc.status == DocumentStatus.indexed and doc.error_message is None
+    assert [c.text for c in rows(db, doc)] == ["novo documento"]
+    assert old_ids.isdisjoint({c.id for c in rows(db, doc)})
 
 
 @pytest.mark.parametrize(
     "failure, expected",
     [
-        ("storage", "armazenamento"),
-        ("utf8", "Não foi possível ler o arquivo como texto."),
-        ("key", "chave do Gemini"),
-        ("llm", "modelo de embeddings"),
-        ("other", "Não foi possível indexar"),
-        ("empty", "O arquivo não tem texto."),
+        ("storage", "Não foi possível ler o documento guia.md no armazenamento."),
+        ("utf8", "guia.md: Não foi possível ler o arquivo como texto."),
+        (
+            "key",
+            "Não foi possível indexar o documento guia.md: a chave do Gemini não está configurada.",
+        ),
+        (
+            "llm",
+            "Não foi possível indexar o documento guia.md: o modelo de embeddings falhou.",
+        ),
+        ("other", "Não foi possível indexar o documento guia.md."),
+        ("empty", "guia.md: O arquivo não tem texto."),
     ],
 )
 def test_failures(
@@ -159,7 +194,7 @@ def test_failures(
     with pytest.raises(IndexingError) as raised:
         index_document(session=db, storage=storage, document_id=doc.id)
     db.refresh(doc)
-    assert expected in str(raised.value) == doc.error_message
+    assert expected == str(raised.value) == doc.error_message
     assert "segredo" not in str(raised.value)
     assert doc.status == DocumentStatus.failed and rows(db, doc) == []
 
@@ -203,11 +238,17 @@ def test_commit_failure(
         nonlocal calls
         calls += 1
         if calls == 2:
+            db.flush()
             raise RuntimeError("falha")
         commit()
 
     monkeypatch.setattr(db, "commit", flaky_commit)
-    with pytest.raises(IndexingError):
+    with pytest.raises(IndexingError) as raised:
         index_document(session=db, storage=storage, document_id=doc.id)
     db.refresh(doc)
+    assert (
+        str(raised.value)
+        == doc.error_message
+        == "Não foi possível indexar o documento guia.md."
+    )
     assert doc.status == DocumentStatus.failed and rows(db, doc) == []
