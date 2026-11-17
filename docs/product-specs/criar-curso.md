@@ -52,6 +52,7 @@ A tela não mostra um curso "Gerando" ou "Falhou" como produto pronto.
 | Situação | Resposta | Mensagem |
 | --- | --- | --- |
 | Título vazio | HTTP 422 | Informe um título. |
+| Título com mais de 255 caracteres | HTTP 422 | O título passa de 255 caracteres. |
 | Nenhum documento ou nenhuma saída | HTTP 422 | Envie pelo menos um documento e escolha pelo menos uma saída. |
 | Mais de 3 documentos ou mais de 3 saídas | HTTP 422 | Envie até 3 documentos e escolha até 3 saídas. |
 | Duas saídas do mesmo formato | HTTP 422 | Escolha só uma saída de cada formato. |
@@ -61,12 +62,16 @@ A tela não mostra um curso "Gerando" ou "Falhou" como produto pronto.
 | Texto com mais de 150 mil caracteres | HTTP 422 | O documento é longo demais. Envie um documento menor ou divida o arquivo. |
 | Arquivo Markdown que não é UTF-8 | HTTP 422 | Não foi possível ler o arquivo como texto. |
 | PDF só com imagens | HTTP 422 | Este PDF não tem texto. Envie um PDF com texto. |
+| PDF corrompido ou com senha | HTTP 422 | Não foi possível abrir o PDF. Envie um PDF sem senha. |
 | Mesmo arquivo duas vezes no curso | HTTP 422 | Este arquivo já está no curso. |
 | Setor inexistente | HTTP 404 | Setor não encontrado. |
+| Armazenamento de arquivos fora do ar | HTTP 503 | O armazenamento de arquivos não está disponível. Tente novamente mais tarde. |
 | Falha ao ler ou indexar um documento | Curso "Falhou" | O documento que falhou e o motivo. |
 | Falha no modelo ou no armazenamento | Conteúdo "Falhou" | O que falhou e o botão "Tentar novamente". |
 | Conteúdo reprovado na revisão | Conteúdo "Falhou" | As afirmações sem apoio no documento. |
 | Geração parada por 10 minutos | Conteúdo "Falhou" | A geração foi interrompida. Tente novamente. |
+
+Quando o erro é de um documento, a mensagem vem depois do nome do arquivo: `guia.txt: Envie um arquivo .md ou PDF, ou digite o texto.`
 
 Os textos das mensagens são um ponto de partida. A equipe fecha a redação final.
 
