@@ -41,7 +41,7 @@ def test_extension_ignores_case() -> None:
     assert document.extension == "md"
 
 
-@pytest.mark.parametrize("filename", ["guia.txt", "guia.pdf", "guia", ".md", ""])
+@pytest.mark.parametrize("filename", ["guia.txt", "guia", ".md", ""])
 def test_other_extensions_are_unsupported(filename: str) -> None:
     raised = error(filename, b"texto")
 
@@ -169,3 +169,122 @@ def test_read_documents_reports_invalid_file() -> None:
 
     assert raised.value.code == DocumentErrorCode.unsupported_type
     assert raised.value.filename == "b.txt"
+
+
+def pdf_bytes(*texts: str, password: bool = False) -> bytes:
+    from io import BytesIO
+
+    from pypdf import PdfWriter
+    from pypdf.generic import DecodedStreamObject, DictionaryObject, NameObject
+
+    writer = PdfWriter()
+    for text in texts:
+        page = writer.add_blank_page(width=200, height=200)
+        font = DictionaryObject(
+            {
+                NameObject("/Type"): NameObject("/Font"),
+                NameObject("/Subtype"): NameObject("/Type1"),
+                NameObject("/BaseFont"): NameObject("/Helvetica"),
+            }
+        )
+        page[NameObject("/Resources")] = DictionaryObject(
+            {NameObject("/Font"): DictionaryObject({NameObject("/F1"): font})}
+        )
+        stream = DecodedStreamObject()
+        stream.set_data(f"BT /F1 12 Tf 20 100 Td ({text}) Tj ET".encode())
+        page[NameObject("/Contents")] = writer._add_object(stream)
+    if password:
+        writer.encrypt("senha")
+    output = BytesIO()
+    writer.write(output)
+    return output.getvalue()
+
+
+def test_pdf_pages_and_metadata():
+    import hashlib
+
+    from app.services.documents import PAGE_BREAK, read_document, read_documents
+
+    data = pdf_bytes("A", "", "C")
+    doc = read_document("GUIA.PDF", data)
+    assert doc.extension == "pdf"
+    assert doc.mime_type == "application/pdf"
+    assert doc.size_bytes == len(data)
+    assert doc.sha256 == hashlib.sha256(data).hexdigest()
+    assert doc.text == "A\f\fC"
+    assert PAGE_BREAK not in read_document("a.pdf", pdf_bytes("A")).text
+    assert len(read_documents([("a.md", b"texto"), ("a.pdf", data)])) == 2
+    with pytest.raises(DocumentError) as exc:
+        read_documents([("a.pdf", data), ("b.pdf", data)])
+    assert exc.value.code == DocumentErrorCode.duplicate
+
+
+@pytest.mark.parametrize(
+    ("data", "code", "message"),
+    [
+        (
+            pdf_bytes("", ""),
+            DocumentErrorCode.empty,
+            "Este PDF não tem texto. Envie um PDF com texto.",
+        ),
+        (
+            b"invalido",
+            DocumentErrorCode.unreadable,
+            "Não foi possível abrir o PDF. Envie um PDF sem senha.",
+        ),
+        (
+            pdf_bytes("A", password=True),
+            DocumentErrorCode.unreadable,
+            "Não foi possível abrir o PDF. Envie um PDF sem senha.",
+        ),
+    ],
+)
+def test_pdf_errors(data, code, message):
+    with pytest.raises(DocumentError) as exc:
+        read_document("guia.pdf", data)
+    assert (exc.value.code, exc.value.message, exc.value.filename) == (
+        code,
+        message,
+        "guia.pdf",
+    )
+
+
+def test_pdf_size_limit(monkeypatch):
+    from app.services import documents
+
+    def fail_if_opened(*_args, **_kwargs):
+        pytest.fail("PDF não deveria ser aberto")
+
+    monkeypatch.setattr(documents, "PdfReader", fail_if_opened)
+    with pytest.raises(DocumentError) as exc:
+        read_document("guia.pdf", b"x" * (5 * 1024 * 1024 + 1))
+    assert exc.value.code == DocumentErrorCode.too_large
+
+
+def test_pdf_input_does_not_enter_logs(caplog):
+    error("segredo.pdf", b"SECRET DOCUMENT CONTENT")
+    assert "SECRE" not in caplog.text
+
+
+def test_pdf_three_text_pages():
+    from app.services.documents import PAGE_BREAK
+
+    text = read_document("a.pdf", pdf_bytes("A", "B", "C")).text
+    assert text == "A\fB\fC"
+    assert text.count(PAGE_BREAK) == 2
+
+
+def test_pdf_extracted_text_limit(monkeypatch):
+    from app.services import documents
+
+    monkeypatch.setitem(
+        documents._READERS,
+        "pdf",
+        documents._Reader(
+            "application/pdf", lambda filename, data: "x" * (MAX_TEXT_CHARS + 1)
+        ),
+    )
+    raised = error("a.pdf", b"pdf")
+    assert raised.code == DocumentErrorCode.too_long
+    assert raised.message == TOO_LONG
+    assert raised.filename == "a.pdf"
