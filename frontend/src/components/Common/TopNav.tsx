@@ -24,7 +24,7 @@ import {
 import useAuth from "@/hooks/useAuth"
 
 const tabs = [
-  { title: "Home", to: "/" },
+  { title: "Home", to: "/courses" },
   { title: "Novo curso", to: "/courses/new" },
 ] as const
 
