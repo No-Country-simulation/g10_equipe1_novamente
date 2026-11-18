@@ -10,6 +10,7 @@ touches:
   - frontend/src/components/Common/TopNav.tsx
   - frontend/src/components/Courses/CourseCard.tsx
   - frontend/src/lib/courses.ts
+  - frontend/src/hooks/useAuth.ts
   - frontend/tests/courses.spec.ts
   - frontend/tests/utils/course.ts
   - frontend/tests/utils/user.ts

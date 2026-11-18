@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test"
 
 test("Home tab is active after login", async ({ page }) => {
-  await page.goto("/")
+  await page.goto("/courses")
   const nav = page.getByRole("navigation", { name: "Principal" })
 
   await expect(nav.getByRole("link", { name: "Home" })).toHaveAttribute(
@@ -16,7 +16,7 @@ test("Home tab is active after login", async ({ page }) => {
 test("Novo curso tab opens /courses/new and becomes active", async ({
   page,
 }) => {
-  await page.goto("/")
+  await page.goto("/courses")
   const nav = page.getByRole("navigation", { name: "Principal" })
 
   await nav.getByRole("link", { name: "Novo curso" }).click()
@@ -53,7 +53,7 @@ test("On a narrow screen the tabs open from the menu button", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 375, height: 700 })
-  await page.goto("/")
+  await page.goto("/courses")
 
   await page.getByRole("button", { name: "Abrir menu" }).click()
   await page.getByRole("link", { name: "Novo curso" }).click()
