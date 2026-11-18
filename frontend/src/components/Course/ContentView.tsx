@@ -1,6 +1,7 @@
 import type { ContentPublic } from "@/client"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
+import { Card } from "@/components/ui/card"
 import { FORMAT_LABELS } from "@/lib/courses"
 import { ContentReader } from "./ContentReader"
 
@@ -34,37 +35,64 @@ export function ContentView({ content }: ContentViewProps) {
         </Alert>
       )}
       {content.content !== null && (
-        <div className="space-y-4">
-          <h2 className="font-heading text-2xl font-bold">
-            {content.title || FORMAT_LABELS[content.format]}
-          </h2>
-          {content.estimated_minutes !== null && (
-            <p>{content.estimated_minutes} min de estudo</p>
-          )}
-          {!!content.key_concepts?.length && (
-            <section>
-              <h3>Conceitos-chave</h3>
-              <div className="flex flex-wrap gap-2">
-                {content.key_concepts.map((concept) => (
-                  <Badge key={concept}>{concept}</Badge>
-                ))}
+        <>
+          <Card
+            role="region"
+            aria-labelledby="content-metadata"
+            className="gap-4 rounded-[12px] p-6"
+          >
+            <div>
+              <p
+                id="content-metadata"
+                className="mb-1 text-sm font-semibold text-foreground-tertiary"
+              >
+                Sobre este conteúdo
+              </p>
+              <h2 className="break-words font-heading text-2xl font-bold">
+                {content.title || FORMAT_LABELS[content.format]}
+              </h2>
+            </div>
+            <dl className="grid gap-4 text-[15px]/[21px] text-foreground sm:grid-cols-3 [&_dt]:text-xs [&_dt]:font-semibold [&_dt]:tracking-[0.08em] [&_dt]:text-foreground-tertiary">
+              {content.estimated_minutes !== null && (
+                <div>
+                  <dt>TEMPO DE ESTUDO</dt>
+                  <dd>cerca de {content.estimated_minutes} min</dd>
+                </div>
+              )}
+              {!!content.key_concepts?.length && (
+                <div>
+                  <dt>CONCEITOS-CHAVE</dt>
+                  <dd className="mt-1 flex flex-wrap gap-2">
+                    {content.key_concepts.map((concept) => (
+                      <Badge
+                        key={concept}
+                        variant="outline"
+                        className="max-w-full whitespace-normal break-all"
+                      >
+                        {concept}
+                      </Badge>
+                    ))}
+                  </dd>
+                </div>
+              )}
+              <div>
+                <dt>PRÉ-REQUISITOS</dt>
+                <dd>
+                  {content.prerequisites?.length ? (
+                    <ul className="list-disc pl-5">
+                      {content.prerequisites.map((item) => (
+                        <li key={item}>{item}</li>
+                      ))}
+                    </ul>
+                  ) : (
+                    "Nenhum"
+                  )}
+                </dd>
               </div>
-            </section>
-          )}
-          <section>
-            <h3>Pré-requisitos</h3>
-            {content.prerequisites?.length ? (
-              <ul className="list-disc pl-5">
-                {content.prerequisites.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
-            ) : (
-              <p>Nenhum</p>
-            )}
-          </section>
+            </dl>
+          </Card>
           <ContentReader format={content.format} content={content.content} />
-        </div>
+        </>
       )}
     </div>
   )

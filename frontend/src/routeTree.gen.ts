@@ -18,6 +18,7 @@ import { Route as LayoutCoursesIndexRouteImport } from './routes/_layout/courses
 import { Route as LayoutCoursesCourseIdRouteRouteImport } from './routes/_layout/courses/$courseId/route'
 import { Route as LayoutCoursesNewRouteImport } from './routes/_layout/courses/new'
 import { Route as LayoutCoursesCourseIdIndexRouteImport } from './routes/_layout/courses/$courseId/index'
+import { Route as LayoutCoursesCourseIdContentsContentIdRouteImport } from './routes/_layout/courses/$courseId/contents/$contentId'
 
 const LayoutRoute = LayoutRouteImport.update({
   id: '/_layout',
@@ -65,6 +66,12 @@ const LayoutCoursesCourseIdIndexRoute =
     path: '/',
     getParentRoute: () => LayoutCoursesCourseIdRouteRoute,
   } as any)
+const LayoutCoursesCourseIdContentsContentIdRoute =
+  LayoutCoursesCourseIdContentsContentIdRouteImport.update({
+    id: '/contents/$contentId',
+    path: '/contents/$contentId',
+    getParentRoute: () => LayoutCoursesCourseIdRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof LayoutIndexRoute
@@ -75,6 +82,7 @@ export interface FileRoutesByFullPath {
   '/courses/new': typeof LayoutCoursesNewRoute
   '/courses/': typeof LayoutCoursesIndexRoute
   '/courses/$courseId/': typeof LayoutCoursesCourseIdIndexRoute
+  '/courses/$courseId/contents/$contentId': typeof LayoutCoursesCourseIdContentsContentIdRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
@@ -84,6 +92,7 @@ export interface FileRoutesByTo {
   '/courses/new': typeof LayoutCoursesNewRoute
   '/courses': typeof LayoutCoursesIndexRoute
   '/courses/$courseId': typeof LayoutCoursesCourseIdIndexRoute
+  '/courses/$courseId/contents/$contentId': typeof LayoutCoursesCourseIdContentsContentIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -96,6 +105,7 @@ export interface FileRoutesById {
   '/_layout/courses/new': typeof LayoutCoursesNewRoute
   '/_layout/courses/': typeof LayoutCoursesIndexRoute
   '/_layout/courses/$courseId/': typeof LayoutCoursesCourseIdIndexRoute
+  '/_layout/courses/$courseId/contents/$contentId': typeof LayoutCoursesCourseIdContentsContentIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -108,6 +118,7 @@ export interface FileRouteTypes {
     | '/courses/new'
     | '/courses/'
     | '/courses/$courseId/'
+    | '/courses/$courseId/contents/$contentId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
@@ -117,6 +128,7 @@ export interface FileRouteTypes {
     | '/courses/new'
     | '/courses'
     | '/courses/$courseId'
+    | '/courses/$courseId/contents/$contentId'
   id:
     | '__root__'
     | '/_layout'
@@ -128,6 +140,7 @@ export interface FileRouteTypes {
     | '/_layout/courses/new'
     | '/_layout/courses/'
     | '/_layout/courses/$courseId/'
+    | '/_layout/courses/$courseId/contents/$contentId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -201,16 +214,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutCoursesCourseIdIndexRouteImport
       parentRoute: typeof LayoutCoursesCourseIdRouteRoute
     }
+    '/_layout/courses/$courseId/contents/$contentId': {
+      id: '/_layout/courses/$courseId/contents/$contentId'
+      path: '/contents/$contentId'
+      fullPath: '/courses/$courseId/contents/$contentId'
+      preLoaderRoute: typeof LayoutCoursesCourseIdContentsContentIdRouteImport
+      parentRoute: typeof LayoutCoursesCourseIdRouteRoute
+    }
   }
 }
 
 interface LayoutCoursesCourseIdRouteRouteChildren {
   LayoutCoursesCourseIdIndexRoute: typeof LayoutCoursesCourseIdIndexRoute
+  LayoutCoursesCourseIdContentsContentIdRoute: typeof LayoutCoursesCourseIdContentsContentIdRoute
 }
 
 const LayoutCoursesCourseIdRouteRouteChildren: LayoutCoursesCourseIdRouteRouteChildren =
   {
     LayoutCoursesCourseIdIndexRoute: LayoutCoursesCourseIdIndexRoute,
+    LayoutCoursesCourseIdContentsContentIdRoute:
+      LayoutCoursesCourseIdContentsContentIdRoute,
   }
 
 const LayoutCoursesCourseIdRouteRouteWithChildren =
