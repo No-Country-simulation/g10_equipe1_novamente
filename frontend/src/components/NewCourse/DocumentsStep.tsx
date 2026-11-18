@@ -181,7 +181,7 @@ export function DocumentsStep({
             <Label htmlFor="document-text">Texto do documento</Label>
             <Textarea
               id="document-text"
-              className="min-h-44 resize-y bg-card leading-relaxed"
+              className="h-44 field-sizing-fixed resize-none bg-card leading-relaxed"
               placeholder="Cole ou escreva aqui o conteúdo que vai servir de base para o curso."
               aria-invalid={!!error}
               aria-describedby={error ? "document-text-error" : undefined}
