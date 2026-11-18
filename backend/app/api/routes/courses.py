@@ -18,14 +18,22 @@ from app.models import (
     CourseContent,
     CourseDetail,
     CoursesPublic,
+    CourseStatus,
     CourseSummary,
     DocumentChunk,
     DocumentPublic,
+    DocumentStatus,
+    GenerationStatus,
     Niche,
     NichePublic,
     SourceDocument,
 )
-from app.services.documents import MAX_FILE_BYTES, DocumentError, read_documents
+from app.services.documents import (
+    MAX_DOCUMENTS,
+    MAX_FILE_BYTES,
+    DocumentError,
+    read_documents,
+)
 
 router = APIRouter(prefix="/courses", tags=["courses"])
 
@@ -224,7 +232,7 @@ def create_course(
         raise HTTPException(
             422, "Envie pelo menos um documento e escolha pelo menos uma saída."
         )
-    if len(files) > 3 or len(formats) > 3:
+    if len(files) > MAX_DOCUMENTS or len(formats) > MAX_DOCUMENTS:
         raise HTTPException(422, "Envie até 3 documentos e escolha até 3 saídas.")
     if len(set(formats)) != len(formats):
         raise HTTPException(422, "Escolha só uma saída de cada formato.")
@@ -242,6 +250,7 @@ def create_course(
         niche_id=niche_id,
         title=title,
         audience_level=audience_level,
+        status=CourseStatus.initializing,
     )
     keys: list[str] = []
     try:
@@ -249,8 +258,8 @@ def create_course(
         for doc, (_, content) in zip(documents, data, strict=True):
             doc_id = uuid.uuid4()
             key = document_key(course.id, doc_id, doc.extension)
-            storage.put(key, content, doc.mime_type)
             keys.append(key)
+            storage.put(key, content, doc.mime_type)
             rows.append(
                 SourceDocument(
                     id=doc_id,
@@ -261,19 +270,29 @@ def create_course(
                     size_bytes=doc.size_bytes,
                     sha256=doc.sha256,
                     oci_object_key=key,
+                    status=DocumentStatus.uploaded,
                 )
             )
         session.add(course)
         session.add_all(rows)
         session.add_all(
             [
-                CourseContent(course_id=course.id, format=fmt, position=i, focus=title)
+                CourseContent(
+                    course_id=course.id,
+                    format=fmt,
+                    position=i,
+                    focus=title,
+                    status=GenerationStatus.pending,
+                )
                 for i, fmt in enumerate(formats)
             ]
         )
         session.commit()
     except Exception:
-        session.rollback()
+        try:
+            session.rollback()
+        except Exception:
+            logging.exception("Falha no rollback do curso %s", course.id)
         for key in keys:
             try:
                 storage.delete(key)

@@ -202,6 +202,23 @@ def test_second_put_failure(client, headers, storage, monkeypatch):
     assert_empty(client, headers, storage)
 
 
+def test_put_failure_after_write_cleans_object(client, headers, storage, monkeypatch):
+    original = storage.put
+
+    def put(key, data, content_type):
+        original(key, data, content_type)
+        raise StorageError("after write")
+
+    monkeypatch.setattr(storage, "put", put)
+    response = send(client, headers)
+    assert response.status_code == 503
+    assert (
+        response.json()["detail"]
+        == "O armazenamento de arquivos não está disponível. Tente novamente mais tarde."
+    )
+    assert_empty(client, headers, storage)
+
+
 def test_commit_failure(client, headers, storage):
     with patch.object(Session, "commit", side_effect=RuntimeError("commit")):
         with pytest.raises(RuntimeError, match="commit"):
