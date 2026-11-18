@@ -115,11 +115,10 @@ export function DocumentsStep({
           <TabsContent value="upload">
             <section
               className={cn(
-                "flex min-h-64 flex-col items-center justify-center gap-4 rounded-xl border-2 border-dashed px-6 py-8 text-center transition-colors motion-reduce:transition-none",
-                full
-                  ? "border-border bg-muted/20 opacity-60"
-                  : "border-primary/35 bg-primary/[0.03] hover:border-primary/60",
-                dragging && !full && "border-primary bg-primary/10",
+                "flex flex-col items-center gap-3.5 rounded-[12px] border-2 border-dashed bg-background px-6 py-5 text-center transition-colors motion-reduce:transition-none sm:flex-row sm:text-left",
+                full && "opacity-60",
+                !full && !dragging && "hover:border-border-strong",
+                dragging && !full && "border-primary bg-primary/5",
               )}
               onDragOver={(event) => {
                 event.preventDefault()
@@ -141,14 +140,12 @@ export function DocumentsStep({
               aria-label="Área de envio de arquivos"
               aria-disabled={full}
             >
-              <div className="flex size-14 items-center justify-center rounded-2xl border border-primary/20 bg-card text-primary shadow-sm">
-                <Upload
-                  className="size-7"
-                  strokeWidth={1.75}
-                  aria-hidden="true"
-                />
-              </div>
-              <div className="space-y-1">
+              <Upload
+                className="size-8 shrink-0 text-muted-foreground"
+                strokeWidth={1.75}
+                aria-hidden="true"
+              />
+              <div className="flex-1">
                 <p className="font-semibold">Arraste os arquivos até aqui</p>
                 <p className="text-sm text-muted-foreground">
                   MD ou PDF, até 5 MiB
@@ -169,7 +166,7 @@ export function DocumentsStep({
               />
               <Button
                 variant="outline"
-                className="min-h-12 border-primary/25 bg-card px-[22px] hover:bg-primary/10"
+                className="min-h-12 bg-card px-[22px]"
                 disabled={full}
                 onClick={() => input.current?.click()}
               >

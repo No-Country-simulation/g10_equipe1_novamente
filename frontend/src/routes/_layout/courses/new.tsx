@@ -35,7 +35,7 @@ function NewCourse() {
           completed={current > 1 ? [1] : []}
           onSelect={setStep}
         />
-        <Card className="min-h-[560px] overflow-hidden rounded-[12px] border-t-4 border-t-primary pb-0 shadow-sm">
+        <Card className="min-h-[560px] overflow-hidden rounded-[12px] pb-0">
           <CardHeader>
             <CardDescription className="text-xs font-semibold tracking-[0.08em] text-foreground-tertiary">
               ETAPA {current} DE {STEPS.length}
