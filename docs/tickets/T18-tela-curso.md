@@ -400,19 +400,19 @@ As linhas marcadas como "Proposta" não têm desenho nas Telas finais. Quem cuid
 | Linha numerada entre os cartões e texto "Cada um libera o próximo" | Tela 5 | Sai | Progresso fica fora do MVP (`telas.md`). |
 | Selos "Concluído", "Em andamento" e "Não iniciado" | Tela 5 | Selo de estado da geração | `criar-curso.md`: cada conteúdo mostra na fila, gerando, pronto ou falhou. |
 | Destaque azul do cartão atual | Tela 5 | Sai | Marca o conteúdo em andamento, que é progresso. |
-| Botões "Revisar", "Continuar" e "Começar" | Tela 5 | "Abrir", em todos os cartões. Proposta. | Os três textos dependem do progresso. |
+| Botões "Revisar", "Continuar" e "Começar" | Tela 5 | "Abrir", em todos os cartões. | Os três textos dependem do progresso. |
 | Descrição do cartão e contagem ("5 etapas") | Tela 5 | Sai. No lugar, o texto de estado. | O esquema não guarda descrição. A contagem dependeria da forma de cada formato, que é dos leitores. |
 | Rótulo "ROADMAP DO CURSO" | Tela 5 | "CURSO" | `conteudos-e-formatos.md`: o produto não propõe uma trilha. |
 | Link "Meus cursos" na tela 5 | Tela 5 | "Todos os cursos", para `/courses` | O mesmo texto da tela 6. O `master` chama a lista de "Cursos". |
 | Progresso, TEMA e "Continuar curso" no "Resumo do curso" | Tela 5 | Saem. Entram FORMATOS e MATERIAIS. | Progresso fica fora do MVP. O esquema não tem tema. |
 | "Materiais usados" | Não aparece | Item MATERIAIS do "Resumo do curso" | Mantém a informação que a versão anterior deste ticket pedia, no bloco que o design já tem. |
-| Faixa escura de borda a borda e fundo azul claro | Tela 6 | Faixa com raio de 12 px na largura da coluna. O fundo da página não muda. Proposta. | O layout de `_layout.tsx` limita a largura e dá o padding. T07 e T17 seguem esse layout. |
+| Faixa escura de borda a borda e fundo azul claro | Tela 6 | Faixa com raio de 12 px na largura da coluna. O fundo da página não muda. | O layout de `_layout.tsx` limita a largura e dá o padding. T07 e T17 seguem esse layout. |
 | Título no cabeçalho escuro | Título do curso | Título do curso | Igual ao design. O título do conteúdo fica em "Sobre este conteúdo". |
 | Link "Todos os cursos" na tela 6 | Leva à lista | "Voltar ao curso", para `/courses/$courseId` | A pessoa abriu o conteúdo a partir do curso. Com um só conteúdo, o link continua "Todos os cursos". |
 | Selo "Tutorial · Nível básico" | Formato e nível | Formato, nível e setor | `telas.md`: a tela de um conteúdo mostra o nível e o setor. |
 | Texto "Quiz comentado" | Telas 5, Q1 a Q3 | "Quiz", de `FORMAT_LABELS` | `@/lib/courses` já está no `master` e é dividido com T17. |
 | Ícones do quiz e dos flashcards | `CircleQuestionMark` e `Layers` nas telas 2 e 5. `ListChecks` e `Copy` nas telas Q1 e F1 | Os das telas 2 e 5, em todo lugar | O mesmo formato usa um só ícone. |
-| Tempo, conceitos-chave e pré-requisitos | Não aparecem | Card "Sobre este conteúdo". Proposta. | O briefing e `conteudos-e-formatos.md` exigem os três. |
+| Tempo, conceitos-chave e pré-requisitos | Não aparecem | Card "Sobre este conteúdo". | O briefing e `conteudos-e-formatos.md` exigem os três. |
 | Botão "Finalizar" | Tela 6 | Sai | Tela de finalização fica fora do MVP (`telas.md`). |
 | Estados na fila, gerando e falhou | Não aparecem | Selo e texto no cartão, aviso na tela do conteúdo. Proposta. | `criar-curso.md`. |
 | Alerta "Um documento falhou", carregamento, 404 e erro | Não aparecem | Padrões de T07 e T17. Proposta. | `telas.md`: uma mensagem de erro diz o que aconteceu e o que a pessoa pode fazer. |
