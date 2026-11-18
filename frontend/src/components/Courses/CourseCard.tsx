@@ -32,11 +32,8 @@ export function CourseCard({ course }: { course: CourseSummary }) {
           </h2>
         </CardHeader>
         <CardContent className="flex items-center justify-between gap-2">
-          <span className="inline-flex items-center gap-2">
-            <AudienceIcon
-              aria-hidden="true"
-              className="size-4 shrink-0 text-muted-foreground"
-            />
+          <span className="inline-flex items-center gap-2 text-muted-foreground">
+            <AudienceIcon aria-hidden="true" className="size-4 shrink-0" />
             {AUDIENCE_LABELS[course.audience_level]}
           </span>
           <Badge className={color}>{COURSE_STATUS_LABELS[course.status]}</Badge>
