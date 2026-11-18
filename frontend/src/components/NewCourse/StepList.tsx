@@ -15,7 +15,7 @@ interface StepListProps {
 
 export function StepList({ current, completed, onSelect }: StepListProps) {
   return (
-    <ol aria-label="Etapas" className="flex flex-col gap-4">
+    <ol aria-label="Etapas" className="flex flex-col gap-2">
       {STEPS.map((name, index) => {
         const step = index + 1
         const isCurrent = step === current
@@ -25,7 +25,11 @@ export function StepList({ current, completed, onSelect }: StepListProps) {
           <li
             key={name}
             aria-current={isCurrent ? "step" : undefined}
-            className="flex items-center gap-3"
+            className={cn(
+              "flex min-h-16 items-center gap-3 rounded-xl border border-transparent px-4 py-3",
+              isCurrent && "border-primary/20 bg-primary/10",
+              isCompleted && "bg-card/60",
+            )}
           >
             {isCompleted && onSelect ? (
               <Button

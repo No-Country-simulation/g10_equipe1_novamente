@@ -1,15 +1,26 @@
-import { FileText, Upload, X } from "lucide-react"
+import {
+  ArrowRight,
+  Check,
+  FileText,
+  PenLine,
+  Plus,
+  Upload,
+  X,
+} from "lucide-react"
 import { useRef, useState } from "react"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
+import { cn } from "@/lib/utils"
 import {
   checkFile,
   checkTypedText,
   type DraftDocument,
   MAX_DOCUMENTS,
+  MAX_TEXT_CHARS,
   typedTextFile,
 } from "./documents"
 
@@ -38,6 +49,7 @@ export function DocumentsStep({
   const [rejected, setRejected] = useState<
     { id: string; name: string; error: string }[]
   >([])
+  const [dragging, setDragging] = useState(false)
   const [text, setText] = useState("")
   const [error, setError] = useState<string | null>(null)
   const input = useRef<HTMLInputElement>(null)
@@ -79,25 +91,64 @@ export function DocumentsStep({
   return (
     <>
       <div className="flex flex-col gap-3 px-6">
-        <p className="font-semibold">Seus próprios materiais</p>
+        <div className="flex items-center justify-between gap-3">
+          <p className="font-semibold">Seus próprios materiais</p>
+          <Badge
+            variant="outline"
+            className="border-primary/20 bg-primary/5 px-3 py-1 text-foreground"
+            aria-live="polite"
+          >
+            {documents.length} de {MAX_DOCUMENTS} documentos
+          </Badge>
+        </div>
         <Tabs defaultValue="upload">
-          <TabsList>
-            <TabsTrigger value="upload">Enviar arquivo</TabsTrigger>
-            <TabsTrigger value="typed">Digitar texto</TabsTrigger>
+          <TabsList className="h-11 w-full bg-muted/40 p-1 sm:w-fit">
+            <TabsTrigger value="upload" className="gap-2 px-4">
+              <Upload aria-hidden="true" />
+              Enviar arquivo
+            </TabsTrigger>
+            <TabsTrigger value="typed" className="gap-2 px-4">
+              <PenLine aria-hidden="true" />
+              Digitar texto
+            </TabsTrigger>
           </TabsList>
           <TabsContent value="upload">
             <section
-              className="flex flex-wrap items-center gap-[14px] rounded-xl border-2 border-dashed border-border-strong bg-background px-6 py-5"
-              onDragOver={(event) => event.preventDefault()}
+              className={cn(
+                "flex min-h-64 flex-col items-center justify-center gap-4 rounded-xl border-2 border-dashed px-6 py-8 text-center transition-colors motion-reduce:transition-none",
+                full
+                  ? "border-border bg-muted/20 opacity-60"
+                  : "border-primary/35 bg-primary/[0.03] hover:border-primary/60",
+                dragging && !full && "border-primary bg-primary/10",
+              )}
+              onDragOver={(event) => {
+                event.preventDefault()
+                if (!full) setDragging(true)
+              }}
+              onDragLeave={(event) => {
+                if (
+                  !event.currentTarget.contains(
+                    event.relatedTarget as Node | null,
+                  )
+                )
+                  setDragging(false)
+              }}
               onDrop={(event) => {
                 event.preventDefault()
+                setDragging(false)
                 if (!full) addFiles(event.dataTransfer.files)
               }}
               aria-label="Área de envio de arquivos"
               aria-disabled={full}
             >
-              <Upload size={32} strokeWidth={1.75} />
-              <div className="flex-1">
+              <div className="flex size-14 items-center justify-center rounded-2xl border border-primary/20 bg-card text-primary shadow-sm">
+                <Upload
+                  className="size-7"
+                  strokeWidth={1.75}
+                  aria-hidden="true"
+                />
+              </div>
+              <div className="space-y-1">
                 <p className="font-semibold">Arraste os arquivos até aqui</p>
                 <p className="text-sm text-muted-foreground">
                   MD ou PDF, até 5 MiB
@@ -118,7 +169,7 @@ export function DocumentsStep({
               />
               <Button
                 variant="outline"
-                className="min-h-12 px-[22px]"
+                className="min-h-12 border-primary/25 bg-card px-[22px] hover:bg-primary/10"
                 disabled={full}
                 onClick={() => input.current?.click()}
               >
@@ -126,31 +177,83 @@ export function DocumentsStep({
               </Button>
             </section>
           </TabsContent>
-          <TabsContent value="typed" className="space-y-3">
+          <TabsContent
+            value="typed"
+            className="space-y-3 rounded-xl border bg-background/50 p-5"
+          >
             <Label htmlFor="document-text">Texto do documento</Label>
             <Textarea
               id="document-text"
+              className="min-h-44 resize-y bg-card leading-relaxed"
+              placeholder="Cole ou escreva aqui o conteúdo que vai servir de base para o curso."
+              aria-invalid={!!error}
+              aria-describedby={error ? "document-text-error" : undefined}
               value={text}
               disabled={full}
-              onChange={(event) => setText(event.target.value)}
+              onChange={(event) => {
+                setText(event.target.value)
+                setError(null)
+              }}
             />
-            {error && <p className="text-destructive">{error}</p>}
-            <Button disabled={full || !text} onClick={addText}>
-              Adicionar texto
-            </Button>
+            {error && (
+              <p
+                id="document-text-error"
+                role="alert"
+                className="text-sm text-destructive"
+              >
+                {error}
+              </p>
+            )}
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <span className="text-xs text-foreground-tertiary">
+                {text.length.toLocaleString("pt-BR")} /{" "}
+                {MAX_TEXT_CHARS.toLocaleString("pt-BR")} caracteres
+              </span>
+              <Button disabled={full || !text} onClick={addText}>
+                <Plus aria-hidden="true" />
+                Adicionar texto
+              </Button>
+            </div>
           </TabsContent>
         </Tabs>
-        {full && <p>Limite de 3 documentos atingido.</p>}
+        {full && (
+          <p
+            className="flex items-center gap-2 text-sm text-muted-foreground"
+            role="status"
+          >
+            <Check className="size-4" aria-hidden="true" />
+            Limite de 3 documentos atingido.
+          </p>
+        )}
         <div className="flex flex-col gap-3">
           {documents.map((document) => (
             <div
               key={document.id}
-              className="flex min-h-[52px] items-center gap-3 rounded-lg border px-4"
+              className="flex min-h-[72px] items-center gap-3 rounded-lg border bg-card px-4 py-2"
             >
-              <FileText size={20} strokeWidth={1.75} />
-              <span className="flex-1 font-mono text-sm">
-                {document.file.name}
-              </span>
+              <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-foreground">
+                <FileText size={20} strokeWidth={1.75} aria-hidden="true" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="break-all font-mono text-sm">
+                  {document.file.name}
+                </p>
+                <p className="mt-1 text-xs text-foreground-tertiary">
+                  {document.source === "typed"
+                    ? "Texto digitado"
+                    : document.file.name.toLowerCase().endsWith(".pdf")
+                      ? "PDF"
+                      : "Markdown"}{" "}
+                  ·{" "}
+                  {document.file.size < 1024 * 1024
+                    ? `${Math.max(1, Math.ceil(document.file.size / 1024))} KiB`
+                    : `${(document.file.size / (1024 * 1024)).toLocaleString("pt-BR", { maximumFractionDigits: 1 })} MiB`}
+                </p>
+              </div>
+              <Check
+                className="size-4 shrink-0 text-success"
+                aria-label="Documento adicionado"
+              />
               <Button
                 variant="ghost"
                 size="icon"
@@ -167,11 +270,11 @@ export function DocumentsStep({
           {rejected.map((item) => (
             <div
               key={item.id}
-              className="flex min-h-[52px] items-center gap-3 rounded-lg border-[1.5px] border-destructive bg-card px-4"
+              className="flex min-h-[72px] items-center gap-3 rounded-lg border-[1.5px] border-destructive bg-destructive-background/30 px-4 py-2"
             >
               <FileText size={20} className="text-destructive" />
-              <div className="flex-1">
-                <p className="font-mono text-sm">{item.name}</p>
+              <div className="min-w-0 flex-1">
+                <p className="break-all font-mono text-sm">{item.name}</p>
                 <p className="text-[13px] font-semibold text-destructive">
                   {item.error}
                 </p>
@@ -191,13 +294,18 @@ export function DocumentsStep({
           ))}
         </div>
       </div>
-      <div className="mt-auto flex justify-end border-t bg-muted/50 p-6">
+      <div className="mt-auto flex flex-wrap items-center justify-between gap-4 border-t bg-muted/30 p-6">
+        <p className="text-sm text-foreground-tertiary">
+          {documents.length
+            ? "Tudo pronto para definir o perfil do curso."
+            : "Adicione um documento para continuar."}
+        </p>
         <Button
-          className="min-h-12 rounded-md bg-foreground px-7 text-background disabled:bg-muted disabled:text-foreground-tertiary"
+          className="min-h-12 rounded-md bg-foreground px-7 text-background hover:bg-foreground/90 disabled:bg-muted disabled:text-foreground-tertiary"
           disabled={!documents.length}
           onClick={onContinue}
         >
-          Continuar
+          Continuar <ArrowRight aria-hidden="true" />
         </Button>
       </div>
     </>
