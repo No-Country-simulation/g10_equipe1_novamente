@@ -97,7 +97,7 @@ Estes arquivos são gerados. Em um conflito, nunca junte as duas versões à mã
 
 Vários tickets criam `backend/app/services/__init__.py`, `backend/tests/services/__init__.py` e `backend/tests/core/__init__.py`. Crie cada um vazio. Arquivos idênticos não geram conflito.
 
-T17 e T18 criam `frontend/src/lib/courses.ts` e `frontend/tests/utils/course.ts`. Os dois tickets trazem o mesmo conteúdo para cada arquivo. Crie cada um exatamente como o ticket manda.
+T17 criou `frontend/src/lib/courses.ts` e `frontend/tests/utils/course.ts`, que T18 também usa. T18 não edita esses arquivos.
 
 ## Regras de escrita de tickets
 
@@ -125,7 +125,7 @@ Os tickets das ondas 1 e 2 estão escritos. Os demais são escritos quando a ond
 | 1 | T16 | Leitura e validação de documentos `.md` | - |
 | 2 | T07 | Novo curso, passo 1: documentos e texto digitado | T06 |
 | 2 | T17 | Tela "Cursos" | T02, T06 |
-| 2 | T18 | Tela "Curso": lista de conteúdos, estados e metadados | T02, T06 |
+| 2 | T18 | Tela "Curso": cartões de conteúdo, estados e metadados | T02, T06 |
 | 2 | T19 | Indexação: chunks e embeddings | T14, T15, T16 |
 | 2 | T20 | Agente `escreve`: tutorial | T03, T05, T15 |
 | 2 | T21 | Agente `revisa` | T03, T04, T05, T15 |

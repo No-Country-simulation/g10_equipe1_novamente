@@ -31,9 +31,9 @@ O briefing exige as três. O esquema guarda em `key_concepts`, `prerequisites` e
 Um guia passo a passo.
 
 - Título.
-- Resumo de abertura, no layout "Resumo" dos documentos de design.
+- Resumo de abertura, que abre o texto do tutorial, como na tela 6 das Telas finais.
 - Seções, cada uma com um título e um texto em Markdown.
-- Lista "Para levar", com os pontos que a pessoa deve guardar. Ela também vem do layout "Resumo".
+- Lista "Para levar", com os pontos que a pessoa deve guardar. Ela fecha o texto do tutorial, como na tela 6 das Telas finais.
 
 Cada tutorial tem de 1 a 8 seções e de 1 a 5 itens na lista "Para levar".
 
