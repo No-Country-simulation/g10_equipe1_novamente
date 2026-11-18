@@ -76,10 +76,10 @@ Depois que T15 estiver no `master`, abra um PR de uma linha com o modelo escolhi
 
 ## Critérios de aceite
 
-- [ ] `docs/ARCHITECTURE.md` traz o modelo de texto, os limites medidos e a data.
-- [ ] O nome do modelo de embeddings e as 768 dimensões estão confirmados, ou a equipe foi avisada do erro.
-- [ ] Uma chamada real com `GeneratedTutorial` foi feita, e o resultado está anotado.
-- [ ] Um arquivo foi enviado, lido, listado e apagado em `novamente-docs`.
+- [X] `docs/ARCHITECTURE.md` traz o modelo de texto, os limites medidos e a data.
+- [X] O nome do modelo de embeddings e as 768 dimensões estão confirmados, ou a equipe foi avisada do erro.
+- [X] Uma chamada real com `GeneratedTutorial` foi feita, e o resultado está anotado.
+- [X] Um arquivo foi enviado, lido, listado e apagado em `novamente-docs`.
 - [ ] Cada pessoa que desenvolve tem uma chave própria, fora do repositório.
 - [ ] Se algum limite não comporta um curso com três saídas, a equipe sabe antes de T19 começar.
 
