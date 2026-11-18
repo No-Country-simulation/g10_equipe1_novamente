@@ -1,0 +1,59 @@
+{
+  "title": "Fundamentos de HTTP, Códigos de Status, JSON e Segurança",
+  "estimated_minutes": 30,
+  "key_concepts": [
+    "HTTP",
+    "Códigos de Status",
+    "JSON",
+    "Autenticação",
+    "Autorização"
+  ],
+  "prerequisites": [
+    "Conceitos básicos de rede e desenvolvimento web"
+  ],
+  "content": {
+    "introduction": "Este material aborda os fundamentos de requisições HTTP, respostas, códigos de status, representações JSON e conceitos de autenticação e autorização com base nos trechos fornecidos.",
+    "cards": [
+      {
+        "front": "O que significa o código de status 200 (OK)?",
+        "back": "Sinaliza sucesso na operação.",
+        "hint": "Relacionado a códigos de sucesso"
+      },
+      {
+        "front": "O que o código 201 (Created) informa?",
+        "back": "Informa a criação de um recurso.",
+        "hint": "Comum após requisições POST"
+      },
+      {
+        "front": "Qual é o significado do código 401 (Unauthorized)?",
+        "back": "Indica que faltam credenciais válidas de autenticação.",
+        "hint": "Relacionado a requisições inválidas"
+      },
+      {
+        "front": "O que indica o código 403 (Forbidden)?",
+        "back": "Indica que o servidor compreendeu a requisição, mas recusa sua execução.",
+        "hint": "Relacionado a permissões"
+      },
+      {
+        "front": "O que informa o código 404 (Not Found)?",
+        "back": "Informa que o recurso não foi encontrado no endereço solicitado.",
+        "hint": "Recurso inexistente"
+      },
+      {
+        "front": "Qual a diferença entre Autenticação e Autorização?",
+        "back": "Autenticação verifica a identidade do solicitante, enquanto autorização verifica se uma identidade pode realizar determinada ação sobre um recurso.",
+        "hint": "Segurança"
+      },
+      {
+        "front": "O que o cabeçalho Content-Type: application/json descreve?",
+        "back": "Descreve o formato enviado.",
+        "hint": "Representações JSON"
+      },
+      {
+        "front": "O que o código 503 (Service Unavailable) indica?",
+        "back": "Indica incapacidade temporária de atender à requisição, por exemplo quando o serviço está indisponível ou sobrecarregado.",
+        "hint": "Falha no servidor"
+      }
+    ]
+  }
+}

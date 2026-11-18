@@ -1,0 +1,59 @@
+{
+  "questions": [
+    {
+      "prompt": "O que é o protocolo HTTP?",
+      "options": [
+        "Um protocolo de comunicação entre clientes e servidores.",
+        "Um formato de dados estruturados em pares de chave e valor.",
+        "Um método exclusivo para criar recursos.",
+        "Uma ferramenta de autenticação de APIs."
+      ],
+      "correct_index": 0,
+      "explanation": "A fonte afirma explicitamente que o HTTP é um protocolo de comunicação entre clientes e servidores."
+    },
+    {
+      "prompt": "Qual é a função principal do método GET?",
+      "options": [
+        "Enviar dados para processamento.",
+        "Criar novos recursos no servidor.",
+        "Consultar recursos.",
+        "Autenticar o cliente na API."
+      ],
+      "correct_index": 2,
+      "explanation": "Segundo a fonte, o método GET é usado para consultar recursos."
+    },
+    {
+      "prompt": "O que indica o código de status HTTP 201?",
+      "options": [
+        "A requisição foi concluída com sucesso.",
+        "Um novo recurso foi criado.",
+        "O recurso solicitado não foi encontrado.",
+        "Ocorreu um erro inesperado no servidor."
+      ],
+      "correct_index": 1,
+      "explanation": "A fonte define que o código 201 indica que um novo recurso foi criado."
+    },
+    {
+      "prompt": "Sobre o formato JSON, é correto afirmar que:",
+      "options": [
+        "Todas as mensagens HTTP exigem obrigatoriamente o uso de JSON.",
+        "Ele representa dados estruturados em pares de chave e valor, listas, números, booleanos e valores nulos.",
+        "Ele é um protocolo de comunicação entre clientes e servidores.",
+        "Ele substitui completamente os métodos HTTP GET e POST."
+      ],
+      "correct_index": 1,
+      "explanation": "A fonte descreve o formato JSON como a representação de dados estruturados em pares de chave e valor, listas, números, booleanos e valores nulos."
+    },
+    {
+      "prompt": "Qual é a diferença entre autenticação e autorização segundo o texto?",
+      "options": [
+        "São exatamente o mesmo processo no protocolo HTTP.",
+        "A autorização identifica quem faz uma chamada, e a autenticação verifica permissões.",
+        "A autenticação identifica quem faz uma chamada, enquanto a autorização determina se a identidade tem permissão para realizar determinada operação.",
+        "A autenticação usa códigos de status 400 e a autorização usa códigos 500."
+      ],
+      "correct_index": 2,
+      "explanation": "O texto diz que a autenticação serve para identificar quem faz uma chamada, e a autorização determina se a identidade autenticada tem permissão para realizar determinada operação."
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "experimento": "simulacao_rag_lexical_nao_vetorial",
+  "fonte_nome": "fonte_rag_exemplo.md",
+  "fonte_sha256": "3c7e84aa4c2086a4d2e384c8e7d6258321caa2c5cdc309516eccf7e7c8ef77d0",
+  "foco": "HTTP requisições respostas códigos de status autenticação autorização JSON",
+  "nivel": "tecnico_basico",
+  "setor": "geral",
+  "cenario": "quiz",
+  "modelo": "gemini-3.5-flash-lite",
+  "schema_mode": "full",
+  "chunk_chars": 850,
+  "top_k": 3,
+  "chunks_documento": 5,
+  "chunks_selecionados": 3,
+  "caracteres_contexto": 2550,
+  "chunks": [
+    {
+      "chunk_id": "C004",
+      "inicio": 2550,
+      "fim": 3400,
+      "texto": "idar permissões do lado do servidor.\n\n## Exemplo de consulta\nUm sistema de treinamento pode consultar GET /cursos/42 para obter informações de um curso. Se o curso existir e a pessoa tiver acesso, o servidor pode devolver 200 e um objeto JSON. Se o curso não existir, pode devolver 404. Se a identidade não tiver permissão, pode devolver 403 conforme as regras definidas.\n\n## Exemplo de criação\nUm sistema pode enviar POST /cursos com um corpo JSON contendo título e descrição. Quando um recurso é criado com sucesso, o servidor pode responder 201. Antes de criar o registro, o backend valida os dados e confere se o usuário tem permissão.\n\n## Erros e observabilidade\nRespostas de erro devem informar ao cliente o que aconteceu sem revelar segredos. Logs internos podem registrar identificadores de correlação, tempos e códigos de status. Não devem r",
+      "score_lexical": 4
+    },
+    {
+      "chunk_id": "C002",
+      "inicio": 850,
+      "fim": 1700,
+      "texto": "urso no endereço solicitado. PATCH descreve uma modificação parcial. DELETE solicita a remoção de um recurso. Essas definições não garantem que o servidor execute qualquer operação sem verificar permissões ou regras de negócio.\n\n## Códigos de sucesso\n200 (OK) sinaliza sucesso na operação. 201 (Created) informa a criação de um recurso. 204 (No Content) sinaliza sucesso sem corpo de resposta. O significado exato precisa ser interpretado juntamente com o método e a documentação da API.\n\n## Códigos relacionados a requisições inválidas\n400 (Bad Request) sinaliza problema na requisição. 401 (Unauthorized) indica que faltam credenciais válidas de autenticação. 403 (Forbidden) indica que o servidor compreendeu a requisição, mas recusa sua execução. 404 (Not Found) informa que o recurso não foi encontrado.\n\n## Códigos de falha no servidor\n500 (Int",
+      "score_lexical": 3
+    },
+    {
+      "chunk_id": "C003",
+      "inicio": 1700,
+      "fim": 2550,
+      "texto": "ernal Server Error) representa falha inesperada no servidor. 503 (Service Unavailable) indica incapacidade temporária de atender à requisição, por exemplo quando o serviço está indisponível ou sobrecarregado. O cliente não deve pressupor que todas as falhas 503 serão resolvidas rapidamente.\n\n## Representações JSON\nJSON pode representar objetos com pares chave/valor, arrays, textos, números, booleanos e null. O cabeçalho Content-Type: application/json descreve o formato enviado. HTTP não obriga que toda resposta seja JSON. Uma API pode escolher outra representação e deve documentá-la.\n\n## Autenticação e autorização\nAutenticação verifica a identidade do solicitante. Autorização verifica se uma identidade pode realizar determinada ação sobre um recurso. Um usuário autenticado pode não ter permissão para excluir dados. A aplicação precisa val",
+      "score_lexical": 3
+    }
+  ]
+}

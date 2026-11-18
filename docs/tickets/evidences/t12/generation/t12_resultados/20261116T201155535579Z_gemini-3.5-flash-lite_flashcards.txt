@@ -1,0 +1,45 @@
+{
+  "introduction": "Flashcards baseados no texto fornecido sobre requisições HTTP, códigos de resposta, formato JSON, autenticação e autorização.",
+  "cards": [
+    {
+      "front": "O que é HTTP?",
+      "back": "É um protocolo de comunicação entre clientes e servidores.",
+      "hint": "Envolve clientes e servidores."
+    },
+    {
+      "front": "Para que é usado o método GET?",
+      "back": "É usado para consultar recursos.",
+      "hint": "Consulta"
+    },
+    {
+      "front": "Para que é normalmente usado o método POST?",
+      "back": "Para enviar dados para processamento ou criar recursos.",
+      "hint": "Envio e criação"
+    },
+    {
+      "front": "O que indica o código de status HTTP 200?",
+      "back": "Indica que a requisição foi concluída com sucesso.",
+      "hint": "Sucesso"
+    },
+    {
+      "front": "O que significa o código de status 404?",
+      "back": "Indica que o recurso solicitado não foi encontrado.",
+      "hint": "Não encontrado"
+    },
+    {
+      "front": "O formato JSON exige que todas as mensagens HTTP o utilizem?",
+      "back": "Não, o HTTP não exige que todas as mensagens usem esse formato.",
+      "hint": "Verdadeiro ou falso implícito"
+    },
+    {
+      "front": "Qual é a função da autenticação em uma API?",
+      "back": "Identificar quem faz uma chamada.",
+      "hint": "Identificação"
+    },
+    {
+      "front": "O que a autorização determina?",
+      "back": "Determina se a identidade autenticada tem permissão para realizar determinada operação.",
+      "hint": "Permissão"
+    }
+  ]
+}

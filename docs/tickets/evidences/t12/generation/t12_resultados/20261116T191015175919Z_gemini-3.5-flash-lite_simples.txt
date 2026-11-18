@@ -1,0 +1,3 @@
+O HTTP funciona como um protocolo de comunicação entre clientes e servidores, onde o cliente envia uma requisição e o servidor retorna uma resposta. Para isso, são utilizados métodos como o GET, usado para consultar recursos, e o POST, normalmente usado para enviar dados para processamento ou criar recursos.
+
+As respostas do servidor possuem códigos de status para indicar o resultado da operação, sendo citados na fonte os códigos 200, que indica sucesso, 201, que indica a criação de um novo recurso, e 400, que informa um problema do lado do cliente. Além disso, a fonte menciona o código 401 para requisições sem credenciais válidas, o código 404 para recursos não encontrados, e o código 500 para sinalizar um erro inesperado no servidor.

@@ -1,0 +1,73 @@
+{
+  "title": "Fundamentos de HTTP, Códigos de Status, Autenticação e JSON",
+  "estimated_minutes": 15,
+  "key_concepts": [
+    "HTTP",
+    "Códigos de Status",
+    "Autenticação",
+    "Autorização",
+    "JSON"
+  ],
+  "prerequisites": [
+    "Noções básicas de desenvolvimento web e APIs"
+  ],
+  "content": {
+    "questions": [
+      {
+        "prompt": "Qual código de status HTTP indica que um recurso foi criado com sucesso?",
+        "options": [
+          "200 (OK)",
+          "201 (Created)",
+          "204 (No Content)",
+          "400 (Bad Request)"
+        ],
+        "correct_index": 1,
+        "explanation": "O código 201 (Created) informa a criação bem-sucedida de um recurso."
+      },
+      {
+        "prompt": "O que indica o código de status HTTP 401 (Unauthorized)?",
+        "options": [
+          "Falha inesperada no servidor.",
+          "O recurso não foi encontrado.",
+          "Faltam credenciais válidas de autenticação.",
+          "O servidor compreendeu a requisição, mas recusa sua execução."
+        ],
+        "correct_index": 2,
+        "explanation": "O código 401 (Unauthorized) indica que faltam credenciais válidas de autenticação."
+      },
+      {
+        "prompt": "Qual é a principal diferença entre autenticação e autorização?",
+        "options": [
+          "Autenticação verifica a identidade e autorização verifica se a identidade pode realizar determinada ação.",
+          "Autenticação verifica códigos de status e autorização verifica o formato JSON.",
+          "Autenticação valida dados no backend e autorização envia requisições POST.",
+          "Não há diferença entre os dois conceitos."
+        ],
+        "correct_index": 0,
+        "explanation": "Autenticação verifica a identidade do solicitante, enquanto autorização verifica se uma identidade pode realizar determinada ação sobre um recurso."
+      },
+      {
+        "prompt": "Qual cabeçalho HTTP descreve que o formato enviado é JSON?",
+        "options": [
+          "Authorization: Bearer",
+          "Content-Type: application/json",
+          "Accept: text/plain",
+          "X-Correlation-ID"
+        ],
+        "correct_index": 1,
+        "explanation": "O cabeçalho Content-Type: application/json descreve o formato enviado."
+      },
+      {
+        "prompt": "O que o código de status 403 (Forbidden) significa?",
+        "options": [
+          "O serviço está temporariamente indisponível.",
+          "O recurso solicitado não existe.",
+          "O servidor compreendeu a requisição, mas recusa sua execução.",
+          "Houve uma falha inesperada no servidor."
+        ],
+        "correct_index": 2,
+        "explanation": "O código 403 (Forbidden) indica que o servidor compreendeu a requisição, mas recusa sua execução."
+      }
+    ]
+  }
+}

@@ -1,0 +1,2 @@
+data_utc,modelo,cenario,status,duracao_s,tokens_entrada,tokens_saida,tokens_pensamento,tokens_total,tokens_cache,finish_reason,erro_codigo,erro_tipo,validacao,arquivo_saida
+2026-11-16T19:40:50.919960+00:00,gemini-3.8-flash,simples,erro,8.356,,,,,,,503,ServerError,nao_avaliado,

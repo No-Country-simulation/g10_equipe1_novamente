@@ -1,0 +1,16 @@
+data_utc,modelo,cenario,status,duracao_s,tokens_entrada,tokens_saida,tokens_pensamento,tokens_total,tokens_cache,finish_reason,erro_codigo,erro_tipo,validacao,arquivo_saida
+2026-11-16T19:10:15.175919+00:00,gemini-3.5-flash-lite,simples,ok,8.36,349,170,,519,,FinishReason.STOP,,,texto_nao_estruturado,t12_resultados/20261116T191015175919Z_gemini-3.5-flash-lite_simples.txt
+2026-11-16T19:11:16.758144+00:00,gemini-3.8-flash,simples,erro,3.141,,,,,,,503,ServerError,nao_avaliado,
+2026-11-16T19:20:26.916861+00:00,gemini-3.8-flash,simples,erro,28.531,,,,,,,503,ServerError,nao_avaliado,
+2026-11-16T19:24:14.530597+00:00,gemini-3.5-flash-lite,tutorial,erro,2.405,,,,,,,503,ServerError,nao_avaliado,
+2026-11-16T19:34:16.637750+00:00,gemini-3.5-flash-lite,tutorial,ok,1.898,344,427,,771,,FinishReason.STOP,,,valido,t12_resultados/20261116T193416637750Z_gemini-3.5-flash-lite_tutorial.txt
+2026-11-16T19:39:58.005501+00:00,gemini-3.8-flash,simples,erro,3.574,,,,,,,503,ServerError,nao_avaliado,
+2026-11-16T19:40:50.919960+00:00,gemini-3.8-flash,simples,erro,8.356,,,,,,,503,ServerError,nao_avaliado,
+2026-11-16T19:43:41.564126+00:00,gemini-3.5-flash-lite,tutorial,ok,9.417,344,450,,794,,FinishReason.STOP,,,valido,t12_resultados/20261116T194341564126Z_gemini-3.5-flash-lite_tutorial.txt
+2026-11-16T20:04:59.528532+00:00,gemini-3.5-flash-lite,tutorial,ok,2.114,344,409,,753,,FinishReason.STOP,,,valido,t12_resultados/20261116T200459528532Z_gemini-3.5-flash-lite_tutorial.txt
+2026-11-16T20:05:23.777949+00:00,gemini-3.5-flash-lite,tutorial,ok,1.993,344,406,,750,,FinishReason.STOP,,,valido,t12_resultados/20261116T200523777949Z_gemini-3.5-flash-lite_tutorial.txt
+2026-11-16T20:11:55.535579+00:00,gemini-3.5-flash-lite,flashcards,ok,21.687,342,434,,776,,FinishReason.STOP,,,valido,t12_resultados/20261116T201155535579Z_gemini-3.5-flash-lite_flashcards.txt
+2026-11-16T20:12:28.900220+00:00,gemini-3.5-flash-lite,quiz,ok,5.117,349,653,,1002,,FinishReason.STOP,,,valido,t12_resultados/20261116T201228900220Z_gemini-3.5-flash-lite_quiz.txt
+2026-11-17T19:27:33.415257+00:00,gemini-3.5-flash-lite,rag_tutorial,ok,3.519,758,566,,1324,,FinishReason.STOP,,,valido,t12_resultados/20261117T192733414202Z_0e196900_gemini-3.5-flash-lite_tutorial_rag_resposta.json
+2026-11-17T19:28:11.593748+00:00,gemini-3.5-flash-lite,rag_flashcards,ok,3.17,754,629,,1383,,FinishReason.STOP,,,valido,t12_resultados/20261117T192811592609Z_12879912_gemini-3.5-flash-lite_flashcards_rag_resposta.json
+2026-11-17T19:35:55.146428+00:00,gemini-3.5-flash-lite,rag_quiz,ok,3.699,760,729,,1489,,FinishReason.STOP,,,valido,t12_resultados/20261117T193555144932Z_17c5d847_gemini-3.5-flash-lite_quiz_rag_resposta.json

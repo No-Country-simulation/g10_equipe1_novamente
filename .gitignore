@@ -10,3 +10,4 @@ backend/app/frontend/
 .env.*
 !.env.example
 .DS_Store
+/temp/

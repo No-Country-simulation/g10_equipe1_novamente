@@ -79,6 +79,16 @@ Depois que T15 estiver no `master`, abra um PR de uma linha com o modelo escolhi
 - [ ] `docs/ARCHITECTURE.md` traz o modelo de texto, os limites medidos e a data.
 - [ ] O nome do modelo de embeddings e as 768 dimensões estão confirmados, ou a equipe foi avisada do erro.
 - [ ] Uma chamada real com `GeneratedTutorial` foi feita, e o resultado está anotado.
-- [ ] Um arquivo foi enviado, lido, listado e apagado em `novamente-dev`.
+- [ ] Um arquivo foi enviado, lido, listado e apagado em `novamente-docs`.
 - [ ] Cada pessoa que desenvolve tem uma chave própria, fora do repositório.
 - [ ] Se algum limite não comporta um curso com três saídas, a equipe sabe antes de T19 começar.
+
+## Execução e encerramento
+
+Verificações e medições consolidadas em 16–18/11/2026. As evidências apontam `gemini-embedding-2` com 768 dimensões e `gemini-3.5-flash-lite` como modelo de texto selecionado. A chamada estruturada com `GeneratedTutorial` validou no Pydantic. O teste de recuperação foi sintético e controlado; os resultados não garantem precisão em produção.
+
+O bucket de desenvolvimento testado foi `novamente-docs`, na região `sa-saopaulo-1`, usando autenticação local por API signing key. PUT, GET, LIST e DELETE foram reportados como aprovados. A captura local confirma as configurações, mas não contém a saída das operações. Instance principal e publicação ponta a ponta continuam sem validação.
+
+O [registro de evidências do T12](evidences/t12/T12-evidencias.md) detalha resultados, consumo, latências, quotas, ocorrências e limitações. Ele também registra divergências identificadas nos artefatos e as referências primárias.
+
+**Recomendação:** encerrar o ticket quanto à seleção do modelo, às medições de quota e à verificação reportada do bucket. Manter a ressalva de que o resultado de PUT/GET/LIST/DELETE não tem log local de execução disponível e que o teto de 41 cursos por dia é teórico.

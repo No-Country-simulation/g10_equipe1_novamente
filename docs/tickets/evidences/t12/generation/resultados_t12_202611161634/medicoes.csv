@@ -1,0 +1,5 @@
+data_utc,modelo,cenario,status,duracao_s,tokens_entrada,tokens_saida,tokens_pensamento,tokens_total,tokens_cache,finish_reason,erro_codigo,erro_tipo,validacao,arquivo_saida
+2026-11-16T19:10:15.175919+00:00,gemini-3.5-flash-lite,simples,ok,8.36,349,170,,519,,FinishReason.STOP,,,texto_nao_estruturado,resultados_t12\20261116T191015175919Z_gemini-3.5-flash-lite_simples.txt
+2026-11-16T19:11:16.758144+00:00,gemini-3.8-flash,simples,erro,3141,,,,,,,503,ServerError,nao_avaliado,
+2026-11-16T19:20:26.916861+00:00,gemini-3.8-flash,simples,erro,28531,,,,,,,503,ServerError,nao_avaliado,
+2026-11-16T19:24:14.530597+00:00,gemini-3.5-flash-lite,tutorial,erro,2405,,,,,,,503,ServerError,nao_avaliado,
