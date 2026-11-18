@@ -50,7 +50,7 @@ T20 e T21 foram escritos sem essa conferência. Se a API recusa o schema, avise 
 
 ### 4. O bucket funciona?
 
-1. Crie o bucket privado `novamente-dev` em uma conta Always Free.
+1. Crie o bucket privado `novamente-docs` em uma conta Always Free.
 2. Crie uma API signing key para cada pessoa que desenvolve. Guarde a chave fora da pasta do repositório.
 3. Envie, leia, liste e apague um arquivo. Se T14 já estiver no `master`, use `backend/scripts/verify_storage.py`. Senão, use a OCI CLI.
 4. Anote o namespace e a região.
