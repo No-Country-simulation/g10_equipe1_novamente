@@ -27,11 +27,10 @@ O texto digitado em um campo conta como um documento. O navegador o envia como u
 ## O que a pessoa vê
 
 1. A pessoa clica em "Novo curso" e preenche os 3 passos de `/courses/new`: documentos, perfil (título, setor e nível) e formatos. O navegador confere tipo e tamanho dos arquivos. Ao clicar em "Criar curso", ele envia tudo em um só pedido.
-2. O curso aparece na lista com o estado "Gerando".
-3. A tela se atualiza sozinha a cada 3 segundos.
+2. Se o envio dá certo, a pessoa vai direto à tela do curso criado. Cada conteúdo mostra o próprio estado e começa como "Na fila". Na lista de cursos, o curso aparece como "Gerando".
+3. A lista de cursos e a tela do curso se atualizam a cada 3 segundos enquanto algum conteúdo está na fila ou em geração.
 4. O produto gera uma saída por vez, na ordem escolhida.
 5. O curso muda para "Pronto" quando a primeira saída é publicada. As outras saídas continuam em geração.
-6. A pessoa abre o curso e vê cada conteúdo com o seu estado.
 
 O briefing pede poucos cliques. Depois de preencher o formulário, a pessoa chega ao primeiro conteúdo com dois cliques.
 
