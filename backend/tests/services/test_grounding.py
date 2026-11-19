@@ -84,6 +84,29 @@ def test_invalid_chunks_and_ordered_unique_citations() -> None:
     )
 
 
+@pytest.mark.parametrize(
+    "invalid_chunk_id", [None, uuid.UUID(int=0)], ids=["missing", "unknown"]
+)
+def test_invalid_chunk_alone_blocks_publication(
+    invalid_chunk_id: uuid.UUID | None,
+) -> None:
+    chunk = uuid.uuid4()
+    claims = [
+        ClaimReview(claim="Com citação válida", supported=True, chunk_id=chunk),
+        ClaimReview(
+            claim="Sem citação válida", supported=True, chunk_id=invalid_chunk_id
+        ),
+    ]
+    result = evaluate(review(claims), {chunk})
+
+    assert result.passed is False
+    assert decide(result, attempt=1) == Decision.rewrite
+    assert decide(result, attempt=2) == Decision.fail
+    assert failure_message(result) == (
+        "Afirmações sem apoio no documento:\nSem citação válida"
+    )
+
+
 @pytest.mark.parametrize("attempt", [0, -1])
 @pytest.mark.parametrize(
     "focus_covered,supported", [(True, True), (True, False), (False, True)]
