@@ -102,10 +102,32 @@ test("mostra a nota de uma publicação anterior e indica a falta de citações"
 
   const card = evaluation(page)
   await expect(card.getByText("87%", { exact: true })).toBeVisible()
+  await expect(card.getByText("CLAREZA", { exact: true })).toHaveCount(0)
+  await expect(
+    card.getByText("OBSERVAÇÕES DA REVISÃO", { exact: true }),
+  ).toHaveCount(0)
   await expect(card.getByText("Nenhum trecho citado.")).toBeVisible()
   await expect(card.getByRole("list", { name: "Trechos citados" })).toHaveCount(
     0,
   )
+})
+
+test("mostra a citação quando faltam os dados de revisão", async ({ page }) => {
+  const course = await setup(page, {
+    contents: [{ ...publishedTutorial, cited_chunks: [0] }],
+  })
+  await page.goto(`/courses/${course.id}`)
+
+  const card = evaluation(page)
+  await expect(card).toBeVisible()
+  await expect(
+    citationItems(page).getByText(chunks[0], { exact: true }),
+  ).toBeVisible()
+  await expect(card.getByRole("term")).toHaveCount(0)
+  await expect(card.locator("dl")).toHaveCount(0)
+  await expect(
+    card.getByText("FIDELIDADE AO DOCUMENTO", { exact: true }),
+  ).toHaveCount(0)
 })
 
 test("expande e recolhe um trecho com 700 caracteres", async ({ page }) => {
