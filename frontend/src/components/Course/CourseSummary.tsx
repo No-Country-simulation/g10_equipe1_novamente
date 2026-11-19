@@ -23,7 +23,7 @@ export function CourseSummary({ course }: { course: CourseDetail }) {
       <h2 id="course-summary-title" className="font-heading text-2xl font-bold">
         Resumo do curso
       </h2>
-      <dl className="flex flex-col gap-4 text-[15px]/[21px] text-foreground lg:flex-row lg:flex-wrap lg:gap-x-10 [&_dt]:text-xs [&_dt]:font-semibold [&_dt]:tracking-[0.08em] [&_dt]:text-foreground-tertiary">
+      <dl className="grid gap-4 text-[15px]/[21px] text-foreground lg:grid-cols-[auto_auto_minmax(0,max-content)_minmax(8rem,1fr)] lg:items-start lg:gap-x-10 [&_dd]:mt-1 lg:[&_dd]:flex lg:[&_dd]:min-h-9 lg:[&_dd]:items-center [&_dt]:text-xs [&_dt]:font-semibold [&_dt]:tracking-[0.08em] [&_dt]:text-foreground-tertiary">
         <div>
           <dt>SETOR</dt>
           <dd>{course.niche.name}</dd>
@@ -40,11 +40,14 @@ export function CourseSummary({ course }: { course: CourseDetail }) {
           <div className="min-w-0">
             <dt>MATERIAIS</dt>
             <dd>
-              <ul className="mt-1 flex flex-wrap gap-2" aria-label="Materiais">
+              <ul
+                className="flex min-w-0 flex-wrap gap-2"
+                aria-label="Materiais"
+              >
                 {documents.map((document) => (
                   <li
                     key={document.id}
-                    className="min-w-0 break-all rounded-sm border px-3 py-1.5 font-mono text-[13px]"
+                    className="min-w-0 wrap-anywhere rounded-sm border px-3 py-1.5 font-mono text-[13px]"
                   >
                     {document.original_filename}
                   </li>

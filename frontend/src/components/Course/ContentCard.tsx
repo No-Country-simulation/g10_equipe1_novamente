@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { CONTENT_STATUS_LABELS, FORMAT_LABELS } from "@/lib/courses"
+import { cn } from "@/lib/utils"
 import { formatIcons } from "./formatIcons"
 
 interface ContentCardProps {
@@ -23,6 +24,7 @@ export function ContentCard({ courseId, content, number }: ContentCardProps) {
   const Icon = formatIcons[content.format]
   const format = FORMAT_LABELS[content.format]
   const title = content.title || format
+  const failed = content.status === "failed"
   const statusText = {
     pending: "Este conteúdo espera a vez de ser gerado.",
     running: "A tela se atualiza sozinha.",
@@ -33,7 +35,12 @@ export function ContentCard({ courseId, content, number }: ContentCardProps) {
   const actionLabel = `Abrir ${title}`
 
   return (
-    <Card className="gap-3.5 rounded-[12px] p-5">
+    <Card
+      className={cn(
+        "gap-3.5 rounded-[12px] p-5",
+        failed && "border-destructive-foreground",
+      )}
+    >
       <div className="flex items-center justify-between gap-2">
         <span className="grid size-11 place-items-center rounded-lg bg-info/10 text-info">
           <Icon aria-hidden="true" className="size-[22px]" />
@@ -55,7 +62,7 @@ export function ContentCard({ courseId, content, number }: ContentCardProps) {
       </div>
       {statusText && (
         <p
-          className={`break-words text-[15px]/[1.5] ${content.status === "failed" ? "whitespace-pre-line text-destructive-foreground" : "text-muted-foreground"}`}
+          className={`break-words text-[15px]/[1.5] ${failed ? "whitespace-pre-line text-destructive-foreground" : "text-muted-foreground"}`}
         >
           {statusText}
         </p>
