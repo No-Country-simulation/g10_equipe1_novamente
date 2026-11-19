@@ -64,8 +64,8 @@ export function ProfileStep({
     retry: false,
   })
   const error = checkedTitle ? titleError(profile.title) : null
-  const nichesUnavailable =
-    niches.isPending || niches.isFetching || niches.isError
+  const nichesUnavailable = !niches.data
+  const nichesLoadError = niches.isError && nichesUnavailable
   const selectedNiche = niches.data?.find(
     (niche) => niche.id === profile.nicheId,
   )
@@ -104,12 +104,12 @@ export function ProfileStep({
               id="course-niche"
               className="w-full"
               aria-describedby={
-                niches.isError ? "course-niche-error" : undefined
+                nichesLoadError ? "course-niche-error" : undefined
               }
             >
               <SelectValue
                 placeholder={
-                  niches.isFetching ? "Carregando setores…" : "Escolha um setor"
+                  niches.isPending ? "Carregando setores…" : "Escolha um setor"
                 }
               />
             </SelectTrigger>
@@ -121,7 +121,7 @@ export function ProfileStep({
               ))}
             </SelectContent>
           </Select>
-          {niches.isError && (
+          {nichesLoadError && (
             <div className="flex flex-wrap items-center gap-2">
               <p
                 id="course-niche-error"

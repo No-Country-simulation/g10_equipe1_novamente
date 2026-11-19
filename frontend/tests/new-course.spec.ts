@@ -483,6 +483,41 @@ test("refaz a consulta de setores depois de uma falha", async ({ page }) => {
   await expect(next(page)).toBeEnabled()
 })
 
+test("mantém o setor selecionado quando a atualização da lista falha", async ({
+  page,
+}) => {
+  await openFormats(page)
+  let release!: () => void
+  const held = new Promise<void>((resolve) => {
+    release = resolve
+  })
+  await page.route("**/api/v1/niches/", async (route) => {
+    await held
+    await route.abort()
+  })
+  const refetch = page.waitForRequest("**/api/v1/niches/")
+  const failed = page.waitForEvent("requestfailed", (request) =>
+    request.url().endsWith("/api/v1/niches/"),
+  )
+
+  try {
+    await back(page).click()
+    await refetch
+    await expect(next(page)).toBeEnabled()
+    await expect(nicheSelect(page)).toBeEnabled()
+  } finally {
+    release()
+  }
+  await failed
+
+  await expect(nicheSelect(page)).toHaveText("Fintech")
+  await expect(next(page)).toBeEnabled()
+  await expect(nicheSelect(page)).toBeEnabled()
+  await expect(page.getByRole("alert")).toHaveCount(0)
+  await next(page).click()
+  await expect(page.getByText("ETAPA 3 DE 3")).toBeVisible()
+})
+
 test("mostra mensagens para validação em lista e falha de conexão", async ({
   page,
 }) => {
