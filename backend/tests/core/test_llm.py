@@ -1,11 +1,10 @@
 import logging
+import math
 from collections.abc import Callable
 from types import SimpleNamespace
 from typing import Any
 
 import pytest
-from google import genai
-from google.genai import errors
 from pydantic import BaseModel, Field
 
 from app.core import llm
@@ -19,10 +18,16 @@ class Answer(BaseModel):
     items: list[str] = Field(min_length=1)
 
 
-def api_error(code: int) -> errors.APIError:
-    return errors.APIError(
-        code, {"error": {"status": "FALHA", "message": SECRET_TEXT}}, None
-    )
+def api_error(code: int, *, retry_delay: str | None = None) -> llm.errors.APIError:
+    body: dict[str, Any] = {"status": "FALHA", "message": SECRET_TEXT}
+    if retry_delay is not None:
+        body["details"] = [
+            {
+                "@type": "type.googleapis.com/google.rpc.RetryInfo",
+                "retryDelay": retry_delay,
+            }
+        ]
+    return llm.errors.APIError(code, {"error": body}, None)
 
 
 class FakeModels:
@@ -31,9 +36,11 @@ class FakeModels:
     def __init__(self, *outcomes: Any) -> None:
         self.outcomes = list(outcomes)
         self.calls: list[dict[str, Any]] = []
+        self.call_times: list[float] = []
 
     def _next(self, **kwargs: Any) -> Any:
         self.calls.append(kwargs)
+        self.call_times.append(llm._now())
         outcome = self.outcomes.pop(0) if len(self.outcomes) > 1 else self.outcomes[0]
         if isinstance(outcome, Exception):
             raise outcome
@@ -64,13 +71,19 @@ def text_response(text: str | None) -> Any:
 
 @pytest.fixture(autouse=True)
 def configured(monkeypatch: pytest.MonkeyPatch) -> list[float]:
-    """Configura chave e modelos falsos e troca a espera por uma lista."""
+    """Usa modelos falsos e avança o relógio só durante as esperas."""
     monkeypatch.setattr(settings, "GEMINI_API_KEY", "chave-falsa")
     monkeypatch.setattr(settings, "GEMINI_EMBEDDING_MODEL", "gemini-embedding-2")
     monkeypatch.setattr(settings, "GEMINI_GENERATION_MODEL", "modelo-de-texto")
+    monkeypatch.setattr(settings, "GEMINI_EMBEDDING_RPM", 100)
+    monkeypatch.setattr(settings, "GEMINI_EMBEDDING_TPM", 30_000)
+    monkeypatch.setattr(settings, "GEMINI_GENERATION_RPM", 15)
     monkeypatch.setattr(llm, "_client", None)
+    monkeypatch.setattr(llm, "_embedding_limiter", llm._RateLimiter("embeddings"))
+    monkeypatch.setattr(llm, "_generation_limiter", llm._RateLimiter("texto"))
     waits: list[float] = []
     monkeypatch.setattr(llm, "_sleep", waits.append)
+    monkeypatch.setattr(llm, "_now", lambda: sum(waits, 0.0))
     return waits
 
 
@@ -100,6 +113,71 @@ def test_embed_texts_splits_batches_and_keeps_order(
     assert all(len(vector) == 768 for vector in vectors)
     assert models.calls[0]["model"] == "gemini-embedding-2"
     assert models.calls[0]["config"].output_dimensionality == 768
+
+
+def test_embedding_limits_for_large_document(
+    monkeypatch: pytest.MonkeyPatch,
+    configured: list[float],
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    caplog.set_level(logging.INFO, logger="app.core.llm")
+    models = use(monkeypatch, embeddings_for())
+    texts = [f"{i:0>1000}" for i in range(150)]
+
+    vectors = llm.embed_texts(texts, task="document")
+
+    assert [len(call["contents"]) for call in models.calls] == [20] * 7 + [10]
+    assert [text for call in models.calls for text in sent_texts(call)] == [
+        f"title: none | text: {text}" for text in texts
+    ]
+    assert [vector[0] for vector in vectors] == list(range(150))
+    for end in models.call_times:
+        window = [
+            text.removeprefix("title: none | text: ")
+            for sent_at, call in zip(models.call_times, models.calls, strict=True)
+            if end - 60 < sent_at <= end
+            for text in sent_texts(call)
+        ]
+        assert len(window) <= 100
+        assert sum(math.ceil(len(text) / 3) for text in window) <= 30_000
+    assert sum(configured) > 0
+    assert "Gemini embeddings: espera de 60.00s por cota local" in caplog.text
+    assert texts[0] not in caplog.text
+
+
+def test_short_embedding_batch_leaves_without_waiting(
+    monkeypatch: pytest.MonkeyPatch, configured: list[float]
+) -> None:
+    models = use(monkeypatch, embeddings_for())
+
+    assert len(llm.embed_texts(["a"] * 20, task="document")) == 20
+
+    assert models.call_times == [0.0]
+    assert configured == []
+
+
+def test_embedding_requests_share_a_window_between_calls(
+    monkeypatch: pytest.MonkeyPatch, configured: list[float]
+) -> None:
+    models = use(monkeypatch, embeddings_for())
+
+    llm.embed_texts(["a"] * 60, task="document")
+    llm.embed_texts(["a"] * 60, task="document")
+
+    assert models.call_times == [0.0] * 5 + [60.0]
+    assert configured == [60.0]
+
+
+def test_oversized_embedding_batches_wait_for_empty_window(
+    monkeypatch: pytest.MonkeyPatch, configured: list[float]
+) -> None:
+    monkeypatch.setattr(settings, "GEMINI_EMBEDDING_RPM", 10)
+    models = use(monkeypatch, embeddings_for())
+
+    assert len(llm.embed_texts(["a"] * 40, task="document")) == 40
+
+    assert models.call_times == [0.0, 60.0]
+    assert configured == [60.0]
 
 
 def test_embed_texts_empty_list_does_not_call_client(
@@ -195,9 +273,26 @@ def test_generate_structured_rejects_invalid_response_without_retry(
     assert raised.value.__cause__ is None
 
 
-@pytest.mark.parametrize("code", [429, 503])
+def test_generation_waits_after_fifteen_requests(
+    monkeypatch: pytest.MonkeyPatch, configured: list[float]
+) -> None:
+    models = use(monkeypatch, text_response('{"title": "T", "items": ["a"]}'))
+
+    for _ in range(16):
+        llm.generate_structured(
+            system_instruction="s", prompt="p", response_model=Answer
+        )
+
+    assert models.call_times == [0.0] * 15 + [60.0]
+    assert configured == [60.0]
+
+
+@pytest.mark.parametrize(("code", "waits"), [(429, [60.0, 60.0]), (503, [1.0, 2.0])])
 def test_two_temporary_errors_then_success(
-    monkeypatch: pytest.MonkeyPatch, configured: list[float], code: int
+    monkeypatch: pytest.MonkeyPatch,
+    configured: list[float],
+    code: int,
+    waits: list[float],
 ) -> None:
     models = use(monkeypatch, api_error(code), api_error(code), embeddings_for())
 
@@ -205,7 +300,69 @@ def test_two_temporary_errors_then_success(
 
     assert len(vectors) == 1
     assert len(models.calls) == 3
-    assert configured == [1.0, 2.0]
+    assert configured == waits
+
+
+@pytest.mark.parametrize(
+    ("code", "retry_delay", "wait"),
+    [
+        (429, "37s", 37.0),
+        (429, "37.5s", 37.5),
+        (429, None, 60.0),
+        (429, "invalido", 60.0),
+        (503, None, 1.0),
+    ],
+)
+def test_temporary_error_then_success(
+    monkeypatch: pytest.MonkeyPatch,
+    configured: list[float],
+    code: int,
+    retry_delay: str | None,
+    wait: float,
+) -> None:
+    models = use(
+        monkeypatch, api_error(code, retry_delay=retry_delay), embeddings_for()
+    )
+
+    assert len(llm.embed_texts(["a"], task="query")) == 1
+
+    assert models.call_times == [0.0, wait]
+    assert configured == [wait]
+
+
+def test_three_rate_limit_errors_raise_llm_error(
+    monkeypatch: pytest.MonkeyPatch,
+    configured: list[float],
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    caplog.set_level(logging.INFO, logger="app.core.llm")
+    models = use(monkeypatch, api_error(429, retry_delay="37s"))
+
+    with pytest.raises(llm.LLMError) as raised:
+        llm.embed_texts([SECRET_TEXT], task="query")
+
+    assert str(raised.value) == (
+        "A API Gemini recusou o pedido por limite de uso (429). "
+        "Tente de novo mais tarde."
+    )
+    assert raised.value.__cause__ is None
+    assert len(models.calls) == 3
+    assert configured == [37.0, 37.0]
+    assert "Gemini embeddings: espera de 37.00s por HTTP 429" in caplog.text
+    assert SECRET_TEXT not in caplog.text
+
+
+def test_retry_counts_toward_quota(
+    monkeypatch: pytest.MonkeyPatch, configured: list[float]
+) -> None:
+    monkeypatch.setattr(settings, "GEMINI_EMBEDDING_RPM", 2)
+    models = use(monkeypatch, api_error(429, retry_delay="37s"), embeddings_for())
+
+    llm.embed_texts(["a"], task="query")
+    llm.embed_texts(["b"], task="query")
+
+    assert models.call_times == [0.0, 37.0, 60.0]
+    assert configured == [37.0, 23.0]
 
 
 def test_four_temporary_errors_raise_llm_error(
@@ -263,7 +420,7 @@ def test_without_generation_model_raises_not_configured(
 def test_client_is_created_on_first_call_and_reused() -> None:
     client = llm._get_client()
 
-    assert isinstance(client, genai.Client)
+    assert isinstance(client, llm.genai.Client)
     assert llm._get_client() is client
 
 
