@@ -14,7 +14,11 @@ const publishedTutorial = {
   format: "tutorial",
   status: "succeeded",
   title: "Introdução",
-  content: {},
+  content: {
+    summary: "Aprenda os conceitos básicos do curso.",
+    sections: [{ title: "Primeiros passos", body: "Comece pela base." }],
+    takeaways: ["Pratique os conceitos do curso."],
+  },
   estimated_minutes: 12,
   key_concepts: ["Conceito A", "Conceito B"],
   prerequisites: ["Base"],
@@ -67,7 +71,7 @@ test("abre diretamente o único conteúdo com seus metadados", async ({
   for (const text of ["cerca de 12 min", "Conceito A", "Conceito B", "Base"]) {
     await expect(metadata.getByText(text, { exact: true })).toBeVisible()
   }
-  await expect(page.getByText(readerPlaceholder)).toBeVisible()
+  await expect(page.getByText(publishedTutorial.content.summary)).toBeVisible()
   await expect(page.getByRole("button", { name: /^Abrir / })).toHaveCount(0)
   await expect(page.getByRole("link", { name: /^Abrir / })).toHaveCount(0)
 })
@@ -222,7 +226,7 @@ test("mantém o conteúdo publicado legível durante falha ou geração", async 
   await expect(
     page.getByRole("heading", { name: "Introdução", level: 2 }),
   ).toBeVisible()
-  await expect(page.getByText(readerPlaceholder)).toBeVisible()
+  await expect(page.getByText(publishedTutorial.content.summary)).toBeVisible()
 
   await page.goto(`${coursePath}/contents/${running.id}`)
   await expect(
