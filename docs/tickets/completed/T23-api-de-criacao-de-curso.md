@@ -173,12 +173,12 @@ Decisão: o campo do setor é `niche_id`, o `id` que `GET /api/v1/niches/` devol
 
 ## Critérios de aceite
 
-- [ ] A rota cria o curso, os documentos e os conteúdos, e grava os arquivos na OCI.
-- [ ] Cada erro da tabela responde com o código e a mensagem definidos, sem gravar nada.
-- [ ] Uma falha no meio da gravação não deixa linha nem objeto.
-- [ ] O backend sobe e os testes passam sem nenhuma variável `OCI_*`.
-- [ ] O cliente gerado traz `CoursesService.createCourse`.
-- [ ] Os hooks e os testes passam, com cobertura de 90% ou mais.
+- [x] A rota cria o curso, os documentos e os conteúdos, e grava os arquivos na OCI.
+- [x] Cada erro da tabela responde com o código e a mensagem definidos, sem gravar nada.
+- [x] Uma falha no meio da gravação não deixa linha nem objeto.
+- [x] O backend sobe e os testes passam sem nenhuma variável `OCI_*`.
+- [x] O cliente gerado traz `CoursesService.createCourse`.
+- [x] Os hooks e os testes passam, com cobertura de 90% ou mais.
 
 ## Cenários de teste
 
@@ -201,3 +201,9 @@ Em `backend/tests/api/routes/test_courses_create.py`, com `InMemoryStorage`:
 15. Com uma falha no `commit`: o armazenamento fica vazio e o usuário continua sem cursos.
 16. Sem a troca do armazenamento e sem variáveis `OCI_*`: 503, com a mensagem do armazenamento.
 17. O curso criado por um usuário responde 404 para outro usuário.
+
+## Verificação do aceite
+
+- PR revisado: [#28](https://github.com/No-Country-simulation/g10_equipe1_novamente/pull/28), integrado no commit `5a72f8c`.
+- CI do PR: todos os checks obrigatórios passaram.
+- Revisão automática sobre o commit `64dab24`: sem achados.

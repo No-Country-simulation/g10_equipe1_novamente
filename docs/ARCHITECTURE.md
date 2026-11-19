@@ -155,10 +155,14 @@ A regra dos 10 minutos olha o `updated_at` mais recente entre os conteúdos do c
 
 O backend usa o OCI Python SDK (`oci`). Não há servidor local de armazenamento.
 
+- **Buckets**: um para desenvolvimento e um para produção. O de desenvolvimento é `novamente-docs`, privado, na região `sa-saopaulo-1`. O nome `novamente-prod` é uma proposta.
+- **Desenvolvimento**: cada pessoa usa uma API signing key própria, guardada fora da pasta do repositório.
+- **Produção**: o backend usa um instance principal. A VM recebe a permissão por um dynamic group e uma policy. Nenhuma chave do OCI fica na VM.
 - **Desenvolvimento**: o bucket validado manualmente é `novamente-docs`, na região `sa-saopaulo-1`. A validação registrada aprovou PUT, GET com conferência do conteúdo, LIST e DELETE, e confirmou que o objeto de teste foi removido. A evidência local confirma a configuração do bucket e da região; o registro detalhado está no [encerramento do T12](tickets/evidences/t12/T12-evidencias.md#oci-object-storage).
 - **Autenticação local**: API signing key lida pela configuração local da OCI. Cada pessoa deve manter sua própria chave fora da pasta do repositório.
 - **Produção**: instance principal continua planejado. A VM deverá receber permissão por dynamic group e policy. Esta identidade não foi validada pelo teste local do T12.
 - **Testes e CI**: os testes trocam `storage.py` por uma versão que guarda os arquivos em um dicionário Python. O CI não usa credenciais do OCI.
+- **Verificação real**: `backend/scripts/verify_storage.py` envia, lê, lista e apaga um arquivo no bucket de desenvolvimento. Rode depois de mudar `storage.py` e uma vez na VM. Em 19/11/2026, as quatro operações passaram em `novamente-docs` com uma API signing key própria.
 - **Verificação manual**: `backend/scripts/verify_storage.py` envia, lê, lista e apaga um arquivo no bucket configurado. O teste do T12 usou a autenticação local; a integração com a geração e publicação completas continua sem validação ponta a ponta.
 
 `storage.py` precisa de quatro operações: gravar, ler, apagar e listar por prefixo. A listagem lê todas as páginas do resultado.
@@ -181,6 +185,8 @@ Cada conteúdo usa até quatro chamadas de texto. Um curso com três saídas usa
 Para `gemini-3.5-flash-lite`, 500 requisições diárias divididas por até 12 chamadas de texto por curso dão `floor(500 / 12) = 41` cursos por dia. É um teto teórico que considera somente a quota diária de texto; não é throughput medido e não inclui falhas, concorrência, chamadas adicionais ou variação de uso. Um documento com cerca de 100 chunks pode exigir aproximadamente 5 chamadas de embeddings quando enviado em lotes de 20, além dos embeddings de consulta. O tamanho do lote reduz requisições, mas não elimina o consumo de quota.
 
 Em um conjunto sintético controlado de dez consultas, a recuperação simulada obteve HitRate@1 e HitRate@3 de 100% e MRR@3 de 1,00. Esses números não garantem precisão em produção. Quotas podem mudar; indisponibilidade e concorrência podem reduzir a capacidade; e o fluxo completo de geração, revisão e publicação ainda requer validação ponta a ponta. Veja as [medições e ressalvas do T12](tickets/evidences/t12/T12-evidencias.md).
+
+`llm.py` controla o ritmo por minuto antes de cada pedido e espera a janela terminar em HTTP 429 (T39). Sem esse controle, a indexação de um documento com mais de cerca de 90 mil caracteres passa do limite por minuto e falha.
 
 ## Implantação
 

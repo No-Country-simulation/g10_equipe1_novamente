@@ -218,14 +218,14 @@ Pendência: este ticket foi escrito a partir do texto do documento de design. As
 
 ## Critérios de aceite
 
-- [ ] A pessoa anexa arquivos `.md` e PDF, pelo botão ou arrastando, digita um texto e remove um documento.
-- [ ] Um arquivo de outro tipo, vazio ou maior que 5 MiB aparece como linha recusada, com o motivo, e não entra em `documents`.
-- [ ] `documents` nunca passa de 3 documentos.
-- [ ] "Continuar" só funciona com pelo menos um documento aceito, e "Voltar" mantém os documentos.
-- [ ] O clique em uma etapa concluída leva a essa etapa. As etapas futuras não respondem ao clique.
-- [ ] `documents.ts`, `DocumentsStep` e `StepList` cumprem o contrato.
-- [ ] Os testes Playwright que já existem passam.
-- [ ] `bun run lint` e `bun run build` passam.
+- [x] A pessoa anexa arquivos `.md` e PDF, pelo botão ou arrastando, digita um texto e remove um documento.
+- [x] Um arquivo de outro tipo, vazio ou maior que 5 MiB aparece como linha recusada, com o motivo, e não entra em `documents`.
+- [x] `documents` nunca passa de 3 documentos.
+- [x] "Continuar" só funciona com pelo menos um documento aceito, e "Voltar" mantém os documentos.
+- [x] O clique em uma etapa concluída leva a essa etapa. As etapas futuras não respondem ao clique.
+- [x] `documents.ts`, `DocumentsStep` e `StepList` cumprem o contrato.
+- [x] Os testes Playwright que já existem passam.
+- [x] `bun run lint` e `bun run build` passam.
 
 ## Cenários de teste
 
@@ -244,3 +244,9 @@ Em `frontend/tests/new-course.spec.ts`, com o login padrão do projeto:
 11. Com um documento, clicar em "Continuar": a tela mostra "ETAPA 2 DE 3" e "Perfil", e a etapa 2 tem `aria-current="step"`. Clicar em "Voltar": a tela mostra "ETAPA 1 DE 3" e o documento continua na lista.
 12. No passo 2, clicar na etapa "Documentos" da coluna volta ao passo 1. No passo 1, a etapa "Perfil" não é um botão.
 13. Soltar `guia.md` sobre a área de envio, com um evento `drop` e um `DataTransfer` montado no navegador: a lista mostra `guia.md`.
+
+## Verificação do aceite
+
+- PR revisado: [#23](https://github.com/No-Country-simulation/g10_equipe1_novamente/pull/23), integrado no commit `09b50e4`.
+- CI do PR: todos os checks obrigatórios passaram.
+- Revisão automática: os achados sobre os testes foram corrigidos em `5caa553`.

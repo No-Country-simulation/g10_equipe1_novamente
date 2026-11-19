@@ -167,11 +167,11 @@ Decisão: a clareza mede se o texto serve ao nível de público do curso. `fidel
 
 ## Critérios de aceite
 
-- [ ] `review_content` cumpre o contrato e devolve um `ReviewResult` de T04.
-- [ ] Nenhum UUID entra no prompt, e nenhum `chunk_id` fora de `chunks` sai da função.
-- [ ] Um erro do modelo sai da função como erro, nunca como revisão aprovada.
-- [ ] Nenhum teste chama o Gemini.
-- [ ] Os hooks e os testes passam, com cobertura de 90% ou mais.
+- [x] `review_content` cumpre o contrato e devolve um `ReviewResult` de T04.
+- [x] Nenhum UUID entra no prompt, e nenhum `chunk_id` fora de `chunks` sai da função.
+- [x] Um erro do modelo sai da função como erro, nunca como revisão aprovada.
+- [x] Nenhum teste chama o Gemini.
+- [x] Os hooks e os testes passam, com cobertura de 90% ou mais.
 
 ## Cenários de teste
 
@@ -188,3 +188,9 @@ Em `backend/tests/services/test_reviewer.py`, com `generate_structured` trocada:
 9. `chunks` vazio levanta `ValueError`, com zero chamadas.
 10. Um `LLMInvalidResponseError` e um `LLMError` da função falsa saem de `review_content` sem mudança.
 11. `PROMPT_VERSION` tem até 20 caracteres.
+
+## Verificação do aceite
+
+- PR revisado: [#21](https://github.com/No-Country-simulation/g10_equipe1_novamente/pull/21), integrado no commit `a0b9728`.
+- CI do PR: todos os checks obrigatórios passaram.
+- Revisão automática sobre o commit `340151f`: sem achados.
