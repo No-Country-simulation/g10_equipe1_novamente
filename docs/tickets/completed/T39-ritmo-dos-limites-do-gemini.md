@@ -84,12 +84,12 @@ Em `backend/app/core/llm.py`:
 
 ## Critérios de aceite
 
-- [ ] Com os valores padrão, nenhuma janela de 60 segundos passa de 100 textos ou de 30 mil tokens estimados de embeddings, nem de 15 chamadas de geração.
-- [ ] Um HTTP 429 espera o `retryDelay` ou 60 segundos, no máximo duas vezes, e depois levanta `LLMError` com a mensagem do contrato.
-- [ ] O comportamento em HTTP 503 não muda.
-- [ ] As assinaturas de `embed_texts` e `generate_structured` não mudam.
-- [ ] Os hooks e os testes passam, com cobertura de 90% ou mais.
-- [ ] Se você tiver uma chave, rode `embed_texts` com 150 textos de 1.000 caracteres e relate no PR o tempo total e se houve 429. Sem chave, diga que não rodou.
+- [x] Com os valores padrão, nenhuma janela de 60 segundos passa de 100 textos ou de 30 mil tokens estimados de embeddings, nem de 15 chamadas de geração.
+- [x] Um HTTP 429 espera o `retryDelay` ou 60 segundos, no máximo duas vezes, e depois levanta `LLMError` com a mensagem do contrato.
+- [x] O comportamento em HTTP 503 não muda.
+- [x] As assinaturas de `embed_texts` e `generate_structured` não mudam.
+- [x] Os hooks e os testes passam, com cobertura de 90% ou mais.
+- [x] Se você tiver uma chave, rode `embed_texts` com 150 textos de 1.000 caracteres e relate no PR o tempo total e se houve 429. Sem chave, diga que não rodou.
 
 ## Cenários de teste
 
@@ -105,3 +105,10 @@ Em `backend/tests/core/test_llm.py`, com um relógio falso: `_now` devolve um va
 8. Três HTTP 429 seguidos: duas esperas longas e depois `LLMError` com a mensagem do contrato, sem o texto enviado.
 9. HTTP 503 e depois sucesso: uma espera de 1 segundo, como hoje.
 10. A nova tentativa depois de um 429 passa pelo controle e conta na janela.
+
+## Verificação do aceite
+
+- PR revisado: [#31](https://github.com/No-Country-simulation/g10_equipe1_novamente/pull/31), integrado no commit `e4e3613`.
+- CI do PR: todos os checks obrigatórios passaram, com escopo dentro de `touches`.
+- Revisão automática sobre o commit `a73f90b`: sem achados.
+- Chamada real: `embed_texts` com 150 textos de 1.000 caracteres devolveu 150 vetores em 63,84 segundos, sem HTTP 429.

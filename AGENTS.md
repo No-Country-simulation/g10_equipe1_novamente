@@ -81,7 +81,7 @@ Tickets escritos (onda 2):
 | [`T22`](docs/tickets/completed/T22-publicacao.md) | Publicação: JSON na OCI e transação no banco |
 | [`T23`](docs/tickets/completed/T23-api-de-criacao-de-curso.md) | API de criação de curso |
 | [`T37`](docs/tickets/completed/T37-leitura-de-pdf.md) | Leitura de PDF com texto |
-| [`T39`](docs/tickets/T39-ritmo-dos-limites-do-gemini.md) | Ritmo dos limites por minuto do Gemini |
+| [`T39`](docs/tickets/completed/T39-ritmo-dos-limites-do-gemini.md) | Ritmo dos limites por minuto do Gemini |
 
 Os tickets das ondas 3 a 5 estão só na tabela de ondas do README dos tickets.
 
