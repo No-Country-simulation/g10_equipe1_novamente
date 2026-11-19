@@ -16,7 +16,7 @@ function flashcards(count = 8, topic = "Observabilidade") {
     cards: Array.from({ length: count }, (_, index) => ({
       front: `${topic}: pergunta ${index + 1}`,
       back: `${topic}: resposta ${index + 1}`,
-      ...(index === 0 ? { hint } : {}),
+      hint: index === 0 ? hint : null,
     })),
   }
 }
