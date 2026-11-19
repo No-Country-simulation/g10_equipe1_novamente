@@ -132,6 +132,7 @@ Os tickets das ondas 1 e 2 estão escritos. Os demais são escritos quando a ond
 | 2 | T22 | Publicação: JSON na OCI e transação no banco | T03, T04, T05, T14 |
 | 2 | T23 | API de criação de curso | T02, T14, T16 |
 | 2 | T37 | Leitura de PDF com texto | T16 |
+| 2 | T39 | Ritmo dos limites por minuto do Gemini | T15 |
 | 3 | T08 | Leitor de tutorial | T18 |
 | 3 | T09 | Leitor de flashcards | T18 |
 | 3 | T10 | Leitor de quiz com correção | T18 |
@@ -140,7 +141,7 @@ Os tickets das ondas 1 e 2 estão escritos. Os demais são escritos quando a ond
 | 3 | T26 | Agente `escreve`: quiz | T20 |
 | 3 | T27 | Novo curso, passos 2 e 3, e envio | T07, T23 |
 | 3 | T38 | Tela "Curso": fidelidade, clareza e trechos citados | T18 |
-| 4 | T28 | Tarefa de fundo, de ponta a ponta | T03, T19, T22, T23, T24 |
+| 4 | T28 | Tarefa de fundo, de ponta a ponta | T03, T19, T22, T23, T24, T39 |
 | 4 | T29 | Etapa `planeja` | T24 |
 | 4 | T30 | Casos de avaliação da busca e do revisor | T03, T24 |
 | 4 | T31 | Teste da jornada completa no navegador | T08, T09, T10, T17, T27, T38 |
@@ -149,6 +150,8 @@ Os tickets das ondas 1 e 2 estão escritos. Os demais são escritos quando a ond
 | 5 | T34 | Rodar os cenários da demonstração e guardar os JSON | T13, T25, T26, T28, T37 |
 | 5 | T35 | README, diagrama e guia de instalação | T28 |
 | 5 | T36 | Deploy na VM da OCI (opcional) | T28 |
+
+T39 saiu das medições de T12: a cota de embeddings conta cada texto como um pedido, e a indexação de um documento grande passava do limite por minuto. T28 passou a listar T39.
 
 T38 saiu de T18, que passava de 5 pontos: T18 ficou com a página, os estados e os metadados, e T38 com a avaliação. T20, T21 e T22 passaram a listar T03, porque recebem o `RetrievedChunk` da busca. T21 passou a listar T05, porque recebe o conteúdo gerado.
 
