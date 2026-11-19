@@ -91,4 +91,4 @@ O bucket de desenvolvimento testado foi `novamente-docs`, na região `sa-saopaul
 
 O [registro de evidências do T12](evidences/t12/T12-evidencias.md) detalha resultados, consumo, latências, quotas, ocorrências e limitações. Ele também registra divergências identificadas nos artefatos e as referências primárias.
 
-**Recomendação:** encerrar o ticket quanto à seleção do modelo, às medições de quota e à verificação reportada do bucket. Manter a ressalva de que o resultado de PUT/GET/LIST/DELETE não tem log local de execução disponível e que o teto de 41 cursos por dia é teórico.
+**Recomendação:** encerrar o ticket quanto à seleção do modelo, às medições de quota e à verificação reportada do bucket. Manter a ressalva de que o teto de 41 cursos por dia é teórico.
