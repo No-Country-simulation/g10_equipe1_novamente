@@ -74,8 +74,7 @@ Tokens não informados pelos registros de erro **não são considerados zero**: 
 
 1. **Faça backup** da pasta local `t12_resultados`, especialmente de `medicoes.csv`, antes de substituir qualquer arquivo.
 2. Extraia o ZIP na pasta dos scripts, de modo que fique `./t12_resultados/medicoes.csv`.
-3. Para novas execuções, use o script corrigido `02_testar_geracao.py`, que acrescenta linhas ao CSV. O cabeçalho consolidado foi mantido compatível.
-4. Se novos resultados forem coletados, não substitua o CSV pela versão deste pacote sem reconciliar os registros posteriores.
+3. Se novos resultados forem coletados, não substitua o CSV pela versão deste pacote sem reconciliar os registros posteriores.
 
 ## Limitações
 

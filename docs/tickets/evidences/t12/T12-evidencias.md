@@ -24,7 +24,7 @@ No teste D, HitRate@1 = 100%, HitRate@3 = 100% e MRR@3 = 1,00. A avaliação uso
 
 O painel indicou limites de 100 RPM, 30.000 TPM e 1.000 RPD para embeddings. Uma captura após A e B mostra 4 RPM, 83 TPM e **8 RPD**. O pedido de consolidação informava 5 RPD; a captura disponível sustenta 8. Após o conjunto, outra captura mostra 38 RPD. O painel não deve ser interpretado como equivalência entre vetores e requisições: A e B produziram 8 vetores em 4 chamadas do SDK, e o painel registrou valores próprios de uso.
 
-Evidências: [limites observados](screenshots/t12-gemini-embedding-20261118145048.png), [A e B](screenshots/t12-gemini-embedding-20261118145415.png), [C](screenshots/t12-gemini-embedding-20261118145737.png), [D e métricas de recuperação](screenshots/t12-gemini-embedding-20261118145938.png), [quota após A e B](screenshots/t12-gemini-embedding-20261118145509.png), [quota após o conjunto](screenshots/t12-gemini-embedding-20261118150015.png) e [script das etapas A-D](embedding/novamente_t12_embedding_v3.py).
+Evidências: [limites observados](screenshots/t12-gemini-embedding-20261118145048.png), [A e B](screenshots/t12-gemini-embedding-20261118145415.png), [C](screenshots/t12-gemini-embedding-20261118145737.png), [D e métricas de recuperação](screenshots/t12-gemini-embedding-20261118145938.png), [quota após A e B](screenshots/t12-gemini-embedding-20261118145509.png), [quota após o conjunto](screenshots/t12-gemini-embedding-20261118150015.png).
 
 ## Comparação de geração
 
@@ -56,7 +56,7 @@ O teste local selecionou trechos por simulação lexical e enviou contexto sint�
 
 Durante a preparação houve uma falha local por referência a `QuizContent`, que foi corrigida antes das três execuções válidas. Uma simulação artificial de HTTP 503 verificou o registro do erro; ela é distinta das cinco respostas HTTP 503 reais da comparação de modelos. Esses resultados testam geração com contexto simulado, não a integração de recuperação vetorial do backend.
 
-Evidências: [CSV com as três execuções](generation/t12_resultados/medicoes.csv), [resposta tutorial](generation/t12_resultados/20261117T192733414202Z_0e196900_gemini-3.5-flash-lite_tutorial_rag_resposta.json), [resposta flashcards](generation/t12_resultados/20261117T192811592609Z_12879912_gemini-3.5-flash-lite_flashcards_rag_resposta.json), [resposta quiz](generation/t12_resultados/20261117T193555144932Z_17c5d847_gemini-3.5-flash-lite_quiz_rag_resposta.json) e [script da simulação](generation/03_testar_rag.py).
+Evidências: [CSV com as três execuções](generation/t12_resultados/medicoes.csv), [resposta tutorial](generation/t12_resultados/20261117T192733414202Z_0e196900_gemini-3.5-flash-lite_tutorial_rag_resposta.json), [resposta flashcards](generation/t12_resultados/20261117T192811592609Z_12879912_gemini-3.5-flash-lite_flashcards_rag_resposta.json), [resposta quiz](generation/t12_resultados/20261117T193555144932Z_17c5d847_gemini-3.5-flash-lite_quiz_rag_resposta.json).
 
 ## Validação estruturada com o backend
 
