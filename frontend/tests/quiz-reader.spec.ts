@@ -71,6 +71,7 @@ test("mostra a primeira pergunta, as opções e a posição no quiz", async ({
   ].entries()) {
     await expect(options.nth(index)).toHaveAccessibleName(text)
     await expect(options.nth(index)).toBeEnabled()
+    await expect(options.nth(index)).toHaveCSS("border-radius", "8px")
   }
   await expect(previous).toBeDisabled()
   await expect(next).toBeDisabled()

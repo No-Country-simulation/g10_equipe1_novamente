@@ -85,7 +85,7 @@ function Quiz({ questions }: z.infer<typeof quizSchema>) {
               onClick={() =>
                 setRevealed((current) => new Set(current).add(index))
               }
-              className="h-auto min-h-16 w-full justify-start gap-4 rounded-lg border-border-strong p-4 text-left text-lg font-normal whitespace-normal"
+              className="h-auto min-h-16 w-full justify-start gap-4 rounded-md border-border-strong p-4 text-left text-lg font-normal whitespace-normal"
             >
               <span className="grid size-8 shrink-0 place-items-center rounded-[6px] border bg-muted/50 text-sm font-semibold">
                 {optionLetters[optionIndex]}
