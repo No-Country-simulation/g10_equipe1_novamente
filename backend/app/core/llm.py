@@ -1,9 +1,12 @@
 """Acesso à API Gemini. Só este módulo importa o SDK."""
 
 import logging
+import math
 import time
+from collections import deque
 from collections.abc import Callable, Sequence
 from functools import partial
+from threading import Lock
 from typing import Literal
 
 from google import genai
@@ -17,11 +20,50 @@ logger = logging.getLogger(__name__)
 EMBEDDING_DIMENSIONS = 768
 EMBED_BATCH_SIZE = 20
 
-_TEMPORARY_STATUS_CODES = {429, 503}
+_WINDOW_SECONDS = 60.0
+_MAX_RATE_LIMIT_RETRIES = 2
 _RETRY_DELAYS_SECONDS = (1.0, 2.0, 4.0)
 
 _sleep: Callable[[float], None] = time.sleep
+_now: Callable[[], float] = time.monotonic
 _client: genai.Client | None = None
+
+
+def _wait(kind: str, reason: str, seconds: float) -> None:
+    if seconds >= 1:
+        logger.info("Gemini %s: espera de %.2fs por %s", kind, seconds, reason)
+    _sleep(seconds)
+
+
+class _RateLimiter:
+    def __init__(self, kind: str) -> None:
+        self.kind = kind
+        self._lock = Lock()
+        self._window: deque[tuple[float, int, int]] = deque()
+
+    def acquire(self, *, requests: int, tokens: int, rpm: int, tpm: int | None) -> None:
+        window = self._window
+        while True:
+            with self._lock:
+                now = _now()
+                while window and window[0][0] + _WINDOW_SECONDS <= now:
+                    window.popleft()
+                # Um lote acima do limite precisa da janela vazia para sair.
+                if not window or (
+                    requests + sum(count for _, count, _ in window) <= rpm
+                    and (
+                        tpm is None
+                        or tokens + sum(cost for _, _, cost in window) <= tpm
+                    )
+                ):
+                    window.append((now, requests, tokens))
+                    return
+                delay = window[0][0] + _WINDOW_SECONDS - now
+            _wait(self.kind, "cota local", delay)
+
+
+_embedding_limiter = _RateLimiter("embeddings")
+_generation_limiter = _RateLimiter("texto")
 
 
 class LLMError(Exception): ...
@@ -42,25 +84,72 @@ def _get_client() -> genai.Client:
     return _client
 
 
-def _call_api[R](call: Callable[[], R]) -> R:
+def _rate_limit_delay(error: errors.APIError) -> float:
+    # O SDK guarda o corpo JSON em `details`.
+    body = error.details
+    if isinstance(body, dict):
+        body = body.get("error", body)
+    details = body.get("details") if isinstance(body, dict) else None
+    if isinstance(details, list):
+        for detail in details:
+            if not isinstance(detail, dict) or detail.get("@type") != (
+                "type.googleapis.com/google.rpc.RetryInfo"
+            ):
+                continue
+            duration = detail.get("retryDelay")
+            if isinstance(duration, str) and duration.endswith("s"):
+                try:
+                    seconds = float(duration[:-1])
+                except ValueError:
+                    continue
+                if math.isfinite(seconds) and seconds >= 0:
+                    return seconds
+    return _WINDOW_SECONDS
+
+
+def _call_api[R](
+    call: Callable[[], R],
+    *,
+    limiter: _RateLimiter,
+    rpm: int,
+    tpm: int | None = None,
+    requests: int = 1,
+    tokens: int = 0,
+) -> R:
     """Chama a API e tenta de novo em erro temporário.
 
     As exceções saem sem causa encadeada, porque o erro do SDK pode trazer
     o texto enviado ou a resposta do modelo.
     """
-    failure: str
-    for delay in (*_RETRY_DELAYS_SECONDS, None):
+    rate_limit_retries = 0
+    unavailable_delays = iter(_RETRY_DELAYS_SECONDS)
+    while True:
+        limiter.acquire(requests=requests, tokens=tokens, rpm=rpm, tpm=tpm)
         try:
             return call()
         except errors.APIError as error:
             failure = f"A API Gemini respondeu {error.code} {error.status}."
-            temporary = error.code in _TEMPORARY_STATUS_CODES
+            if error.code == 429:
+                failure = (
+                    "A API Gemini recusou o pedido por limite de uso (429). "
+                    "Tente de novo mais tarde."
+                )
+                if rate_limit_retries == _MAX_RATE_LIMIT_RETRIES:
+                    break
+                rate_limit_retries += 1
+                delay = _rate_limit_delay(error)
+            elif error.code == 503:
+                next_delay = next(unavailable_delays, None)
+                if next_delay is None:
+                    break
+                delay = next_delay
+            else:
+                break
+            reason = f"HTTP {error.code}"
         except Exception as error:
             failure = f"A chamada à API Gemini falhou: {type(error).__name__}."
-            temporary = False
-        if not temporary or delay is None:
             break
-        _sleep(delay)
+        _wait(limiter.kind, reason, delay)
     raise LLMError(failure) from None
 
 
@@ -111,7 +200,12 @@ def embed_texts(
                 model=model,
                 contents=contents,
                 config=config,
-            )
+            ),
+            limiter=_embedding_limiter,
+            rpm=settings.GEMINI_EMBEDDING_RPM,
+            tpm=settings.GEMINI_EMBEDDING_TPM,
+            requests=len(batch),
+            tokens=sum(math.ceil(len(text) / 3) for text in batch),
         )
         embeddings = response.embeddings or []
         if len(embeddings) != len(batch):
@@ -160,7 +254,9 @@ def generate_structured[T: BaseModel](
             client.models.generate_content(
                 model=model, contents=prompt, config=config
             ).text
-        )
+        ),
+        limiter=_generation_limiter,
+        rpm=settings.GEMINI_GENERATION_RPM,
     )
     logger.info(
         "Gemini texto: modelo=%s textos=1 tempo=%.2fs",

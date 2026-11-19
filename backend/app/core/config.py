@@ -48,6 +48,9 @@ class Settings(BaseSettings):
     GEMINI_API_KEY: str | None = None
     GEMINI_EMBEDDING_MODEL: str = "gemini-embedding-2"
     GEMINI_GENERATION_MODEL: str | None = None
+    GEMINI_EMBEDDING_RPM: int = 100
+    GEMINI_EMBEDDING_TPM: int = 30_000
+    GEMINI_GENERATION_RPM: int = 15
 
     def _check_default_secret(self, var_name: str, value: str | None) -> None:
         if value == "changethis":
