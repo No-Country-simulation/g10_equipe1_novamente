@@ -198,6 +198,10 @@ test("abre o tutorial pela grade e volta ao curso", async ({ page }) => {
 test("mantém o conteúdo publicado legível durante falha ou geração", async ({
   page,
 }) => {
+  const cards = Array.from({ length: 8 }, (_, index) => ({
+    front: `Pergunta ${index + 1}`,
+    back: `Resposta ${index + 1}`,
+  }))
   const course = await setup(page, {
     contents: [
       {
@@ -205,7 +209,11 @@ test("mantém o conteúdo publicado legível durante falha ou geração", async 
         status: "failed",
         error_message: generationError,
       },
-      { format: "flashcards", status: "running", content: {} },
+      {
+        format: "flashcards",
+        status: "running",
+        content: { introduction: "Revise os conceitos do curso.", cards },
+      },
     ],
   })
   const coursePath = `/courses/${course.id}`
@@ -232,7 +240,7 @@ test("mantém o conteúdo publicado legível durante falha ou geração", async 
   await expect(
     page.getByRole("alert").getByText("Gerando. A tela se atualiza sozinha."),
   ).toBeVisible()
-  await expect(page.getByText(readerPlaceholder)).toBeVisible()
+  await expect(page.getByText(cards[0].front, { exact: true })).toBeVisible()
 })
 
 for (const screen of ["curso", "conteúdo"] as const) {
