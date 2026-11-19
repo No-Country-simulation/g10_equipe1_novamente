@@ -1,4 +1,5 @@
 import uuid
+from dataclasses import replace
 from decimal import Decimal
 from unittest.mock import patch
 
@@ -10,7 +11,7 @@ from app.core.config import settings
 from app.core.storage import InMemoryStorage, StorageError
 from app.models import ContentCitation, Course, CourseContent, DocumentChunk
 from app.services.content_schemas import ContentPackage, GeneratedTutorial
-from app.services.grounding import GroundingReport, ReviewResult
+from app.services.grounding import ClaimReview, ReviewResult, evaluate
 from app.services.publishing import ContentNotFoundError, PublishError, publish_content
 from app.services.retrieval import RetrievedChunk
 from tests.utils.course import create_course
@@ -56,14 +57,16 @@ def publication(client, db, normal_user_token_headers):  # noqa: ARG001
             },
         }
     )
-    review = ReviewResult(claims=[], clarity="high", review_notes="Aprovado")
-    report = GroundingReport(
-        score=Decimal("0.90"),
-        passed=True,
-        supported=[],
-        unsupported=[],
-        cited_chunk_ids=[chunks[0].chunk_id, chunks[1].chunk_id],
+    review = ReviewResult(
+        claims=[
+            ClaimReview(claim=chunk.text, supported=True, chunk_id=chunk.chunk_id)
+            for chunk in chunks[:2]
+        ],
+        clarity="high",
+        review_notes="Aprovado",
+        focus_covered=True,
     )
+    report = evaluate(review, {chunk.chunk_id for chunk in chunks})
     return {
         "session": db,
         "storage": InMemoryStorage(),
@@ -96,7 +99,7 @@ def test_publish_and_regenerate(publication, client, normal_user_token_headers):
         "estimated_minutes": 5,
         "key_concepts": ["conceito"],
         "prerequisites": [],
-        "grounding_score": 0.9,
+        "grounding_score": 1.0,
         "clarity": "high",
         "review_notes": "Aprovado",
     }
@@ -114,7 +117,7 @@ def test_publish_and_regenerate(publication, client, normal_user_token_headers):
     assert content.estimated_minutes == generated.estimated_minutes
     assert content.key_concepts == generated.key_concepts
     assert content.prerequisites == generated.prerequisites
-    assert content.grounding_score == Decimal("0.90")
+    assert content.grounding_score == Decimal("1.00")
     assert content.clarity == args["review"].clarity
     assert content.review_notes == args["review"].review_notes
     prefix = f"courses/{course_id}/contents/{content.id}/"
@@ -137,22 +140,24 @@ def test_publish_and_regenerate(publication, client, normal_user_token_headers):
     assert {
         uuid.UUID(c["chunk_id"]) for c in response.json()["contents"][0]["citations"]
     } == {args["chunks"][0].chunk_id, args["chunks"][1].chunk_id}
-    args["report"] = GroundingReport(
-        score=Decimal("1"),
-        passed=True,
-        supported=[],
-        unsupported=[],
-        cited_chunk_ids=[args["chunks"][2].chunk_id],
+    chunk = args["chunks"][2]
+    args["review"] = args["review"].model_copy(
+        update={
+            "claims": [
+                ClaimReview(claim=chunk.text, supported=True, chunk_id=chunk.chunk_id)
+            ]
+        }
     )
+    args["report"] = evaluate(args["review"], {c.chunk_id for c in args["chunks"]})
     args["generated"].content.summary = "Novo resumo"
     content = publish_content(**args)
     assert content.content["summary"] == "Novo resumo"
-    assert (
-        ContentPackage.model_validate_json(
-            args["storage"].get(content.oci_object_key)
-        ).content["summary"]
-        == "Novo resumo"
+    package = ContentPackage.model_validate_json(
+        args["storage"].get(content.oci_object_key)
     )
+    assert package.content["summary"] == "Novo resumo"
+    assert package.grounding_score == 1.0
+    assert content.grounding_score == Decimal("1.00")
     assert args["session"].get(Course, course_id).status == "ready"
     assert content.oci_object_key != key
     assert key not in args["storage"].list("")
@@ -180,23 +185,12 @@ def assert_unpublished(args):
 def test_validation_failures(publication):
     args, _ = publication
     report = args["report"]
-    args["report"] = GroundingReport(
-        score=Decimal("0"),
-        passed=False,
-        supported=[],
-        unsupported=[],
-        cited_chunk_ids=[],
-    )
+    empty_review = args["review"].model_copy(update={"claims": []})
+    args["report"] = evaluate(empty_review, {c.chunk_id for c in args["chunks"]})
     with pytest.raises(ValueError):
         publish_content(**args)
     assert_unpublished(args)
-    args["report"] = GroundingReport(
-        score=report.score,
-        passed=True,
-        supported=[],
-        unsupported=[],
-        cited_chunk_ids=[uuid.uuid4()],
-    )
+    args["report"] = replace(report, cited_chunk_ids=[uuid.uuid4()])
     with pytest.raises(ValueError):
         publish_content(**args)
     assert_unpublished(args)

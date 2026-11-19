@@ -68,7 +68,8 @@ A tela não mostra um curso "Gerando" ou "Falhou" como produto pronto.
 | Armazenamento de arquivos fora do ar | HTTP 503 | O armazenamento de arquivos não está disponível. Tente novamente mais tarde. |
 | Falha ao ler ou indexar um documento | Curso "Falhou" | O documento que falhou e o motivo. |
 | Falha no modelo ou no armazenamento | Conteúdo "Falhou" | O que falhou e o botão "Tentar novamente". |
-| Conteúdo reprovado na revisão | Conteúdo "Falhou" | As afirmações sem apoio no documento. |
+| Foco não coberto ou segunda revisão sem afirmações | Conteúdo "Falhou" | O documento não trata do assunto pedido. |
+| Segunda revisão com foco coberto e afirmações sem apoio | Conteúdo "Falhou" | Afirmações sem apoio no documento: uma linha por afirmação. |
 | Geração parada por 10 minutos | Conteúdo "Falhou" | A geração foi interrompida. Tente novamente. |
 
 Quando o erro é de um documento, a mensagem vem depois do nome do arquivo: `guia.txt: Envie um arquivo .md ou PDF, ou digite o texto.`
