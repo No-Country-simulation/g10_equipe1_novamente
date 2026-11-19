@@ -36,7 +36,7 @@ Um ticket só começa quando todos os seus bloqueios estão no `master`. Cada br
 
 1. Leia o ticket inteiro, o `AGENTS.md` e os documentos que o ticket cita.
 2. Atualize o `master` e crie o branch `tNN-descricao-curta` a partir de `origin/master`.
-3. Em ticket de backend, prepare o banco do worktree:
+3. Prepare o banco e o `.env` do worktree. Todo ticket precisa deles, porque os testes Playwright do frontend rodam contra o backend:
 
     ```bash
     bash scripts/worktree-setup.sh TNN

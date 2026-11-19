@@ -241,14 +241,14 @@ O login passa a terminar em `/courses`, sem a saudação.
 
 ## Critérios de aceite
 
-- [ ] `/courses` mostra os cursos da pessoa com título, nível e estado, do mais novo ao mais antigo.
-- [ ] A lista trata os estados carregando, vazia e com erro.
-- [ ] A lista se atualiza a cada 3 segundos só enquanto há conteúdo na fila ou em geração.
-- [ ] "Home", o login e `/` levam a `/courses`.
-- [ ] O cartão abre `/courses/$courseId`.
-- [ ] `frontend/src/lib/courses.ts`, `frontend/tests/utils/course.ts` e a moldura da rota têm o conteúdo exato do contrato.
-- [ ] Os testes Playwright que já existem passam, com os ajustes acima.
-- [ ] `bun run lint` e `bun run build` passam.
+- [x] `/courses` mostra os cursos da pessoa com título, nível e estado, do mais novo ao mais antigo.
+- [x] A lista trata os estados carregando, vazia e com erro.
+- [x] A lista se atualiza a cada 3 segundos só enquanto há conteúdo na fila ou em geração.
+- [x] "Home", o login e `/` levam a `/courses`.
+- [x] O cartão abre `/courses/$courseId`.
+- [x] `frontend/src/lib/courses.ts`, `frontend/tests/utils/course.ts` e a moldura da rota têm o conteúdo exato do contrato.
+- [x] Os testes Playwright que já existem passam, com os ajustes acima.
+- [x] `bun run lint` e `bun run build` passam.
 
 ## Cenários de teste
 
@@ -263,3 +263,9 @@ Em `frontend/tests/courses.spec.ts`, com um usuário novo por teste:
 7. Com `GET /api/v1/courses/` respondendo 500 (`page.route`), a tela mostra "Não foi possível carregar os cursos." Depois de liberar a rota, "Tentar novamente" mostra a lista.
 8. Depois do login, a URL é `/courses` e a aba "Home" tem `aria-current="page"`. Abrir `/` leva a `/courses`.
 9. O botão "Novo curso" leva a `/courses/new`.
+
+## Verificação do aceite
+
+- PR revisado: [#27](https://github.com/No-Country-simulation/g10_equipe1_novamente/pull/27), integrado no commit `0533676`.
+- CI do PR: todos os checks obrigatórios passaram.
+- Revisão automática: o achado sobre o cache entre contas foi corrigido em `a423fec`, com `useAuth.ts` acrescentado a `touches` com aprovação.

@@ -32,11 +32,11 @@ size: 3
 
 `docs/product-specs/telas.md` define a tela "Curso": a pessoa vê os conteúdos do curso em ordem, com o estado de cada um, e lê um conteúdo. T02 entregou `GET /api/v1/courses/{course_id}` e a rota de seed. T07 e T17 já estão no `master`.
 
-O layout vem só das Telas finais do Drive. As capturas que este ticket usa estão em [`docs/design/telas-finais/`](../design/telas-finais/README.md):
+O layout vem só das Telas finais do Drive. As capturas que este ticket usa estão em [`docs/design/telas-finais/`](../../design/telas-finais/README.md):
 
-- [`tela-5-curso.png`](../design/telas-finais/tela-5-curso.png): a tela do curso, com a grade de cartões.
-- [`tela-6-conteudo-tutorial.png`](../design/telas-finais/tela-6-conteudo-tutorial.png): a tela de um conteúdo.
-- [`tela-q1-quiz.png`](../design/telas-finais/tela-q1-quiz.png) e [`tela-f1-flashcards.png`](../design/telas-finais/tela-f1-flashcards.png): a mesma moldura com outros formatos.
+- [`tela-5-curso.png`](../../design/telas-finais/tela-5-curso.png): a tela do curso, com a grade de cartões.
+- [`tela-6-conteudo-tutorial.png`](../../design/telas-finais/tela-6-conteudo-tutorial.png): a tela de um conteúdo.
+- [`tela-q1-quiz.png`](../../design/telas-finais/tela-q1-quiz.png) e [`tela-f1-flashcards.png`](../../design/telas-finais/tela-f1-flashcards.png): a mesma moldura com outros formatos.
 
 Este ticket traz para o texto todas as medidas, cores e textos de que você precisa. Você não precisa abrir o Drive. As capturas mostram elementos que ficam fora do MVP, como o progresso e o botão "Finalizar". Siga este ticket, não a captura, quando os dois diferem.
 
@@ -267,7 +267,7 @@ O selo tem 12 px, peso 500, padding de 2 na vertical e 10 na horizontal (`px-2.5
 
 ### Tela do curso, com mais de um conteúdo
 
-Captura: [`tela-5-curso.png`](../design/telas-finais/tela-5-curso.png). A tela usa a largura do layout, como `/courses`. De cima para baixo, com 32 px entre os blocos (`gap-8`):
+Captura: [`tela-5-curso.png`](../../design/telas-finais/tela-5-curso.png). A tela usa a largura do layout, como `/courses`. De cima para baixo, com 32 px entre os blocos (`gap-8`):
 
 1. **Cabeçalho.**
     - O link "Todos os cursos", para `/courses`: 15 px, `text-info`, com o ícone `ChevronLeft` de 18 px à esquerda e altura mínima de 44 px.
@@ -323,7 +323,7 @@ Um `Card` com borda de 1 px, raio de 12 px e padding de 24 px. Em telas a partir
 
 ### Tela de um conteúdo
 
-Captura: [`tela-6-conteudo-tutorial.png`](../design/telas-finais/tela-6-conteudo-tutorial.png). As capturas de quiz e flashcards mostram a mesma moldura.
+Captura: [`tela-6-conteudo-tutorial.png`](../../design/telas-finais/tela-6-conteudo-tutorial.png). As capturas de quiz e flashcards mostram a mesma moldura.
 
 De cima para baixo, com 32 px entre os blocos:
 
@@ -456,20 +456,20 @@ Muda:
 
 ## Critérios de aceite
 
-- [ ] Com mais de um conteúdo, `/courses/$courseId` mostra o cabeçalho, um cartão por conteúdo, em ordem, com o selo de estado, e o "Resumo do curso".
-- [ ] Um curso com um só conteúdo mostra a tela do conteúdo direto, com o link "Todos os cursos".
-- [ ] "Abrir" leva a `/courses/$courseId/contents/$contentId` e fica desabilitado enquanto o conteúdo não tem resultado publicado.
-- [ ] A tela do conteúdo mostra o cabeçalho escuro, o selo "Formato · Nível · Setor" e o link "Voltar ao curso".
-- [ ] Um conteúdo que falhou mostra o motivo no cartão e na tela do conteúdo. Um conteúdo na fila ou em geração não aparece como pronto.
-- [ ] Um conteúdo publicado mostra tempo, conceitos-chave e pré-requisitos.
-- [ ] MATERIAIS lista os documentos que não falharam, e só eles.
-- [ ] Nenhuma tela mostra progresso, "Concluído", "Em andamento", "Não iniciado" ou "Finalizar".
-- [ ] A tela se atualiza a cada 3 segundos só enquanto há conteúdo na fila ou em geração.
-- [ ] Um curso inexistente ou de outra pessoa mostra "Curso não encontrado." Um conteúdo que não é do curso mostra "Conteúdo não encontrado."
-- [ ] Os três leitores, `ContentReader`, `ContentView` e `CoursePage` cumprem o contrato.
-- [ ] Nenhum componente tem valor hexadecimal.
-- [ ] Os testes Playwright que já existem passam.
-- [ ] `bun run lint` e `bun run build` passam.
+- [x] Com mais de um conteúdo, `/courses/$courseId` mostra o cabeçalho, um cartão por conteúdo, em ordem, com o selo de estado, e o "Resumo do curso".
+- [x] Um curso com um só conteúdo mostra a tela do conteúdo direto, com o link "Todos os cursos".
+- [x] "Abrir" leva a `/courses/$courseId/contents/$contentId` e fica desabilitado enquanto o conteúdo não tem resultado publicado.
+- [x] A tela do conteúdo mostra o cabeçalho escuro, o selo "Formato · Nível · Setor" e o link "Voltar ao curso".
+- [x] Um conteúdo que falhou mostra o motivo no cartão e na tela do conteúdo. Um conteúdo na fila ou em geração não aparece como pronto.
+- [x] Um conteúdo publicado mostra tempo, conceitos-chave e pré-requisitos.
+- [x] MATERIAIS lista os documentos que não falharam, e só eles.
+- [x] Nenhuma tela mostra progresso, "Concluído", "Em andamento", "Não iniciado" ou "Finalizar".
+- [x] A tela se atualiza a cada 3 segundos só enquanto há conteúdo na fila ou em geração.
+- [x] Um curso inexistente ou de outra pessoa mostra "Curso não encontrado." Um conteúdo que não é do curso mostra "Conteúdo não encontrado."
+- [x] Os três leitores, `ContentReader`, `ContentView` e `CoursePage` cumprem o contrato.
+- [x] Nenhum componente tem valor hexadecimal.
+- [x] Os testes Playwright que já existem passam.
+- [x] `bun run lint` e `bun run build` passam.
 
 ## Cenários de teste
 
@@ -486,3 +486,9 @@ Em `frontend/tests/course.spec.ts`, com um usuário novo por teste:
 9. Curso `failed` com um documento `failed` chamado `guia.md`: o alerta "Um documento falhou" mostra `guia.md`. O "Resumo do curso" não mostra MATERIAIS.
 10. Um `id` de curso que não existe mostra "Curso não encontrado." O curso de outro usuário mostra o mesmo texto. Um `id` de conteúdo que não é do curso mostra "Conteúdo não encontrado."
 11. Sem login, `/courses/{id}` redireciona para `/login`.
+
+## Verificação do aceite
+
+- PR revisado: [#24](https://github.com/No-Country-simulation/g10_equipe1_novamente/pull/24), integrado no commit `f96bd63`.
+- CI do PR: todos os checks obrigatórios passaram.
+- Revisão automática: os achados sobre os testes foram corrigidos em `ea16b50`. Uma segunda revisão, depois das Telas finais, achou a falha de atualização que trocava a tela pelo erro. A correção está em `01336fa`, e `courses/index.tsx` entrou em `touches` com aprovação.

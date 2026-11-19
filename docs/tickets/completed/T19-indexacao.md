@@ -193,11 +193,11 @@ Decisão: `docs/ARCHITECTURE.md` fala em chunks de cerca de 1.000 caracteres e n
 
 ## Critérios de aceite
 
-- [ ] `split_text` e `index_document` cumprem o contrato.
-- [ ] Um documento indexado tem os chunks, o estado `indexed` e o `embedding_model` gravados na mesma transação.
-- [ ] Um documento que falha fica `failed`, com a mensagem, e sem nenhum chunk.
-- [ ] Nenhum teste chama o Gemini nem a OCI.
-- [ ] Os hooks e os testes passam, com cobertura de 90% ou mais.
+- [x] `split_text` e `index_document` cumprem o contrato.
+- [x] Um documento indexado tem os chunks, o estado `indexed` e o `embedding_model` gravados na mesma transação.
+- [x] Um documento que falha fica `failed`, com a mensagem, e sem nenhum chunk.
+- [x] Nenhum teste chama o Gemini nem a OCI.
+- [x] Os hooks e os testes passam, com cobertura de 90% ou mais.
 
 ## Cenários de teste
 
@@ -225,3 +225,9 @@ Decisão: `docs/ARCHITECTURE.md` fala em chunks de cerca de 1.000 caracteres e n
 17. Com `read_document` trocada por uma função que devolve `mime_type` `application/pdf` e o texto `"A\fB"`, os chunks têm `page_number` 1 e 2.
 18. Um `document_id` que não existe levanta `DocumentNotFoundError`.
 19. Uma falha no `commit` do passo 8 deixa o documento `failed` e sem chunks.
+
+## Verificação do aceite
+
+- PR revisado: [#26](https://github.com/No-Country-simulation/g10_equipe1_novamente/pull/26), integrado no commit `e67dd00`.
+- CI do PR: todos os checks obrigatórios passaram.
+- Revisão automática: os achados sobre os testes foram corrigidos em `68f717f`.

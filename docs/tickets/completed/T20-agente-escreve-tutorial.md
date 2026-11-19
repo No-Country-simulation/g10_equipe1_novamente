@@ -173,11 +173,11 @@ Pendência: a revisão de T05 deixou em aberto o modo estrito do Pydantic (`stri
 
 ## Critérios de aceite
 
-- [ ] `write_content` cumpre o contrato para o formato tutorial.
-- [ ] O prompt traz as seis partes de `system_instruction` e as partes de `prompt`.
-- [ ] Flashcards e quiz levantam `UnsupportedFormatError` sem chamar o modelo.
-- [ ] Nenhum teste chama o Gemini.
-- [ ] Os hooks e os testes passam, com cobertura de 90% ou mais.
+- [x] `write_content` cumpre o contrato para o formato tutorial.
+- [x] O prompt traz as seis partes de `system_instruction` e as partes de `prompt`.
+- [x] Flashcards e quiz levantam `UnsupportedFormatError` sem chamar o modelo.
+- [x] Nenhum teste chama o Gemini.
+- [x] Os hooks e os testes passam, com cobertura de 90% ou mais.
 
 ## Cenários de teste
 
@@ -195,3 +195,9 @@ Em `backend/tests/services/test_writer.py`, com `generate_structured` trocada:
 10. `rewrite.previous` de outro formato levanta `ValueError`.
 11. Um `LLMInvalidResponseError` da função falsa sai de `write_content` sem mudança.
 12. `PROMPT_VERSION` tem até 20 caracteres.
+
+## Verificação do aceite
+
+- PR revisado: [#20](https://github.com/No-Country-simulation/g10_equipe1_novamente/pull/20), integrado no commit `9e58af1`.
+- CI do PR: todos os checks obrigatórios passaram.
+- Revisão automática: os achados sobre os testes foram corrigidos em `f67facb`.

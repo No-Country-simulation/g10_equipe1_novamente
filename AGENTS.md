@@ -72,15 +72,15 @@ Tickets escritos (onda 2):
 
 | Ticket | Entrega |
 | --- | --- |
-| [`T07`](docs/tickets/T07-novo-curso-passo-1.md) | Novo curso, passo 1: documentos e texto digitado |
-| [`T17`](docs/tickets/T17-tela-cursos.md) | Tela "Cursos" |
-| [`T18`](docs/tickets/T18-tela-curso.md) | Tela "Curso": cartões de conteúdo, estados e metadados |
-| [`T19`](docs/tickets/T19-indexacao.md) | Indexação: chunks e embeddings |
-| [`T20`](docs/tickets/T20-agente-escreve-tutorial.md) | Agente `escreve`: tutorial |
-| [`T21`](docs/tickets/T21-agente-revisa.md) | Agente `revisa` |
-| [`T22`](docs/tickets/T22-publicacao.md) | Publicação: JSON na OCI e transação no banco |
-| [`T23`](docs/tickets/T23-api-de-criacao-de-curso.md) | API de criação de curso |
-| [`T37`](docs/tickets/T37-leitura-de-pdf.md) | Leitura de PDF com texto |
+| [`T07`](docs/tickets/completed/T07-novo-curso-passo-1.md) | Novo curso, passo 1: documentos e texto digitado |
+| [`T17`](docs/tickets/completed/T17-tela-cursos.md) | Tela "Cursos" |
+| [`T18`](docs/tickets/completed/T18-tela-curso.md) | Tela "Curso": cartões de conteúdo, estados e metadados |
+| [`T19`](docs/tickets/completed/T19-indexacao.md) | Indexação: chunks e embeddings |
+| [`T20`](docs/tickets/completed/T20-agente-escreve-tutorial.md) | Agente `escreve`: tutorial |
+| [`T21`](docs/tickets/completed/T21-agente-revisa.md) | Agente `revisa` |
+| [`T22`](docs/tickets/completed/T22-publicacao.md) | Publicação: JSON na OCI e transação no banco |
+| [`T23`](docs/tickets/completed/T23-api-de-criacao-de-curso.md) | API de criação de curso |
+| [`T37`](docs/tickets/completed/T37-leitura-de-pdf.md) | Leitura de PDF com texto |
 
 Os tickets das ondas 3 a 5 estão só na tabela de ondas do README dos tickets.
 

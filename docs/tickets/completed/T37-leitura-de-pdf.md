@@ -109,11 +109,11 @@ Decisão: um PDF corrompido ou com senha tem mensagem própria, com o código no
 
 ## Critérios de aceite
 
-- [ ] Um PDF com texto devolve o texto das páginas, separado por `PAGE_BREAK`.
-- [ ] Um PDF sem texto e um PDF que não abre recebem o código e a mensagem do contrato.
-- [ ] Os testes de `.md` de T16 passam, com o ajuste do cenário 2.
-- [ ] Só `documents.py` importa `pypdf`.
-- [ ] Os hooks e os testes passam, com cobertura de 90% ou mais.
+- [x] Um PDF com texto devolve o texto das páginas, separado por `PAGE_BREAK`.
+- [x] Um PDF sem texto e um PDF que não abre recebem o código e a mensagem do contrato.
+- [x] Os testes de `.md` de T16 passam, com o ajuste do cenário 2.
+- [x] Só `documents.py` importa `pypdf`.
+- [x] Os hooks e os testes passam, com cobertura de 90% ou mais.
 
 ## Cenários de teste
 
@@ -130,3 +130,9 @@ Em `backend/tests/services/test_documents.py`:
 9. Um PDF cujo texto passa de 150 mil caracteres levanta `too_long`. Troque o leitor por uma função que devolve o texto longo.
 10. `read_documents` com um `.md` e um `.pdf` devolve os dois, e com o mesmo PDF duas vezes levanta `duplicate`.
 11. `guia.txt` e `guia` continuam levantando `unsupported_type`.
+
+## Verificação do aceite
+
+- PR revisado: [#22](https://github.com/No-Country-simulation/g10_equipe1_novamente/pull/22), integrado no commit `e5718ee`.
+- CI do PR: todos os checks obrigatórios passaram.
+- Revisão automática: o log do pypdf com bytes do arquivo e os cenários sem teste foram corrigidos em `0e52312`.

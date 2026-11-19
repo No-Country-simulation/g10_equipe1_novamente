@@ -193,12 +193,12 @@ Outras regras:
 
 ## Critérios de aceite
 
-- [ ] `publish_content` cumpre o contrato.
-- [ ] O arquivo na OCI valida como `ContentPackage`, e `course_content.content` traz só o conteúdo.
-- [ ] Nenhum caminho de falha deixa um objeto novo na OCI sem a linha publicada, nem uma linha publicada sem objeto.
-- [ ] Um relatório reprovado nunca é publicado.
-- [ ] Nenhum teste chama a OCI nem o Gemini.
-- [ ] Os hooks e os testes passam, com cobertura de 90% ou mais.
+- [x] `publish_content` cumpre o contrato.
+- [x] O arquivo na OCI valida como `ContentPackage`, e `course_content.content` traz só o conteúdo.
+- [x] Nenhum caminho de falha deixa um objeto novo na OCI sem a linha publicada, nem uma linha publicada sem objeto.
+- [x] Um relatório reprovado nunca é publicado.
+- [x] Nenhum teste chama a OCI nem o Gemini.
+- [x] Os hooks e os testes passam, com cobertura de 90% ou mais.
 
 ## Cenários de teste
 
@@ -218,3 +218,9 @@ Em `backend/tests/services/test_publishing.py`, com `InMemoryStorage`:
 12. Na regeneração, se `delete` do objeto antigo falha duas vezes, a função devolve o conteúdo publicado e o log traz o `course_id`.
 13. Publicar em um curso `failed` muda o curso para `ready`.
 14. Um `content_id` que não existe levanta `ContentNotFoundError`.
+
+## Verificação do aceite
+
+- PR revisado: [#25](https://github.com/No-Country-simulation/g10_equipe1_novamente/pull/25), integrado no commit `1c71ccc`.
+- CI do PR: todos os checks obrigatórios passaram.
+- Revisão automática: os achados sobre os testes foram corrigidos em `39be1fc`.
