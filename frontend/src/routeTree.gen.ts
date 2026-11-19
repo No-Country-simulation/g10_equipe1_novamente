@@ -17,6 +17,8 @@ import { Route as LayoutSettingsRouteImport } from './routes/_layout/settings'
 import { Route as LayoutCoursesIndexRouteImport } from './routes/_layout/courses/index'
 import { Route as LayoutCoursesCourseIdRouteRouteImport } from './routes/_layout/courses/$courseId/route'
 import { Route as LayoutCoursesNewRouteImport } from './routes/_layout/courses/new'
+import { Route as LayoutCoursesCourseIdIndexRouteImport } from './routes/_layout/courses/$courseId/index'
+import { Route as LayoutCoursesCourseIdContentsContentIdRouteImport } from './routes/_layout/courses/$courseId/contents/$contentId'
 
 const LayoutRoute = LayoutRouteImport.update({
   id: '/_layout',
@@ -58,24 +60,39 @@ const LayoutCoursesNewRoute = LayoutCoursesNewRouteImport.update({
   path: '/courses/new',
   getParentRoute: () => LayoutRoute,
 } as any)
+const LayoutCoursesCourseIdIndexRoute =
+  LayoutCoursesCourseIdIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => LayoutCoursesCourseIdRouteRoute,
+  } as any)
+const LayoutCoursesCourseIdContentsContentIdRoute =
+  LayoutCoursesCourseIdContentsContentIdRouteImport.update({
+    id: '/contents/$contentId',
+    path: '/contents/$contentId',
+    getParentRoute: () => LayoutCoursesCourseIdRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof LayoutIndexRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/settings': typeof LayoutSettingsRoute
-  '/courses/$courseId': typeof LayoutCoursesCourseIdRouteRoute
+  '/courses/$courseId': typeof LayoutCoursesCourseIdRouteRouteWithChildren
   '/courses/new': typeof LayoutCoursesNewRoute
   '/courses/': typeof LayoutCoursesIndexRoute
+  '/courses/$courseId/': typeof LayoutCoursesCourseIdIndexRoute
+  '/courses/$courseId/contents/$contentId': typeof LayoutCoursesCourseIdContentsContentIdRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/settings': typeof LayoutSettingsRoute
   '/': typeof LayoutIndexRoute
-  '/courses/$courseId': typeof LayoutCoursesCourseIdRouteRoute
   '/courses/new': typeof LayoutCoursesNewRoute
   '/courses': typeof LayoutCoursesIndexRoute
+  '/courses/$courseId': typeof LayoutCoursesCourseIdIndexRoute
+  '/courses/$courseId/contents/$contentId': typeof LayoutCoursesCourseIdContentsContentIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -84,9 +101,11 @@ export interface FileRoutesById {
   '/signup': typeof SignupRoute
   '/_layout/settings': typeof LayoutSettingsRoute
   '/_layout/': typeof LayoutIndexRoute
-  '/_layout/courses/$courseId': typeof LayoutCoursesCourseIdRouteRoute
+  '/_layout/courses/$courseId': typeof LayoutCoursesCourseIdRouteRouteWithChildren
   '/_layout/courses/new': typeof LayoutCoursesNewRoute
   '/_layout/courses/': typeof LayoutCoursesIndexRoute
+  '/_layout/courses/$courseId/': typeof LayoutCoursesCourseIdIndexRoute
+  '/_layout/courses/$courseId/contents/$contentId': typeof LayoutCoursesCourseIdContentsContentIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -98,15 +117,18 @@ export interface FileRouteTypes {
     | '/courses/$courseId'
     | '/courses/new'
     | '/courses/'
+    | '/courses/$courseId/'
+    | '/courses/$courseId/contents/$contentId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
     | '/signup'
     | '/settings'
     | '/'
-    | '/courses/$courseId'
     | '/courses/new'
     | '/courses'
+    | '/courses/$courseId'
+    | '/courses/$courseId/contents/$contentId'
   id:
     | '__root__'
     | '/_layout'
@@ -117,6 +139,8 @@ export interface FileRouteTypes {
     | '/_layout/courses/$courseId'
     | '/_layout/courses/new'
     | '/_layout/courses/'
+    | '/_layout/courses/$courseId/'
+    | '/_layout/courses/$courseId/contents/$contentId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -183,13 +207,44 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutCoursesNewRouteImport
       parentRoute: typeof LayoutRoute
     }
+    '/_layout/courses/$courseId/': {
+      id: '/_layout/courses/$courseId/'
+      path: '/'
+      fullPath: '/courses/$courseId/'
+      preLoaderRoute: typeof LayoutCoursesCourseIdIndexRouteImport
+      parentRoute: typeof LayoutCoursesCourseIdRouteRoute
+    }
+    '/_layout/courses/$courseId/contents/$contentId': {
+      id: '/_layout/courses/$courseId/contents/$contentId'
+      path: '/contents/$contentId'
+      fullPath: '/courses/$courseId/contents/$contentId'
+      preLoaderRoute: typeof LayoutCoursesCourseIdContentsContentIdRouteImport
+      parentRoute: typeof LayoutCoursesCourseIdRouteRoute
+    }
   }
 }
+
+interface LayoutCoursesCourseIdRouteRouteChildren {
+  LayoutCoursesCourseIdIndexRoute: typeof LayoutCoursesCourseIdIndexRoute
+  LayoutCoursesCourseIdContentsContentIdRoute: typeof LayoutCoursesCourseIdContentsContentIdRoute
+}
+
+const LayoutCoursesCourseIdRouteRouteChildren: LayoutCoursesCourseIdRouteRouteChildren =
+  {
+    LayoutCoursesCourseIdIndexRoute: LayoutCoursesCourseIdIndexRoute,
+    LayoutCoursesCourseIdContentsContentIdRoute:
+      LayoutCoursesCourseIdContentsContentIdRoute,
+  }
+
+const LayoutCoursesCourseIdRouteRouteWithChildren =
+  LayoutCoursesCourseIdRouteRoute._addFileChildren(
+    LayoutCoursesCourseIdRouteRouteChildren,
+  )
 
 interface LayoutRouteChildren {
   LayoutSettingsRoute: typeof LayoutSettingsRoute
   LayoutIndexRoute: typeof LayoutIndexRoute
-  LayoutCoursesCourseIdRouteRoute: typeof LayoutCoursesCourseIdRouteRoute
+  LayoutCoursesCourseIdRouteRoute: typeof LayoutCoursesCourseIdRouteRouteWithChildren
   LayoutCoursesNewRoute: typeof LayoutCoursesNewRoute
   LayoutCoursesIndexRoute: typeof LayoutCoursesIndexRoute
 }
@@ -197,7 +252,7 @@ interface LayoutRouteChildren {
 const LayoutRouteChildren: LayoutRouteChildren = {
   LayoutSettingsRoute: LayoutSettingsRoute,
   LayoutIndexRoute: LayoutIndexRoute,
-  LayoutCoursesCourseIdRouteRoute: LayoutCoursesCourseIdRouteRoute,
+  LayoutCoursesCourseIdRouteRoute: LayoutCoursesCourseIdRouteRouteWithChildren,
   LayoutCoursesNewRoute: LayoutCoursesNewRoute,
   LayoutCoursesIndexRoute: LayoutCoursesIndexRoute,
 }

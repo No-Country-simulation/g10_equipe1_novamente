@@ -3,6 +3,7 @@ id: T18
 title: Monte a tela "Curso", com os cartões de conteúdo, os estados e os metadados
 blocked_by: [T02, T06]
 touches:
+  - frontend/src/routes/_layout/courses/index.tsx
   - frontend/src/routes/_layout/courses/$courseId/index.tsx
   - frontend/src/routes/_layout/courses/$courseId/contents/$contentId.tsx
   - frontend/src/routeTree.gen.ts
@@ -20,6 +21,7 @@ touches:
   - frontend/src/components/Course/readers/FlashcardsReader.tsx
   - frontend/src/components/Course/readers/QuizReader.tsx
   - frontend/tests/course.spec.ts
+  - frontend/tests/courses.spec.ts
 executor: agente
 size: 3
 ---
@@ -277,7 +279,9 @@ Captura: [`tela-5-curso.png`](../design/telas-finais/tela-5-curso.png). A tela u
 
 #### Cartão de um conteúdo
 
-Um `Card` com borda de 1 px, raio de 12 px, fundo `bg-card` e padding de 20 px. De cima para baixo:
+Um `Card` com borda de 1 px, raio de 12 px, fundo `bg-card` e padding de 20 px. Quando o conteúdo tem estado `failed`, o cartão usa a borda `border-destructive-foreground`.
+
+De cima para baixo:
 
 | Elemento | Regra |
 | --- | --- |
