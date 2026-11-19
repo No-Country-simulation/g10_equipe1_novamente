@@ -38,7 +38,7 @@ function Courses() {
             <Skeleton key={i} className="h-40" />
           ))}
         </div>
-      ) : query.isError ? (
+      ) : query.isLoadingError ? (
         <Alert variant="destructive">
           <AlertTitle>Não foi possível carregar os cursos.</AlertTitle>
           <AlertDescription>

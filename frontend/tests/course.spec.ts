@@ -258,6 +258,36 @@ for (const screen of ["curso", "conteúdo"] as const) {
       .poll(() => requests, { timeout: 8000 })
       .toBeGreaterThanOrEqual(2)
   })
+
+  test(`mantém os dados na tela de ${screen} após falha na atualização`, async ({
+    page,
+  }) => {
+    const course = await setup(page, { contents: mixedContents })
+    const coursePath = `/courses/${course.id}`
+    await page.goto(
+      screen === "curso"
+        ? coursePath
+        : `${coursePath}/contents/${course.contents[0].id}`,
+    )
+    const title = page.getByRole("heading", { name: "Introdução", level: 2 })
+    await expect(title).toBeVisible()
+
+    const endpoint = `/api/v1/courses/${course.id}`
+    await page.route(`**${endpoint}`, (route) => route.fulfill({ status: 500 }))
+    await page.waitForResponse(
+      (response) =>
+        response.url().endsWith(endpoint) && response.status() === 500,
+    )
+    // A próxima consulta só começa depois que o primeiro erro foi processado.
+    await page.waitForRequest((request) => request.url().endsWith(endpoint))
+
+    await expect(title).toBeVisible()
+    await expect(
+      page
+        .getByRole("alert")
+        .filter({ hasText: "Não foi possível carregar o curso." }),
+    ).toHaveCount(0)
+  })
 }
 
 test("não atualiza curso com todos os conteúdos prontos", async ({ page }) => {

@@ -110,6 +110,37 @@ test("não atualiza quando todos os conteúdos terminaram", async ({ page }) => 
   expect(requests).toBe(1)
 })
 
+test("mantém a lista de cursos após falha na atualização", async ({ page }) => {
+  await seed("Curso em geração", "initializing", "pending")
+  await page.reload()
+  const course = page.getByRole("link", { name: "Curso em geração" })
+  await expect(course).toBeVisible()
+
+  let failures = 0
+  page.on("response", (response) => {
+    if (
+      response.url().endsWith("/api/v1/courses/") &&
+      response.status() === 500
+    ) {
+      failures++
+    }
+  })
+  await page.route("**/api/v1/courses/", (route) =>
+    route.fulfill({ status: 500 }),
+  )
+  // A quinta resposta vem após a primeira falha e as três tentativas da mesma consulta.
+  await expect
+    .poll(() => failures, { timeout: 15000 })
+    .toBeGreaterThanOrEqual(5)
+
+  await expect(course).toBeVisible()
+  await expect(
+    page
+      .getByRole("alert")
+      .filter({ hasText: "Não foi possível carregar os cursos." }),
+  ).toHaveCount(0)
+})
+
 test("permite tentar novamente após erro", async ({ page }) => {
   await seed("Curso A", "ready", "succeeded")
   const pattern = "**/api/v1/courses/"

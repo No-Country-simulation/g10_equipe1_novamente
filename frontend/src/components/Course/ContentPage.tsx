@@ -85,7 +85,9 @@ export function ContentPage({
   contentId: string
 }) {
   const query = useCourse(courseId)
-  if (query.isPending || query.isError) return <CourseFallback query={query} />
+  if (query.isPending || query.isLoadingError) {
+    return <CourseFallback query={query} />
+  }
 
   const content = query.data.contents.find(({ id }) => id === contentId)
   if (!content) {
