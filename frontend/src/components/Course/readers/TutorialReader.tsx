@@ -24,9 +24,11 @@ function MarkdownHeading({ children }: ComponentProps<"h4">) {
 
 const markdownComponents: Components = {
   p: ({ children }) => <p className="mb-4 last:mb-0">{children}</p>,
-  ul: ({ children }) => <ul className="mb-4 list-disc pl-5">{children}</ul>,
+  ul: ({ children }) => (
+    <ul className="mb-4 list-disc pl-5 last:mb-0 [li_&]:mb-0">{children}</ul>
+  ),
   ol: ({ children, start }) => (
-    <ol className="mb-4 list-decimal pl-5" start={start}>
+    <ol className="mb-4 list-decimal pl-5 last:mb-0 [li_&]:mb-0" start={start}>
       {children}
     </ol>
   ),
@@ -36,12 +38,12 @@ const markdownComponents: Components = {
     </code>
   ),
   pre: ({ children }) => (
-    <pre className="mb-4 overflow-x-auto rounded-lg bg-muted p-4 font-mono text-sm">
+    <pre className="mb-4 overflow-x-auto rounded-lg bg-muted p-4 font-mono text-sm last:mb-0">
       {children}
     </pre>
   ),
   table: ({ children }) => (
-    <div className="mb-4 overflow-x-auto wrap-normal">
+    <div className="mb-4 overflow-x-auto wrap-normal last:mb-0">
       <table className="w-full border-collapse text-left">{children}</table>
     </div>
   ),
