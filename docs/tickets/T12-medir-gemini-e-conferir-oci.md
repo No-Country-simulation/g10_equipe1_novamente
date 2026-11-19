@@ -50,7 +50,7 @@ T20 e T21 foram escritos sem essa conferência. Se a API recusa o schema, avise 
 
 ### 4. O bucket funciona?
 
-1. Crie o bucket privado `novamente-dev` em uma conta Always Free.
+1. Crie o bucket privado `novamente-docs` em uma conta Always Free.
 2. Crie uma API signing key para cada pessoa que desenvolve. Guarde a chave fora da pasta do repositório.
 3. Envie, leia, liste e apague um arquivo. Se T14 já estiver no `master`, use `backend/scripts/verify_storage.py`. Senão, use a OCI CLI.
 4. Anote o namespace e a região.
@@ -76,9 +76,15 @@ Depois que T15 estiver no `master`, abra um PR de uma linha com o modelo escolhi
 
 ## Critérios de aceite
 
-- [ ] `docs/ARCHITECTURE.md` traz o modelo de texto, os limites medidos e a data.
-- [ ] O nome do modelo de embeddings e as 768 dimensões estão confirmados, ou a equipe foi avisada do erro.
-- [ ] Uma chamada real com `GeneratedTutorial` foi feita, e o resultado está anotado.
-- [ ] Um arquivo foi enviado, lido, listado e apagado em `novamente-dev`.
+- [x] `docs/ARCHITECTURE.md` traz o modelo de texto, os limites medidos e a data.
+- [x] O nome do modelo de embeddings e as 768 dimensões estão confirmados, ou a equipe foi avisada do erro.
+- [x] Uma chamada real com `GeneratedTutorial` foi feita, e o resultado está anotado.
+- [x] Um arquivo foi enviado, lido, listado e apagado em `novamente-docs`.
 - [ ] Cada pessoa que desenvolve tem uma chave própria, fora do repositório.
-- [ ] Se algum limite não comporta um curso com três saídas, a equipe sabe antes de T19 começar.
+- [x] Se algum limite não comporta um curso com três saídas, a equipe sabe antes de T19 começar.
+
+## Andamento
+
+Em 19/11/2026, `docs/ARCHITECTURE.md` e `.env.example` receberam os resultados: `gemini-embedding-2` devolve 768 dimensões, `gemini-3.5-flash-lite` aceita os quatro schemas e valida com `strict=True`, e `verify_storage.py` passou em `novamente-docs` (`sa-saopaulo-1`). A cota de embeddings não comporta documentos grandes no ritmo atual da indexação, e T39 corrige isso.
+
+Falta uma API signing key própria para cada pessoa que desenvolve. Hoje duas pessoas têm.
