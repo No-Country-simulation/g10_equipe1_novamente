@@ -28,7 +28,7 @@ O ticket não guarda estado. O estado vem do GitHub:
 
 ## Como a ordem é calculada
 
-Um ticket sem bloqueio aberto está na onda 1. A onda de um ticket é a maior onda entre seus bloqueios, mais um. Tickets da mesma onda rodam ao mesmo tempo.
+No planejamento inicial, um ticket sem bloqueio entra na onda 1. Os demais entram uma onda depois de seu bloqueio mais tardio. T40 entrou depois do planejamento e foi incluído na onda 3, sem bloqueios. Nessa onda, comece T40 em paralelo com os tickets que já podem rodar. Comece T24 e T25 depois do merge de T40.
 
 Um ticket só começa quando todos os seus bloqueios estão no `master`. Cada branch nasce do `origin/master` atualizado.
 
@@ -101,7 +101,7 @@ T17 criou `frontend/src/lib/courses.ts` e `frontend/tests/utils/course.ts`, que 
 
 ## Regras de escrita de tickets
 
-- Não existe ticket só de testes. Os testes entram no ticket do código.
+- Os testes de cada mudança entram no ticket do código. T30 e T31 cobrem avaliações e testes que atravessam vários tickets.
 - Migration e modelo ficam no mesmo ticket.
 - Cada ticket gera um PR que uma pessoa revisa em minutos. O alvo é ficar abaixo de 400 linhas.
 - As dependências ficam em `blocked_by`. Ninguém as deduz do título.
@@ -109,7 +109,7 @@ T17 criou `frontend/src/lib/courses.ts` e `frontend/tests/utils/course.ts`, que 
 
 ## Ondas
 
-Os tickets das ondas 1 e 2 estão escritos. Os demais são escritos quando a onda anterior termina, porque a onda anterior muda detalhes.
+Os tickets das ondas 1 a 3 e T26, da onda 4, estão escritos. Escreva os demais quando os contratos de que dependem estiverem definidos.
 
 | Onda | Ticket | Entrega | Bloqueado por |
 | --- | --- | --- | --- |
@@ -135,21 +135,22 @@ Os tickets das ondas 1 e 2 estão escritos. Os demais são escritos quando a ond
 | 2 | T39 | Ritmo dos limites por minuto do Gemini | T15 |
 | 3 | T08 | Leitor de tutorial | T18 |
 | 3 | T09 | Leitor de flashcards | T18 |
-| 3 | T10 | Leitor de quiz com correção | T18 |
-| 3 | T24 | Grafo de geração: escreve, revisa, reescreve uma vez | T20, T21 |
-| 3 | T25 | Agente `escreve`: flashcards | T20 |
-| 3 | T26 | Agente `escreve`: quiz | T20 |
-| 3 | T27 | Novo curso, passos 2 e 3, e envio | T07, T23 |
-| 3 | T38 | Tela "Curso": fidelidade, clareza e trechos citados | T18 |
-| 4 | T28 | Tarefa de fundo, de ponta a ponta | T03, T19, T22, T23, T24, T39 |
+| 3 | T10 | Leitor de quiz com justificativa após a resposta | T18 |
+| 3 | T40 | Revisão de conteúdo, cobertura do foco e publicação só com afirmações sustentadas | - |
+| 3 | T24 | Grafo de geração: escreve, revisa, reescreve uma vez | T20, T21, T40 |
+| 3 | T25 | Agente `escreve`: flashcards | T20, T40 |
+| 3 | T27 | Novo curso, passos 2 e 3, e envio | T07, T18, T23, T37 |
+| 3 | T38 | Tela "Curso": fidelidade, clareza, observações e trechos citados | T18 |
+| 4 | T26 | Agente `escreve`: quiz | T25 |
 | 4 | T29 | Etapa `planeja` | T24 |
-| 4 | T30 | Casos de avaliação da busca e do revisor | T03, T24 |
-| 4 | T31 | Teste da jornada completa no navegador | T08, T09, T10, T17, T27, T38 |
-| 5 | T32 | Nova tentativa e regra dos 10 minutos | T28 |
-| 5 | T33 | Exclusão de curso com limpeza na OCI | T28 |
-| 5 | T34 | Rodar os cenários da demonstração e guardar os JSON | T13, T25, T26, T28, T37 |
-| 5 | T35 | README, diagrama e guia de instalação | T28 |
-| 5 | T36 | Deploy na VM da OCI (opcional) | T28 |
+| 4 | T30 | Avaliação da busca e do revisor, com medição de falsas reprovações | T03, T24 |
+| 5 | T28 | Tarefa de fundo para gerar os três formatos | T03, T19, T22, T23, T24, T26, T39 |
+| 6 | T31 | Teste no navegador da criação à leitura do conteúdo gerado | T08, T09, T10, T17, T27, T28, T38 |
+| 6 | T32 | Nova tentativa e regra dos 10 minutos | T28 |
+| 6 | T33 | Exclusão de curso com limpeza na OCI | T28 |
+| 6 | T34 | Rodar os cenários da demonstração e guardar os JSON | T13, T25, T26, T28, T37 |
+| 6 | T35 | README, diagrama e guia de instalação | T28 |
+| 6 | T36 | Deploy na VM da OCI (opcional) | T28 |
 
 T39 saiu das medições de T12: a cota de embeddings conta cada texto como um pedido, e a indexação de um documento grande passava do limite por minuto. T28 passou a listar T39.
 
@@ -157,4 +158,14 @@ T38 saiu de T18, que passava de 5 pontos: T18 ficou com a página, os estados e 
 
 O `id` T01 foi retirado. As dependências e as configurações que ele traria entram em T14 e T15. O `id` T11 também foi retirado: as correções de links e de instruções já estão feitas.
 
-O caminho mais longo é T15, T20, T24, T28, T34. Quando vários PRs esperam revisão, revise esses primeiro.
+T40 saiu da verificação de 19/11/2026 com o Gemini. A decisão antiga aprovou um tutorial com dois fatos falsos e um tutorial que fugiu do assunto pedido. T24 e T25 usam o contrato novo de revisão.
+
+T26 passou a esperar T25, e não T20: os dois editam as mesmas linhas de `writer.py` (`PROMPT_VERSION` e `FORMAT_INSTRUCTIONS`) e de `test_writer.py`. T25 já espera T40, então T26 recebe as regras de T40 por T25.
+
+T08 muda os casos de tutorial em `frontend/tests/course.spec.ts`. T09 muda o caso de flashcards. Depois do `rebase`, o último dos dois remove `readerPlaceholder` se ficar sem uso.
+
+Em `docs/product-specs/criar-curso.md`, T27 atualiza "O que a pessoa vê" e T40 atualiza "Erros que a pessoa pode ver".
+
+T28 espera T26 para gerar todos os formatos que a API aceita. T31 cria um curso no navegador, espera a tarefa de fundo publicar um conteúdo e abre o leitor. O teste automatizado usa respostas controladas para o Gemini e a OCI.
+
+Entre os tickets já escritos, T40 libera T24 e T25. T24 libera T29 e T30. T28 espera T24 e T26, entre outros. Priorize a revisão de T40 e a de T24 quando seus PRs estiverem prontos.

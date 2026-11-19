@@ -83,7 +83,20 @@ Tickets escritos (onda 2):
 | [`T37`](docs/tickets/completed/T37-leitura-de-pdf.md) | Leitura de PDF com texto |
 | [`T39`](docs/tickets/completed/T39-ritmo-dos-limites-do-gemini.md) | Ritmo dos limites por minuto do Gemini |
 
-Os tickets das ondas 3 a 5 estão só na tabela de ondas do README dos tickets.
+Tickets escritos da onda 3:
+
+| Ticket | Entrega |
+| --- | --- |
+| [`T08`](docs/tickets/T08-leitor-de-tutorial.md) | Leitor de tutorial |
+| [`T09`](docs/tickets/T09-leitor-de-flashcards.md) | Leitor de flashcards |
+| [`T10`](docs/tickets/T10-leitor-de-quiz.md) | Leitor de quiz com justificativa após a resposta |
+| [`T40`](docs/tickets/T40-regras-de-fidelidade.md) | Revisão de conteúdo, cobertura do foco e publicação só com afirmações sustentadas |
+| [`T24`](docs/tickets/T24-grafo-de-geracao.md) | Grafo de geração: escreve, revisa, reescreve uma vez |
+| [`T25`](docs/tickets/T25-agente-escreve-flashcards.md) | Agente `escreve`: flashcards |
+| [`T27`](docs/tickets/T27-novo-curso-passos-2-e-3.md) | Novo curso, passos 2 e 3, e envio |
+| [`T38`](docs/tickets/T38-tela-curso-avaliacao.md) | Tela "Curso": fidelidade, clareza, observações e trechos citados |
+
+Na onda 4, só o [T26](docs/tickets/T26-agente-escreve-quiz.md), agente `escreve` para quiz, está escrito. Os demais tickets das ondas 4 a 6 estão na [tabela de ondas](docs/tickets/README.md#ondas).
 
 ## Fora de `docs/`
 
