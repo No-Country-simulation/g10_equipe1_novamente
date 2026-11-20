@@ -13,11 +13,11 @@ size: 2
 
 ## Contexto
 
-T20 entregou `write_content` para tutorial. No `master`, um pedido de flashcards levanta `UnsupportedFormatError`. T05 entregou `GeneratedFlashcards`. A [verificação de 19/11/2026 com o Gemini](../ARCHITECTURE.md#modelos-de-ia) confirmou que a API aceita o schema.
+T20 entregou `write_content` para tutorial. No `master`, um pedido de flashcards levanta `UnsupportedFormatError`. T05 entregou `GeneratedFlashcards`. A [verificação de 19/11/2026 com o Gemini](../../ARCHITECTURE.md#modelos-de-ia) confirmou que a API aceita o schema.
 
 T40 faz `revisa` conferir só `content`. Uma afirmação sem apoio impede a publicação da versão revisada. Os fatos técnicos ficam no conteúdo de estudo, que inclui a introdução e os cartões.
 
-Leia antes a seção [Flashcards](../product-specs/conteudos-e-formatos.md#flashcards), [T20](completed/T20-agente-escreve-tutorial.md), [T40](completed/T40-regras-de-fidelidade.md) e `backend/app/services/writer.py`.
+Leia antes a seção [Flashcards](../../product-specs/conteudos-e-formatos.md#flashcards), [T20](T20-agente-escreve-tutorial.md), [T40](T40-regras-de-fidelidade.md) e `backend/app/services/writer.py`.
 
 ## Escopo
 
@@ -97,19 +97,19 @@ Em `backend/tests/services/test_writer.py`, troque o laço de formatos sem instr
 
 ## Verificação com a API real
 
-Com o Gemini configurado, use o foco e os trechos do caso de assunto presente da [verificação de T40](completed/T40-regras-de-fidelidade.md#verificação-com-a-api-real). Rode `write_content` com `ContentFormat.flashcards`. Passe o resultado a `review_content`, com o mesmo foco, nível e trechos. Chame `evaluate` e `decide` conforme o contrato de T40, com `attempt=1`.
+Com o Gemini configurado, use o foco e os trechos do caso de assunto presente da [verificação de T40](T40-regras-de-fidelidade.md#verificação-com-a-api-real). Rode `write_content` com `ContentFormat.flashcards`. Passe o resultado a `review_content`, com o mesmo foco, nível e trechos. Chame `evaluate` e `decide` conforme o contrato de T40, com `attempt=1`.
 
 Registre no PR quantos cartões saíram, a decisão, `focus_covered`, as contagens de afirmações com e sem apoio e a lista das que ficaram sem apoio. Indique se a revisão contou alguma afirmação presente só nos metadados. Mantenha o código da verificação fora do PR. Sem acesso ao Gemini, registre que você pulou a verificação.
 
 ## Critérios de aceite
 
-- [ ] `write_content` com `ContentFormat.flashcards` chama o modelo uma vez, com `response_model=GeneratedFlashcards`, e devolve a instância.
-- [ ] A reescrita de flashcards traz a versão anterior e as afirmações sem apoio, como no tutorial.
-- [ ] `system_instruction` traz a regra comum dos metadados nos dois formatos. `PROMPT_VERSION` é `"escreve-v2"` neste ticket.
-- [ ] `ContentFormat.quiz` levanta `UnsupportedFormatError`, sem chamar o modelo.
-- [ ] Nenhum teste chama o Gemini.
-- [ ] Os hooks e os testes passam, com cobertura de 90% ou mais.
-- [ ] O PR relata a verificação com a API real, ou diz que ela não rodou.
+- [x] `write_content` com `ContentFormat.flashcards` chama o modelo uma vez, com `response_model=GeneratedFlashcards`, e devolve a instância.
+- [x] A reescrita de flashcards traz a versão anterior e as afirmações sem apoio, como no tutorial.
+- [x] `system_instruction` traz a regra comum dos metadados nos dois formatos. `PROMPT_VERSION` é `"escreve-v2"` neste ticket.
+- [x] `ContentFormat.quiz` levanta `UnsupportedFormatError`, sem chamar o modelo.
+- [x] Nenhum teste chama o Gemini.
+- [x] Os hooks e os testes passam, com cobertura de 90% ou mais.
+- [x] O PR relata a verificação com a API real, ou diz que ela não rodou.
 
 ## Cenários de teste
 
@@ -120,3 +120,10 @@ Em `backend/tests/services/test_writer.py`, troque `llm.generate_structured` por
 3. `system_instruction` dos flashcards e a do tutorial trazem a regra comum dos metadados.
 4. A reescrita com um `Rewrite` de flashcards traz no `prompt` o JSON da versão anterior e cada afirmação sem apoio. Use uma introdução anterior distinta para identificar a versão.
 5. Um `Rewrite` com um `GeneratedTutorial` para um pedido de flashcards levanta `ValueError`, com zero chamadas.
+
+## Verificação do aceite
+
+- PR revisado: [#39](https://github.com/No-Country-simulation/g10_equipe1_novamente/pull/39), integrado no commit `771ec74`.
+- CI do PR: todos os checks obrigatórios passaram, com escopo dentro de `touches`.
+- Revisão automática: cinco achados, quatro nos testes e um no título do PR. O commit `81fa8f8` corrigiu os quatro dos testes, e o título passou a ter `(T25)`.
+- A verificação com a API real do Gemini não rodou. O PR diz isso, como o critério permite. Ela pode rodar junto da verificação de T26.

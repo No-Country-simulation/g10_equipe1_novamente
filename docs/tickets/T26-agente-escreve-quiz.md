@@ -21,7 +21,7 @@ O JSON conserva `correct_index` para a revisão e para a correção imediata, qu
 
 T25 e T26 editam `PROMPT_VERSION` e `FORMAT_INSTRUCTIONS` em `writer.py`, além do teste de formato sem instrução em `test_writer.py`. Por isso T26 espera T25.
 
-Leia antes a seção [Quiz](../product-specs/conteudos-e-formatos.md#quiz), [T20](completed/T20-agente-escreve-tutorial.md), [T25](T25-agente-escreve-flashcards.md), [T40](completed/T40-regras-de-fidelidade.md) e `backend/app/services/writer.py`.
+Leia antes a seção [Quiz](../product-specs/conteudos-e-formatos.md#quiz), [T20](completed/T20-agente-escreve-tutorial.md), [T25](completed/T25-agente-escreve-flashcards.md), [T40](completed/T40-regras-de-fidelidade.md) e `backend/app/services/writer.py`.
 
 ## Escopo
 
