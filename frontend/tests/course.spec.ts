@@ -9,7 +9,6 @@ test.use({ storageState: { cookies: [], origins: [] } })
 
 const unknownId = "00000000-0000-0000-0000-000000000000"
 const generationError = "linha um\nlinha dois"
-const readerPlaceholder = "O leitor deste formato ainda não está disponível."
 const publishedTutorial = {
   format: "tutorial",
   status: "succeeded",
