@@ -87,7 +87,7 @@ Tickets escritos da onda 3:
 
 | Ticket | Entrega |
 | --- | --- |
-| [`T08`](docs/tickets/T08-leitor-de-tutorial.md) | Leitor de tutorial |
+| [`T08`](docs/tickets/completed/T08-leitor-de-tutorial.md) | Leitor de tutorial |
 | [`T09`](docs/tickets/T09-leitor-de-flashcards.md) | Leitor de flashcards |
 | [`T10`](docs/tickets/completed/T10-leitor-de-quiz.md) | Leitor de quiz com justificativa após a resposta |
 | [`T40`](docs/tickets/completed/T40-regras-de-fidelidade.md) | Revisão de conteúdo, cobertura do foco e publicação só com afirmações sustentadas |

@@ -20,7 +20,7 @@ T18 entregou a tela de um conteúdo. Hoje `TutorialReader` mostra só "O leitor 
 
 Este ticket troca o conteúdo de `TutorialReader.tsx`. A moldura, os metadados e o aviso de estado são de T18 e não mudam.
 
-O layout vem da captura [`tela-6-conteudo-tutorial.png`](../design/telas-finais/tela-6-conteudo-tutorial.png): o cartão branco abaixo do cabeçalho escuro.
+O layout vem da captura [`tela-6-conteudo-tutorial.png`](../../design/telas-finais/tela-6-conteudo-tutorial.png): o cartão branco abaixo do cabeçalho escuro.
 
 Leia antes: `docs/product-specs/conteudos-e-formatos.md`, seção "Tutorial", `docs/tickets/completed/T18-tela-curso.md`, seção "Contrato", e `backend/app/services/content_schemas.py`, classe `TutorialContent`.
 
@@ -144,14 +144,14 @@ T09 atualiza o caso de flashcards `running` no mesmo teste. Depois do `rebase`, 
 
 ## Critérios de aceite
 
-- [ ] Um tutorial válido mostra o resumo, cada seção com título e texto, e "Para levar" com os itens, na ordem.
-- [ ] O texto das seções mostra listas, tabelas, blocos de código e código no meio do texto.
-- [ ] Uma tag HTML no Markdown não vira elemento na página.
-- [ ] Um `content` fora do formato mostra o aviso, sem erro no console.
-- [ ] `course.spec.ts` confirma que o resumo do tutorial publicado aparece na rota direta e continua visível após uma falha de geração.
-- [ ] Nenhum componente tem valor hexadecimal.
-- [ ] Os testes Playwright que já existem passam.
-- [ ] `bun run lint` e `bun run build` passam.
+- [x] Um tutorial válido mostra o resumo, cada seção com título e texto, e "Para levar" com os itens, na ordem.
+- [x] O texto das seções mostra listas, tabelas, blocos de código e código no meio do texto.
+- [x] Uma tag HTML no Markdown não vira elemento na página.
+- [x] Um `content` fora do formato mostra o aviso, sem erro no console.
+- [x] `course.spec.ts` confirma que o resumo do tutorial publicado aparece na rota direta e continua visível após uma falha de geração.
+- [x] Nenhum componente tem valor hexadecimal.
+- [x] Os testes Playwright que já existem passam.
+- [x] `bun run lint` e `bun run build` passam.
 
 ## Cenários de teste
 
@@ -163,3 +163,10 @@ Em `frontend/tests/tutorial-reader.spec.ts`, abra um curso com um só tutorial d
 4. Uma seção com HTML cru, como `<b>negrito</b>`. O leitor exibe o texto sem criar o elemento `b`.
 5. Um tutorial com `content: {"summary": "Resumo"}`. A tela mostra só o aviso no lugar do leitor, sem emitir erro no console.
 6. Em um curso com tutorial e quiz, clique no link "Abrir" do tutorial pelo nome acessível que inclui o título. A tela de conteúdo mostra o resumo.
+
+## Verificação do aceite
+
+- PR revisado: [#34](https://github.com/No-Country-simulation/g10_equipe1_novamente/pull/34), integrado no commit `d7c589d`.
+- CI do PR: todos os checks obrigatórios passaram, com escopo dentro de `touches`.
+- Revisão automática: dois achados, o espaçamento depois de listas, código e tabelas, e a falta de testes das regras do schema e dos links. O commit `0aee75c` corrigiu os dois.
+- Testes: 84 testes Playwright passaram. O lint, o build e os hooks passaram. O CI instalou o lockfile com `--frozen-lockfile`.
