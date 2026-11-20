@@ -115,14 +115,14 @@ Quando faltam os três valores da `dl`, omita a `dl`. Se também não houver cit
 
 ## Critérios de aceite
 
-- [ ] Um conteúdo publicado mostra a fidelidade em porcentagem, a clareza, as observações e os trechos citados, na ordem da API.
-- [ ] Cada trecho mostra o documento e, quando a API devolve os valores, a página e a similaridade com 2 casas.
-- [ ] Um trecho com mais de 600 caracteres aparece encurtado e abre por inteiro com "Mostrar trecho inteiro".
-- [ ] Um conteúdo sem resultado publicado não mostra a avaliação.
-- [ ] `ContentView.tsx` importa e monta `ContentEvaluation` depois de `ContentReader`.
-- [ ] Nenhum componente tem valor hexadecimal.
-- [ ] Os testes Playwright que já existem passam.
-- [ ] `bun run lint` e `bun run build` passam.
+- [x] Um conteúdo publicado mostra a fidelidade em porcentagem, a clareza, as observações e os trechos citados, na ordem da API.
+- [x] Cada trecho mostra o documento e, quando a API devolve os valores, a página e a similaridade com 2 casas.
+- [x] Um trecho com mais de 600 caracteres aparece encurtado e abre por inteiro com "Mostrar trecho inteiro".
+- [x] Um conteúdo sem resultado publicado não mostra a avaliação.
+- [x] `ContentView.tsx` importa e monta `ContentEvaluation` depois de `ContentReader`.
+- [x] Nenhum componente tem valor hexadecimal.
+- [x] Os testes Playwright que já existem passam.
+- [x] `bun run lint` e `bun run build` passam.
 
 ## Cenários de teste
 
@@ -137,3 +137,10 @@ Crie os cenários em `frontend/tests/content-evaluation.spec.ts`, com um usuári
 7. Um tutorial `failed` com `content`, `grounding_score` 1 e `error_message`: a tela mostra "A geração falhou" e a região "Avaliação" com "100%".
 8. Use um tutorial publicado sem nota, clareza, observações ou citações. A região "Sobre este conteúdo" fica visível e a região "Avaliação" fica ausente.
 9. Em um curso com vários conteúdos, abra o tutorial em `/courses/{id}/contents/{contentId}`. Use `page.route` para devolver três citações na ordem da API, com similaridades 0,91, 0,82 e nula, e `page_number` 3 na primeira. A lista preserva a ordem, mostra "página 3" na primeira e omite a similaridade na última.
+
+## Verificação do aceite
+
+- PR revisado: [#33](https://github.com/No-Country-simulation/g10_equipe1_novamente/pull/33), integrado no commit `a23e200`.
+- CI do PR: todos os checks obrigatórios passaram, com escopo dentro de `touches`.
+- Revisão automática: um achado, faltavam testes para as linhas que somem sem dados. O commit `dd79dea` acrescentou os casos de campos ausentes e de só trechos citados.
+- Testes: `tests/content-evaluation.spec.ts` cobre publicações antigas, campos ausentes, a ordem da API e a expansão dos trechos.

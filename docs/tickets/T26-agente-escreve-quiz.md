@@ -21,7 +21,7 @@ O JSON conserva `correct_index` para a revisão e para a correção imediata, qu
 
 T25 e T26 editam `PROMPT_VERSION` e `FORMAT_INSTRUCTIONS` em `writer.py`, além do teste de formato sem instrução em `test_writer.py`. Por isso T26 espera T25.
 
-Leia antes a seção [Quiz](../product-specs/conteudos-e-formatos.md#quiz), [T20](completed/T20-agente-escreve-tutorial.md), [T25](T25-agente-escreve-flashcards.md), [T40](T40-regras-de-fidelidade.md) e `backend/app/services/writer.py`.
+Leia antes a seção [Quiz](../product-specs/conteudos-e-formatos.md#quiz), [T20](completed/T20-agente-escreve-tutorial.md), [T25](T25-agente-escreve-flashcards.md), [T40](completed/T40-regras-de-fidelidade.md) e `backend/app/services/writer.py`.
 
 ## Escopo
 
@@ -89,7 +89,7 @@ Em `backend/tests/services/test_writer.py`, retire de `test_writer` o caso de qu
 
 ## Verificação com a API real
 
-Com o Gemini configurado, use o foco e os trechos do caso de assunto presente da [verificação de T40](T40-regras-de-fidelidade.md#verificação-com-a-api-real). Rode `write_content` com `ContentFormat.quiz`. Passe o resultado a `review_content`, com o mesmo foco, nível e trechos. Chame `evaluate` e `decide` conforme o contrato de T40, com `attempt=1`.
+Com o Gemini configurado, use o foco e os trechos do caso de assunto presente da [verificação de T40](completed/T40-regras-de-fidelidade.md#verificação-com-a-api-real). Rode `write_content` com `ContentFormat.quiz`. Passe o resultado a `review_content`, com o mesmo foco, nível e trechos. Chame `evaluate` e `decide` conforme o contrato de T40, com `attempt=1`.
 
 Registre no PR o `correct_index` de cada pergunta, a decisão, `focus_covered`, as contagens de afirmações com e sem apoio e a lista das que ficaram sem apoio. Indique se a revisão contou alguma afirmação presente só nas opções erradas ou nos metadados. Mantenha o código da verificação fora do PR. Sem acesso ao Gemini, registre que você pulou a verificação.
 

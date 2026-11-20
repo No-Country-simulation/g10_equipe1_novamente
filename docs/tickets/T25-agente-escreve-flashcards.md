@@ -17,7 +17,7 @@ T20 entregou `write_content` para tutorial. No `master`, um pedido de flashcards
 
 T40 faz `revisa` conferir só `content`. Uma afirmação sem apoio impede a publicação da versão revisada. Os fatos técnicos ficam no conteúdo de estudo, que inclui a introdução e os cartões.
 
-Leia antes a seção [Flashcards](../product-specs/conteudos-e-formatos.md#flashcards), [T20](completed/T20-agente-escreve-tutorial.md), [T40](T40-regras-de-fidelidade.md) e `backend/app/services/writer.py`.
+Leia antes a seção [Flashcards](../product-specs/conteudos-e-formatos.md#flashcards), [T20](completed/T20-agente-escreve-tutorial.md), [T40](completed/T40-regras-de-fidelidade.md) e `backend/app/services/writer.py`.
 
 ## Escopo
 
@@ -97,7 +97,7 @@ Em `backend/tests/services/test_writer.py`, troque o laço de formatos sem instr
 
 ## Verificação com a API real
 
-Com o Gemini configurado, use o foco e os trechos do caso de assunto presente da [verificação de T40](T40-regras-de-fidelidade.md#verificação-com-a-api-real). Rode `write_content` com `ContentFormat.flashcards`. Passe o resultado a `review_content`, com o mesmo foco, nível e trechos. Chame `evaluate` e `decide` conforme o contrato de T40, com `attempt=1`.
+Com o Gemini configurado, use o foco e os trechos do caso de assunto presente da [verificação de T40](completed/T40-regras-de-fidelidade.md#verificação-com-a-api-real). Rode `write_content` com `ContentFormat.flashcards`. Passe o resultado a `review_content`, com o mesmo foco, nível e trechos. Chame `evaluate` e `decide` conforme o contrato de T40, com `attempt=1`.
 
 Registre no PR quantos cartões saíram, a decisão, `focus_covered`, as contagens de afirmações com e sem apoio e a lista das que ficaram sem apoio. Indique se a revisão contou alguma afirmação presente só nos metadados. Mantenha o código da verificação fora do PR. Sem acesso ao Gemini, registre que você pulou a verificação.
 

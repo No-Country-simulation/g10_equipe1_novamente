@@ -221,15 +221,15 @@ Registre o foco, a decisão, `focus_covered`, as contagens e as afirmações sem
 
 ## Critérios de aceite
 
-- [ ] Nenhum caminho de `decide` devolve `publish` com uma afirmação em `unsupported`, sem afirmação ou com `focus_covered` falso.
-- [ ] `focus_covered` falso leva a `fail` já na tentativa 1, com "O documento não trata do assunto pedido."
-- [ ] A decisão de cobertura considera o material e os trechos. A similaridade da busca não entra no prompt nem na decisão.
-- [ ] O prompt de `revisa` traz o foco e o `content` e exclui todos os campos da raiz fora de `content`.
-- [ ] `MIN_GROUNDING_SCORE` e o parâmetro `min_score` não existem mais.
-- [ ] A arquitetura e as especificações descrevem a regra nova, inclusive a falha imediata por foco não coberto.
-- [ ] Nenhum teste chama o Gemini.
-- [ ] Os hooks e os testes passam, com cobertura de 90% ou mais.
-- [ ] O PR relata a verificação com a API real, ou diz que ela não rodou.
+- [x] Nenhum caminho de `decide` devolve `publish` com uma afirmação em `unsupported`, sem afirmação ou com `focus_covered` falso.
+- [x] `focus_covered` falso leva a `fail` já na tentativa 1, com "O documento não trata do assunto pedido."
+- [x] A decisão de cobertura considera o material e os trechos. A similaridade da busca não entra no prompt nem na decisão.
+- [x] O prompt de `revisa` traz o foco e o `content` e exclui todos os campos da raiz fora de `content`.
+- [x] `MIN_GROUNDING_SCORE` e o parâmetro `min_score` não existem mais.
+- [x] A arquitetura e as especificações descrevem a regra nova, inclusive a falha imediata por foco não coberto.
+- [x] Nenhum teste chama o Gemini.
+- [x] Os hooks e os testes passam, com cobertura de 90% ou mais.
+- [x] O PR relata a verificação com a API real, ou diz que ela não rodou.
 
 ## Cenários de teste
 
@@ -252,3 +252,16 @@ Em `backend/tests/services/test_reviewer.py`, com `generate_structured` trocada:
 12. `system_instruction` exclui os distratores e distingue dois casos de foco não coberto: material de outro tema mesmo com trechos relevantes, e assunto pedido sem apoio nos trechos.
 13. `focus` vazio ou só com espaços levanta `ValueError`, com zero chamadas.
 14. Os cenários de T21 continuam: tradução de `chunk_number`, nenhum UUID no prompt, `chunks` vazio, erro do modelo sem mudança e `PROMPT_VERSION` com até 20 caracteres.
+
+## Verificação do aceite
+
+- PR revisado: [#36](https://github.com/No-Country-simulation/g10_equipe1_novamente/pull/36), integrado no commit `447d3ac`.
+- CI do PR: todos os checks obrigatórios passaram, com escopo dentro de `touches`.
+- Revisão automática: um achado, o cenário 6 não isolava a citação inválida. O commit `a099ce0` acrescentou o caso isolado.
+- Testes: 323 testes passaram, com cobertura de 98%.
+- Chamada real com `gemini-3.5-flash-lite`, 8 trechos de um Markdown público de 25.783 caracteres:
+  - tutorial fiel: `publish`;
+  - o mesmo tutorial com dois fatos falsos: as duas afirmações marcadas sem apoio, `rewrite`;
+  - foco fora do documento (Kubernetes): `focus_covered` falso, `fail` com "O documento não trata do assunto pedido.";
+  - tutorial de outro assunto com os mesmos trechos: `fail`;
+  - nenhuma afirmação veio dos metadados da raiz.

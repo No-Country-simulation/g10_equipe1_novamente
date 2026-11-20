@@ -23,7 +23,7 @@ A decisão de usar LangGraph está na tabela "Decisões" de `docs/ARCHITECTURE.m
 
 Depois de T40, T24 e T25 podem rodar em paralelo. T28 depende do grafo de T24 e do suporte a quiz de T26.
 
-Leia antes: `docs/ARCHITECTURE.md`, seções "A criação de um curso segue doze passos" e "Regras que o código mantém", `docs/product-specs/fidelidade-e-qualidade.md` e `docs/tickets/T40-regras-de-fidelidade.md`.
+Leia antes: `docs/ARCHITECTURE.md`, seções "A criação de um curso segue doze passos" e "Regras que o código mantém", `docs/product-specs/fidelidade-e-qualidade.md` e `docs/tickets/completed/T40-regras-de-fidelidade.md`.
 
 ## Escopo
 
