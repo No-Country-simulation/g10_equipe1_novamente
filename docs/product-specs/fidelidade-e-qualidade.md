@@ -8,7 +8,7 @@ Estado: a construir.
 
 | Informação | Significado | No esquema |
 | --- | --- | --- |
-| Fidelidade ao documento | Porcentagem das afirmações técnicas com apoio no documento | `course_content.grounding_score` |
+| Fidelidade ao documento | Porcentagem das afirmações técnicas com apoio no documento. Cada versão publicada pela regra nova tem 100%. | `course_content.grounding_score` |
 | Clareza | Baixa, média ou alta, conforme o texto serve ao nível de público do curso | `course_content.clarity` |
 | Observações da revisão | Um texto curto sobre a adequação ao público | `course_content.review_notes` |
 | Trechos citados | Os trechos do documento que sustentam o conteúdo | `content_citation` |
@@ -17,14 +17,15 @@ Cada trecho citado existe no documento que a pessoa enviou.
 
 ## Como o produto decide publicar
 
-1. Um revisor lista as afirmações técnicas do conteúdo.
-2. Para cada afirmação, o revisor aponta o trecho do documento que a sustenta, ou diz que não há trecho.
-3. O produto calcula a fidelidade: afirmações sustentadas divididas pelo total de afirmações.
-4. Se a fidelidade atinge o mínimo, o produto publica.
-5. Se não atinge, o produto reescreve o conteúdo uma vez, com a lista das afirmações reprovadas.
-6. Se a segunda versão também não atinge, o produto não publica e mostra as afirmações reprovadas.
+1. O revisor confere o material de estudo (`content`) e verifica se ele trata diretamente do foco com apoio nos trechos recuperados. Os metadados da raiz do JSON ficam fora da revisão.
+2. O revisor lista as afirmações técnicas e aponta o trecho que sustenta cada uma, ou indica que não há apoio.
+3. O produto divide o número de afirmações sustentadas pelo total de afirmações. Se a revisão não lista afirmações, a nota é zero.
+4. Se o foco não é coberto, a geração falha de imediato com “O documento não trata do assunto pedido.”
+5. O produto publica se o material cobre o foco, a revisão lista pelo menos uma afirmação e todas têm apoio em trechos válidos.
+6. Se o foco é coberto, mas falta apoio para alguma afirmação ou a revisão não lista afirmações, o produto reescreve uma vez com a lista das afirmações sem apoio.
+7. Na segunda revisão, se o foco não é coberto ou a revisão não lista afirmações, a geração falha com “O documento não trata do assunto pedido.” Se o foco é coberto e falta apoio para alguma afirmação, a mensagem começa com “Afirmações sem apoio no documento:” e lista cada afirmação sem apoio em uma linha.
 
-O mínimo inicial é 80%. A equipe mede com os primeiros casos, ajusta o valor e registra cada mudança neste documento.
+O banco e o JSON da OCI guardam a nota de 0 a 1. A tela mostra a nota em porcentagem, inclusive para versões antigas. O produto só grava a nota ao publicar. Se a geração falha, a nota da versão publicada permanece, se houver.
 
 ## Regras
 
@@ -32,13 +33,15 @@ O mínimo inicial é 80%. A equipe mede com os primeiros casos, ajusta o valor e
 - **Erro na revisão não aprova.** Se a revisão falha ou devolve uma resposta inválida, o produto não publica.
 - **A nota é calculada, não escrita pelo modelo.** O produto conta as afirmações. O modelo não informa o número.
 - **Sem apoio, sem ponto.** Uma afirmação marcada como sustentada, sem um trecho válido, conta como não sustentada.
-- **Assunto ausente gera aviso.** Se o documento não trata do foco pedido, o conteúdo reprova e a pessoa vê o motivo.
+- **Assunto ausente gera aviso.** Se o material não cobre o foco pedido com base nos trechos recuperados, a geração falha sem reescrita e a pessoa vê o motivo.
 
 ## Limite conhecido
 
 O revisor só vê os trechos que a busca encontrou. Uma afirmação correta, baseada em outra parte do documento, pode ser reprovada. A equipe prefere esse erro ao de aprovar algo sem fonte.
 
 ## Como a equipe mede a qualidade
+
+O T30 mede quantos conteúdos fiéis a regra reprova após a reescrita, quando houver. A avaliação distingue os trechos de apoio que a busca deixou de recuperar dos trechos disponíveis que o revisor deixou de reconhecer.
 
 As metas abaixo são o ponto de partida. Nenhuma foi medida ainda. A equipe ajusta cada meta depois da primeira medição.
 

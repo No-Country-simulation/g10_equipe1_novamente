@@ -8,7 +8,6 @@ from pydantic import BaseModel
 
 from app.models import ClarityLevel
 
-MIN_GROUNDING_SCORE = Decimal("0.80")
 MAX_ATTEMPTS = 2
 
 
@@ -22,6 +21,7 @@ class ReviewResult(BaseModel):
     claims: list[ClaimReview]
     clarity: ClarityLevel
     review_notes: str
+    focus_covered: bool
 
 
 class Decision(StrEnum):
@@ -34,6 +34,7 @@ class Decision(StrEnum):
 class GroundingReport:
     score: Decimal
     passed: bool
+    focus_covered: bool
     supported: list[ClaimReview]
     unsupported: list[ClaimReview]
     cited_chunk_ids: list[uuid.UUID]
@@ -42,8 +43,6 @@ class GroundingReport:
 def evaluate(
     review: ReviewResult,
     valid_chunk_ids: Set[uuid.UUID],
-    *,
-    min_score: Decimal = MIN_GROUNDING_SCORE,
 ) -> GroundingReport:
     supported = []
     unsupported = []
@@ -58,11 +57,10 @@ def evaluate(
 
     total = len(review.claims)
     score = Decimal(len(supported)) / Decimal(total) if total else Decimal(0)
-    # Compare por multiplicação para não arredondar a fração na decisão.
-    passed = bool(total) and Decimal(len(supported)) >= min_score * total
     return GroundingReport(
         score=score.quantize(Decimal("0.01"), rounding=ROUND_FLOOR),
-        passed=passed,
+        passed=review.focus_covered and bool(total) and not unsupported,
+        focus_covered=review.focus_covered,
         supported=supported,
         unsupported=unsupported,
         cited_chunk_ids=list(citations),
@@ -72,13 +70,15 @@ def evaluate(
 def decide(report: GroundingReport, *, attempt: int) -> Decision:
     if attempt < 1:
         raise ValueError("A tentativa deve começar em 1.")
+    if not report.focus_covered:
+        return Decision.fail
     if report.passed:
         return Decision.publish
     return Decision.rewrite if attempt < MAX_ATTEMPTS else Decision.fail
 
 
 def failure_message(report: GroundingReport) -> str:
-    if not report.supported and not report.unsupported:
+    if not report.focus_covered or (not report.supported and not report.unsupported):
         return "O documento não trata do assunto pedido."
     return "\n".join(
         ["Afirmações sem apoio no documento:"]
