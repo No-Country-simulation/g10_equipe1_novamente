@@ -6,14 +6,23 @@ from app.models import AudienceLevel, ContentFormat
 from app.services.content_schemas import GENERATED_MODELS, GeneratedBase
 from app.services.retrieval import RetrievedChunk
 
-PROMPT_VERSION = "escreve-v1"
+PROMPT_VERSION = "escreve-v2"
 
 TUTORIAL_INSTRUCTION = (
     "Escreva um tutorial com resumo de abertura, de 1 a 8 seções em Markdown "
-    "e de 1 a 5 itens Para levar. Inclua conceitos-chave presentes no documento, "
-    "pré-requisitos e tempo estimado em minutos."
+    "e de 1 a 5 itens Para levar."
 )
-FORMAT_INSTRUCTIONS = {ContentFormat.tutorial: TUTORIAL_INSTRUCTION}
+FLASHCARDS_INSTRUCTION = (
+    "Escreva uma introdução curta baseada nos trechos e de 8 a 12 cartões. "
+    "Cada cartão deve tratar de um só fato ou conceito. A frente deve ser uma "
+    "pergunta ou um termo. O verso deve responder à frente com um fato dos "
+    "trechos do documento. A dica é opcional e ajuda a lembrar a resposta sem "
+    "trazer um fato técnico novo. Cartões diferentes não podem repetir a mesma pergunta."
+)
+FORMAT_INSTRUCTIONS = {
+    ContentFormat.tutorial: TUTORIAL_INSTRUCTION,
+    ContentFormat.flashcards: FLASHCARDS_INSTRUCTION,
+}
 AUDIENCE_INSTRUCTIONS = {
     AudienceLevel.non_technical: "Evite jargão, use analogias cotidianas e explique para que serve antes de como funciona.",
     AudienceLevel.technical_basic: "Use termos corretos e explique-os; inclua passos práticos e exemplos de comandos ou código.",
@@ -59,6 +68,9 @@ def write_content(
         f"{AUDIENCE_INSTRUCTIONS[request.audience_level]} "
         f"Use exemplos do setor {request.niche_name}: {request.niche_prompt_hint}. "
         "Os exemplos não devem acrescentar fatos técnicos ausentes do documento. "
+        "Use um título que descreva o material e coloque os fatos técnicos em content. "
+        "Escolha conceitos-chave que aparecem nos trechos e que o conteúdo ensina. "
+        "Indique os pré-requisitos necessários antes de estudar e o tempo estimado em minutos. "
         f"{FORMAT_INSTRUCTIONS[request.content_format]}"
     )
     chunks = "\n".join(

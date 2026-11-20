@@ -68,9 +68,8 @@ def test_writer(monkeypatch):
         s in calls[-1]["prompt"] for s in ("Anterior", "afirmação A", "afirmação B")
     )
     count = len(calls)
-    for format in (ContentFormat.flashcards, ContentFormat.quiz):
-        with pytest.raises(UnsupportedFormatError):
-            write_content(request(format=format))
+    with pytest.raises(UnsupportedFormatError):
+        write_content(request(format=ContentFormat.quiz))
     with pytest.raises(ValueError):
         write_content(request(chunks=[]))
     with pytest.raises(ValueError):
@@ -104,3 +103,202 @@ def test_writer(monkeypatch):
     with pytest.raises(llm.LLMInvalidResponseError):
         write_content(request())
     assert len(PROMPT_VERSION) <= 20
+
+
+def flashcards_result(introduction="Introdução dos flashcards"):
+    return GeneratedFlashcards.model_validate(
+        {
+            "title": "Flashcards",
+            "estimated_minutes": 10,
+            "key_concepts": ["conceito"],
+            "prerequisites": [],
+            "content": {
+                "introduction": introduction,
+                "cards": [
+                    {
+                        "front": f"Pergunta {index}",
+                        "back": "Resposta",
+                        "hint": "Dica" if index % 2 == 0 else None,
+                    }
+                    for index in range(8)
+                ],
+            },
+        }
+    )
+
+
+def flashcards_request():
+    chunk = RetrievedChunk(
+        uuid.uuid4(), uuid.uuid4(), 0, "texto do documento", None, 0.9
+    )
+    return WriteRequest(
+        ContentFormat.flashcards,
+        "foco dos flashcards",
+        AudienceLevel.non_technical,
+        "setor",
+        "dica do setor",
+        [chunk],
+    )
+
+
+def test_first_flashcards_write(monkeypatch):
+    flashcards = flashcards_result()
+    calls = []
+
+    def generate(**kwargs):
+        calls.append(kwargs)
+        return flashcards
+
+    monkeypatch.setattr(llm, "generate_structured", generate)
+
+    result = write_content(flashcards_request())
+
+    assert result is flashcards
+    assert len(calls) == 1
+    assert calls[0]["response_model"] is GeneratedFlashcards
+
+
+def test_flashcards_instruction_is_specific(monkeypatch):
+    calls = []
+
+    def generate(**kwargs):
+        calls.append(kwargs)
+        if kwargs["response_model"] is GeneratedFlashcards:
+            return flashcards_result()
+        return GeneratedTutorial.model_validate(
+            {
+                "title": "Tutorial",
+                "estimated_minutes": 5,
+                "key_concepts": ["conceito"],
+                "prerequisites": [],
+                "content": {
+                    "summary": "Resumo",
+                    "sections": [{"title": "Seção", "body": "Texto"}],
+                    "takeaways": ["Ponto"],
+                },
+            }
+        )
+
+    monkeypatch.setattr(llm, "generate_structured", generate)
+
+    write_content(flashcards_request())
+    flashcards_instruction = calls[-1]["system_instruction"]
+
+    tutorial_request = WriteRequest(
+        ContentFormat.tutorial,
+        "foco do tutorial",
+        AudienceLevel.non_technical,
+        "setor",
+        "dica do setor",
+        [RetrievedChunk(uuid.uuid4(), uuid.uuid4(), 0, "texto", None, 0.9)],
+    )
+    write_content(tutorial_request)
+    tutorial_instruction = calls[-1]["system_instruction"]
+
+    assert "8 a 12 cartões" in flashcards_instruction
+    assert "dica é opcional" in flashcards_instruction
+    assert "fato técnico novo" in flashcards_instruction
+    assert flashcards_instruction != tutorial_instruction
+
+
+def test_metadata_instructions_are_common(monkeypatch):
+    calls = []
+
+    def generate(**kwargs):
+        calls.append(kwargs)
+        if kwargs["response_model"] is GeneratedFlashcards:
+            return flashcards_result()
+        return GeneratedTutorial.model_validate(
+            {
+                "title": "Tutorial",
+                "estimated_minutes": 5,
+                "key_concepts": ["conceito"],
+                "prerequisites": [],
+                "content": {
+                    "summary": "Resumo",
+                    "sections": [{"title": "Seção", "body": "Texto"}],
+                    "takeaways": ["Ponto"],
+                },
+            }
+        )
+
+    monkeypatch.setattr(llm, "generate_structured", generate)
+
+    write_content(flashcards_request())
+    flashcards_instruction = calls[-1]["system_instruction"]
+
+    tutorial_request = WriteRequest(
+        ContentFormat.tutorial,
+        "foco",
+        AudienceLevel.non_technical,
+        "setor",
+        "dica",
+        [RetrievedChunk(uuid.uuid4(), uuid.uuid4(), 0, "texto", None, 0.9)],
+    )
+    write_content(tutorial_request)
+    tutorial_instruction = calls[-1]["system_instruction"]
+
+    common_rules = (
+        "Use um título que descreva o material",
+        "conceitos-chave",
+        "pré-requisitos",
+        "tempo estimado",
+    )
+    assert all(rule in flashcards_instruction for rule in common_rules)
+    assert all(rule in tutorial_instruction for rule in common_rules)
+
+
+def test_flashcards_rewrite_contains_previous_and_claims(monkeypatch):
+    flashcards = flashcards_result("Introdução anterior distinta")
+    calls = []
+
+    def generate(**kwargs):
+        calls.append(kwargs)
+        return flashcards_result("Introdução reescrita")
+
+    monkeypatch.setattr(llm, "generate_structured", generate)
+
+    write_content(
+        flashcards_request(),
+        rewrite=Rewrite(
+            previous=flashcards,
+            unsupported_claims=["afirmação sem apoio A", "afirmação sem apoio B"],
+        ),
+    )
+
+    prompt = calls[0]["prompt"]
+    assert "Introdução anterior distinta" in prompt
+    assert "afirmação sem apoio A" in prompt
+    assert "afirmação sem apoio B" in prompt
+    assert "Retire ou corrija cada afirmação sem apoio" in prompt
+
+
+def test_flashcards_rewrite_rejects_tutorial(monkeypatch):
+    calls = []
+
+    def generate(**kwargs):
+        calls.append(kwargs)
+
+    monkeypatch.setattr(llm, "generate_structured", generate)
+
+    tutorial = GeneratedTutorial.model_validate(
+        {
+            "title": "Tutorial",
+            "estimated_minutes": 5,
+            "key_concepts": ["conceito"],
+            "prerequisites": [],
+            "content": {
+                "summary": "Resumo",
+                "sections": [{"title": "Seção", "body": "Texto"}],
+                "takeaways": ["Ponto"],
+            },
+        }
+    )
+
+    with pytest.raises(ValueError):
+        write_content(
+            flashcards_request(),
+            rewrite=Rewrite(previous=tutorial, unsupported_claims=[]),
+        )
+
+    assert calls == []
