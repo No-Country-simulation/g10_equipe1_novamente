@@ -18,7 +18,7 @@ T18 entregou a tela de um conteúdo e o ponto de encaixe dos leitores. Hoje `Fla
 
 Este ticket troca o conteúdo de `FlashcardsReader.tsx`. A moldura, os metadados e o aviso de estado são de T18 e não mudam.
 
-O layout vem da captura [`tela-f1-flashcards.png`](../design/telas-finais/tela-f1-flashcards.png): o cartão branco à direita, com o contador, a barra, o cartão azul e os botões "Anterior" e "Próximo".
+O layout vem da captura [`tela-f1-flashcards.png`](../../design/telas-finais/tela-f1-flashcards.png): o cartão branco à direita, com o contador, a barra, o cartão azul e os botões "Anterior" e "Próximo".
 
 Leia antes: `docs/product-specs/conteudos-e-formatos.md`, seção "Flashcards", `docs/tickets/completed/T18-tela-curso.md`, seção "Contrato", e `backend/app/services/content_schemas.py`, classe `FlashcardsContent`.
 
@@ -136,15 +136,15 @@ T08 atualiza os casos de tutorial. Depois do `rebase`, o último dos dois ticket
 
 ## Critérios de aceite
 
-- [ ] Um conjunto válido mostra a introdução e um cartão por vez, com "CARTÃO N DE T" e a barra de posição.
-- [ ] O clique no cartão, ou Enter e Espaço, mostra o verso, e um novo clique volta à frente.
-- [ ] A dica aparece só no cartão que tem dica, depois do clique em "Mostrar dica".
-- [ ] "Anterior" e "Próximo" ficam desabilitados nas pontas, e trocar de cartão mostra a frente.
-- [ ] Um `content` fora do formato mostra o aviso, sem erro no console.
-- [ ] `course.spec.ts` confirma que os flashcards publicados continuam legíveis durante nova geração.
-- [ ] Nenhum componente tem valor hexadecimal.
-- [ ] Os testes Playwright que já existem passam.
-- [ ] `bun run lint` e `bun run build` passam.
+- [x] Um conjunto válido mostra a introdução e um cartão por vez, com "CARTÃO N DE T" e a barra de posição.
+- [x] O clique no cartão, ou Enter e Espaço, mostra o verso, e um novo clique volta à frente.
+- [x] A dica aparece só no cartão que tem dica, depois do clique em "Mostrar dica".
+- [x] "Anterior" e "Próximo" ficam desabilitados nas pontas, e trocar de cartão mostra a frente.
+- [x] Um `content` fora do formato mostra o aviso, sem erro no console.
+- [x] `course.spec.ts` confirma que os flashcards publicados continuam legíveis durante nova geração.
+- [x] Nenhum componente tem valor hexadecimal.
+- [x] Os testes Playwright que já existem passam.
+- [x] `bun run lint` e `bun run build` passam.
 
 ## Cenários de teste
 
@@ -159,3 +159,11 @@ Em `frontend/tests/flashcards-reader.spec.ts`, com um usuário novo por teste e 
 7. No cartão 8, "Próximo" está desabilitado.
 8. Um conteúdo com 3 cartões. A tela mostra só o aviso no lugar do leitor, sem emitir erro no console.
 9. Com o cartão 12 aberto em um conteúdo `running`, intercepte uma consulta automática do curso e devolva um conjunto válido com 8 cartões. O leitor abre na frente do primeiro cartão novo.
+
+## Verificação do aceite
+
+- PR revisado: [#35](https://github.com/No-Country-simulation/g10_equipe1_novamente/pull/35), integrado no commit `62b69f3`.
+- CI do PR: todos os checks obrigatórios passaram, com escopo dentro de `touches`.
+- Revisão automática: um achado, nenhum teste usava `hint: null`, o formato publicado de um cartão sem dica. O commit `7dd6080` corrigiu.
+- Depois do rebase sobre T08, a constante `readerPlaceholder` ficou sem uso e saiu de `course.spec.ts`.
+- Testes: 83 testes Playwright passaram no Chromium. `bun run lint`, `bun run build` e os hooks passaram.
