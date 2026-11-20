@@ -184,13 +184,13 @@ Regras:
 
 ## Critérios de aceite
 
-- [ ] `generate_content` cumpre o contrato e devolve `publish` ou `fail`, nunca `rewrite`.
-- [ ] Nenhuma geração passa de duas escritas e duas revisões.
-- [ ] Um conteúdo com afirmação sem apoio depois da reescrita não sai como `publish`.
-- [ ] Um erro do modelo sai como `fail`, com mensagem e com os dados da última versão escrita, quando houver.
-- [ ] O grafo usa `StateGraph` do LangGraph. O manifesto declara a dependência e o `uv.lock` registra a versão 1.2.23.
-- [ ] Nenhum teste chama o Gemini.
-- [ ] Os hooks e os testes passam, com cobertura de 90% ou mais.
+- [x] `generate_content` cumpre o contrato e devolve `publish` ou `fail`, nunca `rewrite`.
+- [x] Nenhuma geração passa de duas escritas e duas revisões.
+- [x] Um conteúdo com afirmação sem apoio depois da reescrita não sai como `publish`.
+- [x] Um erro do modelo sai como `fail`, com mensagem e com os dados da última versão escrita, quando houver.
+- [x] O grafo usa `StateGraph` do LangGraph. O manifesto declara a dependência e o `uv.lock` registra a versão 1.2.23.
+- [x] Nenhum teste chama o Gemini.
+- [x] Os hooks e os testes passam, com cobertura de 90% ou mais.
 
 ## Cenários de teste
 
@@ -210,3 +210,10 @@ Em `backend/tests/services/test_generation_graph.py`. Os cenários 1 a 10 trocam
 O cenário 11 troca só `app.core.llm.generate_structured`, para passar pelos agentes reais. A função falsa responde conforme o `response_model`: `GeneratedTutorial` para `escreve` e `_ReviewOut` de `app.services.reviewer` para `revisa`.
 
 11. A primeira revisão marca um fato como sem apoio e a segunda marca tudo como sustentado. Ambas indicam foco coberto. O grafo devolve `publish` após 4 chamadas a `generate_structured`. O `prompt` da segunda escrita traz o fato sem apoio.
+
+## Verificação do aceite
+
+- PR revisado: [#40](https://github.com/No-Country-simulation/g10_equipe1_novamente/pull/40), integrado no commit `9a7ad4c`.
+- CI do PR: todos os checks obrigatórios passaram, com escopo dentro de `touches`.
+- Revisão automática sobre o commit `cbc4fde`: sem achados. O revisor conferiu que o grafo repassa a decisão de T40 sem mudança, faz no máximo duas escritas e duas revisões e guarda os dados certos quando o modelo falha.
+- Testes: 335 testes passaram em Python 3.14.8, com 98% de cobertura no backend e 100% no grafo. `uv lock --check` passou, com LangGraph 1.2.23.

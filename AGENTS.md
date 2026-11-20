@@ -91,7 +91,7 @@ Tickets escritos da onda 3:
 | [`T09`](docs/tickets/completed/T09-leitor-de-flashcards.md) | Leitor de flashcards |
 | [`T10`](docs/tickets/completed/T10-leitor-de-quiz.md) | Leitor de quiz com justificativa após a resposta |
 | [`T40`](docs/tickets/completed/T40-regras-de-fidelidade.md) | Revisão de conteúdo, cobertura do foco e publicação só com afirmações sustentadas |
-| [`T24`](docs/tickets/T24-grafo-de-geracao.md) | Grafo de geração: escreve, revisa, reescreve uma vez |
+| [`T24`](docs/tickets/completed/T24-grafo-de-geracao.md) | Grafo de geração: escreve, revisa, reescreve uma vez |
 | [`T25`](docs/tickets/completed/T25-agente-escreve-flashcards.md) | Agente `escreve`: flashcards |
 | [`T27`](docs/tickets/completed/T27-novo-curso-passos-2-e-3.md) | Novo curso, passos 2 e 3, e envio |
 | [`T38`](docs/tickets/completed/T38-tela-curso-avaliacao.md) | Tela "Curso": fidelidade, clareza, observações e trechos citados |
