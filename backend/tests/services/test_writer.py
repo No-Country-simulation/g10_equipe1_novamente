@@ -5,7 +5,12 @@ import pytest
 
 from app.core import llm
 from app.models import AudienceLevel, ContentFormat
-from app.services.content_schemas import GeneratedFlashcards, GeneratedTutorial
+from app.services import writer
+from app.services.content_schemas import (
+    GeneratedFlashcards,
+    GeneratedQuiz,
+    GeneratedTutorial,
+)
 from app.services.retrieval import RetrievedChunk
 from app.services.writer import (
     FLASHCARDS_INSTRUCTION,
@@ -70,10 +75,10 @@ def test_writer(monkeypatch):
         for i in range(3)
     ]
 
-    def request(
-        level=AudienceLevel.non_technical, format=ContentFormat.tutorial, chunks=chunks
-    ):
-        return WriteRequest(format, "foco", level, "setor", "dica", chunks)
+    def request(level=AudienceLevel.non_technical, chunks=chunks):
+        return WriteRequest(
+            ContentFormat.tutorial, "foco", level, "setor", "dica", chunks
+        )
 
     assert write_content(request()) is tutorial
     assert len(calls) == 1
@@ -97,8 +102,6 @@ def test_writer(monkeypatch):
         s in calls[-1]["prompt"] for s in ("Anterior", "afirmação A", "afirmação B")
     )
     count = len(calls)
-    with pytest.raises(UnsupportedFormatError):
-        write_content(request(format=ContentFormat.quiz))
     with pytest.raises(ValueError):
         write_content(request(chunks=[]))
     with pytest.raises(ValueError):
@@ -220,4 +223,112 @@ def test_flashcards_rewrite_rejects_tutorial(monkeypatch):
         )
 
     assert not isinstance(error.value, UnsupportedFormatError)
+    assert calls == []
+
+
+def quiz_result(prompt="Pergunta do quiz"):
+    return GeneratedQuiz.model_validate(
+        {
+            "title": "Quiz",
+            "estimated_minutes": 5,
+            "key_concepts": ["conceito"],
+            "prerequisites": [],
+            "content": {
+                "questions": [
+                    {
+                        "prompt": f"{prompt} {index + 1}",
+                        "options": ["Opção A", "Opção B", "Opção C", "Opção D"],
+                        "correct_index": index % 4,
+                        "explanation": "Justificativa",
+                    }
+                    for index in range(5)
+                ],
+            },
+        }
+    )
+
+
+@pytest.fixture
+def quiz_request():
+    return replace(
+        flashcards_request(), content_format=ContentFormat.quiz, focus="foco do quiz"
+    )
+
+
+@pytest.fixture
+def quiz_generation(monkeypatch):
+    quiz = quiz_result()
+    calls = []
+
+    def generate(**kwargs):
+        calls.append(kwargs)
+        return quiz
+
+    monkeypatch.setattr(llm, "generate_structured", generate)
+    return quiz, calls
+
+
+def test_first_quiz_write(quiz_request, quiz_generation):
+    quiz, calls = quiz_generation
+
+    assert write_content(quiz_request) is quiz
+    assert len(calls) == 1
+    assert calls[0]["response_model"] is GeneratedQuiz
+
+    instruction = calls[0]["system_instruction"]
+    assert "exatamente 5 perguntas" in instruction
+    assert "exatamente 4 opções distintas por pergunta" in instruction
+    assert "uma única resposta correta" in instruction
+    assert "correct_index de 0 a 3" in instruction
+    assert "varie a posição da resposta correta" in instruction
+    assert "plausíveis para o nível de público" in instruction
+    assert "distinguir a resposta correta das demais" in instruction
+    assert "justificativa com fatos dos trechos" in instruction
+    assert "fato no enunciado ou na justificativa deve ter apoio" in instruction
+    assert "Perguntas diferentes devem tratar de fatos distintos" in instruction
+    assert "Use um título que descreva o material" in instruction
+    assert "fatos técnicos em content" in instruction
+    assert (
+        "conceitos-chave que aparecem nos trechos e que o conteúdo ensina"
+        in instruction
+    )
+    assert "pré-requisitos" in instruction
+    assert "tempo estimado em minutos" in instruction
+
+
+def test_writer_supports_all_formats_with_prompt_version_v3():
+    assert set(writer.FORMAT_INSTRUCTIONS) == set(ContentFormat)
+    assert PROMPT_VERSION == "escreve-v3"
+
+
+def test_quiz_rewrite_contains_previous_and_claims(quiz_request, quiz_generation):
+    quiz, calls = quiz_generation
+    previous = quiz_result("Enunciado da versão anterior")
+    claims = ["afirmação sem apoio A", "afirmação sem apoio B"]
+
+    assert write_content(quiz_request, rewrite=Rewrite(previous, claims)) is quiz
+    assert len(calls) == 1
+    assert calls[0]["response_model"] is GeneratedQuiz
+    prompt = calls[0]["prompt"]
+    assert previous.model_dump_json() in prompt
+    assert all(claim in prompt for claim in claims)
+    assert "Retire ou corrija cada afirmação sem apoio" in prompt
+
+
+def test_quiz_rewrite_rejects_flashcards(quiz_request, quiz_generation):
+    _, calls = quiz_generation
+
+    with pytest.raises(ValueError, match="formato da versão anterior"):
+        write_content(quiz_request, rewrite=Rewrite(flashcards_result(), []))
+
+    assert calls == []
+
+
+def test_quiz_without_format_instruction(quiz_request, quiz_generation, monkeypatch):
+    _, calls = quiz_generation
+    monkeypatch.delitem(writer.FORMAT_INSTRUCTIONS, ContentFormat.quiz)
+
+    with pytest.raises(UnsupportedFormatError):
+        write_content(quiz_request)
+
     assert calls == []
