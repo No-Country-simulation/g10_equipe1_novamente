@@ -1,4 +1,5 @@
 import uuid
+from dataclasses import replace
 
 import pytest
 
@@ -7,7 +8,9 @@ from app.models import AudienceLevel, ContentFormat
 from app.services.content_schemas import GeneratedFlashcards, GeneratedTutorial
 from app.services.retrieval import RetrievedChunk
 from app.services.writer import (
+    FLASHCARDS_INSTRUCTION,
     PROMPT_VERSION,
+    TUTORIAL_INSTRUCTION,
     Rewrite,
     UnsupportedFormatError,
     WriteRequest,
@@ -15,8 +18,8 @@ from app.services.writer import (
 )
 
 
-def test_writer(monkeypatch):
-    tutorial = GeneratedTutorial.model_validate(
+def tutorial_result():
+    return GeneratedTutorial.model_validate(
         {
             "title": "Anterior",
             "estimated_minutes": 5,
@@ -29,6 +32,32 @@ def test_writer(monkeypatch):
             },
         }
     )
+
+
+def flashcards_result(introduction="Introdução dos flashcards"):
+    return GeneratedFlashcards.model_validate(
+        {
+            "title": "Flashcards",
+            "estimated_minutes": 10,
+            "key_concepts": ["conceito"],
+            "prerequisites": [],
+            "content": {
+                "introduction": introduction,
+                "cards": [
+                    {
+                        "front": f"Pergunta {index}",
+                        "back": "Resposta",
+                        "hint": "Dica" if index % 2 == 0 else None,
+                    }
+                    for index in range(8)
+                ],
+            },
+        }
+    )
+
+
+def test_writer(monkeypatch):
+    tutorial = tutorial_result()
     calls = []
 
     def generate(**kwargs):
@@ -68,33 +97,12 @@ def test_writer(monkeypatch):
         s in calls[-1]["prompt"] for s in ("Anterior", "afirmação A", "afirmação B")
     )
     count = len(calls)
-    for format in (ContentFormat.flashcards, ContentFormat.quiz):
-        with pytest.raises(UnsupportedFormatError):
-            write_content(request(format=format))
+    with pytest.raises(UnsupportedFormatError):
+        write_content(request(format=ContentFormat.quiz))
     with pytest.raises(ValueError):
         write_content(request(chunks=[]))
     with pytest.raises(ValueError):
-        write_content(
-            request(),
-            rewrite=Rewrite(
-                GeneratedFlashcards.model_validate(
-                    {
-                        "title": "x",
-                        "estimated_minutes": 1,
-                        "key_concepts": ["x"],
-                        "prerequisites": [],
-                        "content": {
-                            "introduction": "Introdução",
-                            "cards": [
-                                {"front": f"Pergunta {i}", "back": "Resposta"}
-                                for i in range(8)
-                            ],
-                        },
-                    }
-                ),
-                [],
-            ),
-        )
+        write_content(request(), rewrite=Rewrite(flashcards_result(), []))
     assert len(calls) == count
 
     def fail(**_kwargs):
@@ -104,3 +112,112 @@ def test_writer(monkeypatch):
     with pytest.raises(llm.LLMInvalidResponseError):
         write_content(request())
     assert len(PROMPT_VERSION) <= 20
+
+
+def flashcards_request():
+    chunk = RetrievedChunk(
+        uuid.uuid4(), uuid.uuid4(), 0, "texto do documento", None, 0.9
+    )
+    return WriteRequest(
+        ContentFormat.flashcards,
+        "foco dos flashcards",
+        AudienceLevel.non_technical,
+        "setor",
+        "dica do setor",
+        [chunk],
+    )
+
+
+def test_first_flashcards_write(monkeypatch):
+    flashcards = flashcards_result()
+    calls = []
+
+    def generate(**kwargs):
+        calls.append(kwargs)
+        return flashcards
+
+    monkeypatch.setattr(llm, "generate_structured", generate)
+
+    result = write_content(flashcards_request())
+
+    assert result is flashcards
+    assert len(calls) == 1
+    assert calls[0]["response_model"] is GeneratedFlashcards
+
+
+def test_writer_combines_common_and_format_instructions(monkeypatch):
+    calls = []
+
+    def generate(**kwargs):
+        calls.append(kwargs)
+        if kwargs["response_model"] is GeneratedFlashcards:
+            return flashcards_result()
+        return tutorial_result()
+
+    monkeypatch.setattr(llm, "generate_structured", generate)
+
+    request = flashcards_request()
+    write_content(request)
+    write_content(replace(request, content_format=ContentFormat.tutorial))
+
+    flashcards_instruction = calls[0]["system_instruction"]
+    tutorial_instruction = calls[1]["system_instruction"]
+    assert flashcards_instruction.endswith(FLASHCARDS_INSTRUCTION)
+    assert tutorial_instruction.endswith(TUTORIAL_INSTRUCTION)
+    assert "8 a 12 cartões" in flashcards_instruction
+    assert "dica é opcional" in flashcards_instruction
+    assert "fato técnico novo" in flashcards_instruction
+
+    common_instruction = flashcards_instruction.removesuffix(FLASHCARDS_INSTRUCTION)
+    assert common_instruction == tutorial_instruction.removesuffix(TUTORIAL_INSTRUCTION)
+    assert "Use um título que descreva o material" in common_instruction
+    assert "fatos técnicos em content" in common_instruction
+    assert "conceitos-chave que aparecem nos trechos" in common_instruction
+    assert "que o conteúdo ensina" in common_instruction
+    assert "pré-requisitos" in common_instruction
+    assert "tempo estimado em minutos" in common_instruction
+    assert "conceitos-chave" not in TUTORIAL_INSTRUCTION
+    assert "pré-requisitos" not in TUTORIAL_INSTRUCTION
+
+
+def test_flashcards_rewrite_contains_previous_and_claims(monkeypatch):
+    flashcards = flashcards_result("Introdução anterior distinta")
+    calls = []
+
+    def generate(**kwargs):
+        calls.append(kwargs)
+        return flashcards_result("Introdução reescrita")
+
+    monkeypatch.setattr(llm, "generate_structured", generate)
+
+    write_content(
+        flashcards_request(),
+        rewrite=Rewrite(
+            previous=flashcards,
+            unsupported_claims=["afirmação sem apoio A", "afirmação sem apoio B"],
+        ),
+    )
+
+    prompt = calls[0]["prompt"]
+    assert flashcards.model_dump_json() in prompt
+    assert "afirmação sem apoio A" in prompt
+    assert "afirmação sem apoio B" in prompt
+    assert "Retire ou corrija cada afirmação sem apoio" in prompt
+
+
+def test_flashcards_rewrite_rejects_tutorial(monkeypatch):
+    calls = []
+
+    def generate(**kwargs):
+        calls.append(kwargs)
+
+    monkeypatch.setattr(llm, "generate_structured", generate)
+
+    with pytest.raises(ValueError, match="formato da versão anterior") as error:
+        write_content(
+            flashcards_request(),
+            rewrite=Rewrite(previous=tutorial_result(), unsupported_claims=[]),
+        )
+
+    assert not isinstance(error.value, UnsupportedFormatError)
+    assert calls == []
