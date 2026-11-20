@@ -226,17 +226,17 @@ A mensagem some quando a pessoa clica de novo em "Criar curso" ou volta a um pas
 
 ## Critérios de aceite
 
-- [ ] Os passos 2 e 3 usam o cartão, o cabeçalho e o estilo do rodapé do passo 1.
-- [ ] O passo 2 pede título, setor e nível, confere o título com as mensagens de `criar-curso.md` e só avança com os três válidos.
-- [ ] O passo 3 aceita de 1 a 3 formatos e mostra a ordem da escolha.
-- [ ] "Criar curso" envia um só pedido por tentativa, com título, setor, nível, formatos na ordem escolhida e os arquivos do passo 1.
-- [ ] Com sucesso, a tela vai para `/courses/{id}` do curso criado.
-- [ ] A seção "O que a pessoa vê" em `criar-curso.md` descreve a ida direta ao curso, os estados e a atualização automática.
-- [ ] Com erro, a tela fica no passo 3, mostra a mensagem da API e mantém os dados.
-- [ ] "Voltar" e a coluna de etapas levam aos passos anteriores sem perder dados.
-- [ ] Nenhum componente tem valor hexadecimal.
-- [ ] Os testes Playwright que já existem passam.
-- [ ] `bun run lint` e `bun run build` passam.
+- [x] Os passos 2 e 3 usam o cartão, o cabeçalho e o estilo do rodapé do passo 1.
+- [x] O passo 2 pede título, setor e nível, confere o título com as mensagens de `criar-curso.md` e só avança com os três válidos.
+- [x] O passo 3 aceita de 1 a 3 formatos e mostra a ordem da escolha.
+- [x] "Criar curso" envia um só pedido por tentativa, com título, setor, nível, formatos na ordem escolhida e os arquivos do passo 1.
+- [x] Com sucesso, a tela vai para `/courses/{id}` do curso criado.
+- [x] A seção "O que a pessoa vê" em `criar-curso.md` descreve a ida direta ao curso, os estados e a atualização automática.
+- [x] Com erro, a tela fica no passo 3, mostra a mensagem da API e mantém os dados.
+- [x] "Voltar" e a coluna de etapas levam aos passos anteriores sem perder dados.
+- [x] Nenhum componente tem valor hexadecimal.
+- [x] Os testes Playwright que já existem passam.
+- [x] `bun run lint` e `bun run build` passam.
 
 ## Cenários de teste
 
@@ -253,3 +253,10 @@ Acrescente os cenários a `frontend/tests/new-course.spec.ts`, depois dos testes
 9. HTTP 422 do backend real: anexar `guia.pdf` com alguns bytes que não formam um PDF, preencher os passos 2 e 3 e clicar em "Criar curso". A tela mostra "guia.pdf: Não foi possível abrir o PDF. Envie um PDF sem senha." e continua no passo 3.
 10. Faça a consulta de setores falhar com `page.route`. O passo 2 mostra a mensagem, desabilita o `Select` e bloqueia "Continuar". Faça a resposta seguinte passar e clique em "Tentar novamente". A lista volta a funcionar.
 11. Com `page.route`, teste HTTP 422 com `detail` em lista e falha sem resposta. Confira as mensagens do quadro "Envio". Em cada caso, volte ao passo 2, avance e confira que os dados continuam preenchidos e a mensagem saiu.
+
+## Verificação do aceite
+
+- PR revisado: [#37](https://github.com/No-Country-simulation/g10_equipe1_novamente/pull/37), integrado no commit `ae97671`.
+- CI do PR: todos os checks obrigatórios passaram, com escopo dentro de `touches`.
+- Revisão automática: um achado, uma atualização em segundo plano dos setores bloqueava "Continuar" com a lista já carregada. O commit `8932e13` corrigiu e acrescentou o teste.
+- Testes: 89 testes Playwright passaram com o backend local. `bun run lint`, `bun run build` e os hooks passaram.

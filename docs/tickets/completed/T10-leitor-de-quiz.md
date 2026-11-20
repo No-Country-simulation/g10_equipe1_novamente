@@ -15,11 +15,11 @@ size: 2
 
 T18 entregou a tela de um conteúdo. Hoje `QuizReader` mostra só "O leitor deste formato ainda não está disponível." O quiz tem 5 perguntas, cada uma com 4 opções, a opção correta e a justificativa. `telas.md` define uma pergunta por vez e mostra a justificativa depois da resposta. O produto não guarda as respostas.
 
-A pessoa escolhe uma opção para abrir a justificativa. A correção imediata segue como diferencial opcional do [escopo do MVP](../product-specs/escopo-do-mvp.md#o-que-entra-se-sobrar-tempo).
+A pessoa escolhe uma opção para abrir a justificativa. A correção imediata segue como diferencial opcional do [escopo do MVP](../../product-specs/escopo-do-mvp.md#o-que-entra-se-sobrar-tempo).
 
 Este ticket troca o conteúdo de `QuizReader.tsx`. A moldura, os metadados e o aviso de estado são de T18 e não mudam.
 
-O layout vem da captura [`tela-q1-quiz.png`](../design/telas-finais/tela-q1-quiz.png): o cartão branco à direita, com o contador, a barra, a pergunta, as opções e os botões.
+O layout vem da captura [`tela-q1-quiz.png`](../../design/telas-finais/tela-q1-quiz.png): o cartão branco à direita, com o contador, a barra, a pergunta, as opções e os botões.
 
 Leia antes: `docs/product-specs/conteudos-e-formatos.md`, seção "Quiz", `docs/tickets/completed/T18-tela-curso.md`, seção "Contrato", e `backend/app/services/content_schemas.py`, classe `QuizContent`.
 
@@ -130,14 +130,14 @@ Nenhum teste que já existe muda. `frontend/tests/course.spec.ts` não abre um q
 
 ## Critérios de aceite
 
-- [ ] Um quiz válido mostra uma pergunta por vez, com "PERGUNTA N DE 5", a barra e as 4 opções com as letras A a D.
-- [ ] Qualquer escolha revela apenas a justificativa e desabilita as quatro opções com a mesma aparência, sem indicar acerto ou erro.
-- [ ] Da primeira à quarta pergunta, "Próxima pergunta" só funciona depois da escolha. Ao voltar, a justificativa aberta continua visível.
-- [ ] Na quinta pergunta, a pessoa pode abrir a justificativa e voltar às anteriores. A interface não oferece resultado nem opção de refazer.
-- [ ] Um `content` fora do formato mostra o aviso, sem erro no console.
-- [ ] Nenhum componente tem valor hexadecimal.
-- [ ] Os testes Playwright que já existem passam.
-- [ ] `bun run lint` e `bun run build` passam.
+- [x] Um quiz válido mostra uma pergunta por vez, com "PERGUNTA N DE 5", a barra e as 4 opções com as letras A a D.
+- [x] Qualquer escolha revela apenas a justificativa e desabilita as quatro opções com a mesma aparência, sem indicar acerto ou erro.
+- [x] Da primeira à quarta pergunta, "Próxima pergunta" só funciona depois da escolha. Ao voltar, a justificativa aberta continua visível.
+- [x] Na quinta pergunta, a pessoa pode abrir a justificativa e voltar às anteriores. A interface não oferece resultado nem opção de refazer.
+- [x] Um `content` fora do formato mostra o aviso, sem erro no console.
+- [x] Nenhum componente tem valor hexadecimal.
+- [x] Os testes Playwright que já existem passam.
+- [x] `bun run lint` e `bun run build` passam.
 
 ## Cenários de teste
 
@@ -150,3 +150,10 @@ Em `frontend/tests/quiz-reader.spec.ts`, com um usuário novo por teste e um cur
 5. Recarregue a página. A primeira pergunta aparece com as opções habilitadas e sem a justificativa.
 6. Teste três entradas inválidas. Uma tem 4 perguntas, outra tem duas opções iguais após `trim()` e a terceira tem `correct_index: 4`. Em cada caso, a tela mostra só o aviso no lugar do leitor, sem emitir erro no console.
 7. Abra a justificativa da primeira pergunta de um quiz `running` e avance. Intercepte uma consulta automática do curso e devolva as mesmas perguntas. A posição se mantém e a primeira justificativa continua aberta ao voltar. Em outra consulta, devolva cinco perguntas novas. A primeira aparece com as opções habilitadas e sem a justificativa.
+
+## Verificação do aceite
+
+- PR revisado: [#38](https://github.com/No-Country-simulation/g10_equipe1_novamente/pull/38), integrado no commit `830fdc9`.
+- CI do PR: todos os checks obrigatórios passaram, com escopo dentro de `touches`.
+- Revisão automática: um achado, o raio das opções era 10 px. O commit `2c7812f` aplicou 8 px.
+- Testes: 85 testes Playwright passaram no Chromium, sete deles do quiz. `bun run lint`, `bun run build` e os hooks passaram.
