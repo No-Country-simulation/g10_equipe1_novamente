@@ -106,8 +106,8 @@ Tickets escritos das ondas 5 a 8:
 | [`T29`](docs/tickets/completed/T29-etapa-planeja.md) | Etapa `planeja` |
 | [`T30`](docs/tickets/completed/T30-avaliacao-da-busca-e-do-revisor.md) | Avaliação da busca e do revisor, com medição de falsas reprovações |
 | [`T32`](docs/tickets/T32-nova-tentativa-e-regra-dos-10-minutos.md) | Nova tentativa e regra dos 10 minutos |
-| [`T33`](docs/tickets/T33-exclusao-de-curso.md) | Exclusão de curso e de conta com limpeza na OCI |
-| [`T31`](docs/tickets/T31-teste-no-navegador.md) | Teste no navegador da criação à leitura do conteúdo gerado |
+| [`T33`](docs/tickets/completed/T33-exclusao-de-curso.md) | Exclusão de curso e de conta com limpeza na OCI |
+| [`T31`](docs/tickets/completed/T31-teste-no-navegador.md) | Teste no navegador da criação à leitura do conteúdo gerado |
 | [`T41`](docs/tickets/T41-casos-de-avaliacao-e-primeira-medicao.md) | Casos de avaliação sobre os documentos da demonstração e primeira medição |
 | [`T35`](docs/tickets/T35-readme-diagrama-e-guia-de-instalacao.md) | README, diagrama e guia de instalação |
 
