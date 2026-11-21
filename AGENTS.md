@@ -103,7 +103,7 @@ Tickets escritos das ondas 5 a 7:
 | Ticket | Entrega |
 | --- | --- |
 | [`T28`](docs/tickets/completed/T28-tarefa-de-fundo.md) | Tarefa de fundo para gerar os três formatos |
-| [`T29`](docs/tickets/T29-etapa-planeja.md) | Etapa `planeja` |
+| [`T29`](docs/tickets/completed/T29-etapa-planeja.md) | Etapa `planeja` |
 | [`T30`](docs/tickets/T30-avaliacao-da-busca-e-do-revisor.md) | Avaliação da busca e do revisor, com medição de falsas reprovações |
 | [`T41`](docs/tickets/T41-casos-de-avaliacao-e-primeira-medicao.md) | Casos de avaliação sobre os documentos da demonstração e primeira medição |
 
