@@ -5,7 +5,7 @@ blocked_by: [T13, T30]
 touches:
   - examples/evals/
   - docs/product-specs/fidelidade-e-qualidade.md
-executor: pessoa
+executor: agente
 size: 3
 ---
 
@@ -17,7 +17,7 @@ T30 entrega o script de avaliação e o formato dos casos. T13 escolhe os docume
 
 As metas de `docs/product-specs/fidelidade-e-qualidade.md` ainda não foram medidas. A medição responde se a regra de T40, que reprova um conteúdo com qualquer afirmação sem apoio, reprova conteúdos fiéis com frequência e por quê.
 
-Este ticket é de uma pessoa: escrever casos pede ler o documento e julgar os fatos, e ler as pistas do relatório pede julgamento. Uma pessoa sem experiência em programação consegue fazer, com o guia `examples/evals/README.md`.
+Um agente escreve os casos, roda a avaliação e lê as pistas. Uma pessoa da equipe confere os casos e a leitura das pistas no PR antes do merge. A nota de clareza da pessoa (item 5 de "O que entregar") não pode vir do agente: o agente publica no PR os 10 conteúdos do revisor sem as notas do revisor, a pessoa dá as notas no PR e o agente as registra.
 
 Leia antes: `examples/evals/README.md`, `examples/README.md` e `docs/product-specs/fidelidade-e-qualidade.md`.
 
@@ -45,7 +45,7 @@ Rode os comandos de avaliação em `backend/`. Use o banco de desenvolvimento co
 2. Cada arquivo passa em `uv run python scripts/evaluate.py --check <arquivo>`.
 3. Uma rodada da avaliação por arquivo, no mesmo commit e com os mesmos modelos. Guarde os relatórios no PR.
 4. Para cada erro plantado, confira se o revisor marcou aquele fato como sem apoio. Para cada pista, confira a afirmação, os chunks do caso e o documento. Registre se a busca omitiu o apoio, se o revisor deixou de reconhecê-lo, se a afirmação não tem apoio ou se faltam dados para decidir. Para uma geração sem pistas, registre o motivo da falha quando for possível.
-5. Para os 10 conteúdos do revisor, a nota de clareza de uma pessoa (baixa, média ou alta), dada antes de ler a nota do revisor.
+5. Para os 10 conteúdos do revisor, a nota de clareza de uma pessoa (baixa, média ou alta), dada antes de ler a nota do revisor. O agente publica os 10 conteúdos num comentário do PR, sem as notas do revisor, e espera a resposta da pessoa antes de calcular a concordância.
 6. Em `fidelidade-e-qualidade.md`, acrescente a seção "Medições" depois de "Como a equipe mede a qualidade". Reúna os resultados dos documentos em uma tabela para a rodada:
     - data, modelo de texto, modelo de embeddings e versão dos prompts, copiados do relatório;
     - busca: trecho esperado entre os 8, em número e porcentagem;
@@ -62,4 +62,6 @@ Rode os comandos de avaliação em `backend/`. Use o banco de desenvolvimento co
 - [ ] Nenhum conteúdo fiel traz um fato fora do documento.
 - [ ] O PR traz os relatórios, a conferência dos erros plantados e a leitura de cada pista.
 - [ ] `fidelidade-e-qualidade.md` registra a primeira medição na seção "Medições".
+- [ ] As notas de clareza vêm de uma pessoa, dadas no PR antes de ela ver as notas do revisor.
 - [ ] Os hooks passam.
+- [ ] Uma pessoa da equipe conferiu os casos e a leitura das pistas antes do merge.
