@@ -1,0 +1,11 @@
+# Documentos da demonstração
+
+Use os arquivos Markdown de `sources/` como entradas do [roteiro da demonstração](../docs/product-specs/demonstracao.md). Open Finance é o documento principal e entra nos cursos A e B.
+
+| Documento | Setor | Arquivo | Fonte | Licença ou base legal | Atribuição | Idioma | Caracteres | Data da cópia |
+| --- | --- | --- | --- | --- | --- | --- | ---: | --- |
+| Open Finance, Resolução Conjunta nº 1/2020, versão consolidada 10 | `fintech` | [open-finance.md](sources/open-finance.md) | [PDF do Banco Central](https://normativos.bcb.gov.br/Lists/Normativos/Attachments/51028/Res_Conj_0001_v10_L.pdf) | [Termos de Uso do BC, seção Reprodução do Conteúdo](https://www.bcb.gov.br/acessoinformacao/politicaprivacidade). Permitem a cópia com atribuição e preservação do conteúdo. | Banco Central do Brasil e Conselho Monetário Nacional | Português | 85.948 | 21/11/2026 |
+| Regulamento do Pix, Resolução BCB nº 1/2020, redação original | `fintech` | [regulamento-do-pix.md](sources/regulamento-do-pix.md) | [DOU de 13/08/2020, Seção 1, p. 44 a 48](https://www.in.gov.br/en/web/dou/-/resolucao-bcb-n-1-de-12-de-agosto-de-2020-271965371). [Cópia do PDF usada na conversão](https://diariodotransporte.com.br/wp-content/uploads/2020/08/RESOLUCAO-BCB-No-1-DE-12-DE-AGOSTO-DE-2020-PIX.pdf). | Ato oficial excluído da proteção autoral pela [Lei nº 9.610/1998, art. 8º, IV](https://www2.camara.leg.br/legin/fed/lei/1998/lei-9610-19-fevereiro-1998-365399-normaatualizada-pl.html). | Banco Central do Brasil, publicação no Diário Oficial da União | Português | 68.422 | 21/11/2026 |
+| Lei de Acesso à Informação, Lei nº 12.527/2011, texto atualizado | `geral` | [lei-de-acesso-a-informacao.md](sources/lei-de-acesso-a-informacao.md) | [Texto atualizado da Câmara dos Deputados](https://www2.camara.leg.br/legin/fed/lei/2011/lei-12527-18-novembro-2011-611802-normaatualizada-pl.html) | Ato oficial excluído da proteção autoral pela [Lei nº 9.610/1998, art. 8º, IV](https://www2.camara.leg.br/legin/fed/lei/1998/lei-9610-19-fevereiro-1998-365399-normaatualizada-pl.html). | Câmara dos Deputados, Centro de Documentação e Informação | Português | 41.355 | 21/11/2026 |
+
+A contagem inclui os títulos, as notas de origem e as quebras de linha de cada arquivo. O curso sobre o Pix usa a redação de 2020 como fonte histórica.
