@@ -64,7 +64,7 @@ Para ticket de backend, rode os testes e confira a cobertura. O CI exige 90%.
 cd backend && uv run bash scripts/tests-start.sh && uv run coverage report --fail-under=90
 ```
 
-Para ticket de frontend, rode o lint e o build. Os testes Playwright rodam no CI, porque usam portas fixas.
+Para ticket de frontend, rode o lint e o build. O CI roda os testes Playwright. Para rodá-los localmente, reserve as portas do Compose.
 
 ```bash
 cd frontend && bun run lint && bun run build
@@ -99,6 +99,21 @@ Vários tickets criam `backend/app/services/__init__.py`, `backend/tests/service
 
 T17 criou `frontend/src/lib/courses.ts` e `frontend/tests/utils/course.ts`, que T18 também usa. T18 não edita esses arquivos.
 
+T31, T32 e T33 podem rodar em paralelo assim que seus bloqueios estiverem no `master`. T32 e T33 dividem estes arquivos escritos à mão:
+
+| Arquivo | T32 muda | T33 muda |
+| --- | --- | --- |
+| `backend/app/api/routes/courses.py` | O `lifespan` na declaração de `router`, o UUID de geração na construção de `Course` e no agendamento de `create_course`, e a rota `retry_content` no fim do arquivo | Os imports de `User` e `course_deletion`, a rota `delete_course` depois de `read_course` e o lock do dono antes do primeiro `put` de `create_course` |
+| `backend/app/models.py` | O campo `generation_id` no modelo `Course` | O modelo novo `CourseObjectCleanup`, depois dos modelos de tabela existentes |
+| `docs/ARCHITECTURE.md` | A linha `course` da tabela de estados, as linhas "Processo cai durante a geração" e "Nova tentativa" e os parágrafos sobre o prazo | As linhas "Exclusão de curso", "Exclusão de conta" e "Limpeza no OCI falha" |
+| `docs/product-specs/criar-curso.md` | A seção "Nova tentativa" | A seção "Excluir um curso" |
+
+T31 muda só o item "Frontend" da seção "Testes" de `ARCHITECTURE.md`. T35 atualiza o parágrafo de estado depois da tabela "Falhas e recuperação", a tabela "Decisões" e a referência do esquema depois de T32 e T33.
+
+T32 e T33 criam migrations com IDs distintos. Após o primeiro merge, o segundo PR faz rebase e ajusta o `down_revision` da própria migration para manter um único head. Confira `alembic heads` e rode o upgrade em um banco de teste. Gere `frontend/src/client/` de novo depois do rebase.
+
+No segundo PR, teste a concorrência entre DELETE e retry do mesmo curso. Se o retry confirmar primeiro, o DELETE devolve HTTP 409. Se o DELETE confirmar primeiro, o retry devolve HTTP 404 e nenhuma tarefa é agendada. Acrescente o caso ao arquivo de teste da rota que o PR já altera.
+
 ## Regras de escrita de tickets
 
 - Os testes de cada mudança entram no ticket do código. T30 e T31 cobrem avaliações e testes que atravessam vários tickets.
@@ -109,7 +124,7 @@ T17 criou `frontend/src/lib/courses.ts` e `frontend/tests/utils/course.ts`, que 
 
 ## Ondas
 
-Os tickets das ondas 1 a 5 estão escritos, além de T29, T30 e T41. Escreva os demais quando os contratos de que dependem estiverem definidos.
+Os tickets das ondas 1 a 5 estão escritos, além de T29, T30, T31, T32, T33, T35 e T41. Faltam T34 e T36. Escreva cada um quando os contratos de que ele depende estiverem definidos.
 
 | Onda | Ticket | Entrega | Bloqueado por |
 | --- | --- | --- | --- |
@@ -145,13 +160,13 @@ Os tickets das ondas 1 a 5 estão escritos, além de T29, T30 e T41. Escreva os 
 | 5 | T28 | Tarefa de fundo para gerar os três formatos | T03, T19, T22, T23, T24, T26, T39 |
 | 6 | T29 | Etapa `planeja` | T24, T28 |
 | 6 | T30 | Avaliação da busca e do revisor, com medição de falsas reprovações | T03, T24, T28, T37 |
-| 6 | T31 | Teste no navegador da criação à leitura do conteúdo gerado | T08, T09, T10, T17, T27, T28, T38 |
 | 6 | T32 | Nova tentativa e regra dos 10 minutos | T28 |
-| 6 | T33 | Exclusão de curso com limpeza na OCI | T28 |
+| 6 | T33 | Exclusão de curso e de conta com limpeza na OCI | T28 |
 | 6 | T36 | Deploy na VM da OCI (opcional) | T28 |
+| 7 | T31 | Teste no navegador da criação à leitura do conteúdo gerado | T08, T09, T10, T17, T27, T28, T29, T38 |
 | 7 | T34 | Rodar os cenários da demonstração e guardar os JSON | T13, T25, T26, T28, T29, T37 |
-| 7 | T35 | README, diagrama e guia de instalação | T28, T29 |
 | 7 | T41 | Casos de avaliação sobre os documentos da demonstração e primeira medição | T13, T30 |
+| 8 | T35 | README, diagrama e guia de instalação | T29, T31, T32, T33, T34 |
 
 T39 saiu das medições de T12: a cota de embeddings conta cada texto como um pedido, e a indexação de um documento grande passava do limite por minuto. T28 passou a listar T39.
 
@@ -167,7 +182,7 @@ T08 muda os casos de tutorial em `frontend/tests/course.spec.ts`. T09 muda o cas
 
 Em `docs/product-specs/criar-curso.md`, T27 atualiza "O que a pessoa vê" e T40 atualiza "Erros que a pessoa pode ver".
 
-T28 espera T26 para gerar todos os formatos que a API aceita. T31 cria um curso no navegador, espera a tarefa de fundo publicar um conteúdo e abre o leitor. O teste automatizado usa respostas controladas para o Gemini e a OCI.
+T28 espera T26 para gerar todos os formatos que a API aceita. T31 espera T29 porque o teste passa por `planeja`, `escreve` e `revisa`. O CI carrega `compose.playwright.yml` para trocar apenas as fronteiras do Gemini e da OCI no servidor de teste. Como T29 já está no `master`, T31 pode começar junto de T32 e T33.
 
 T28 cria `PROMPT_VERSION` em `generation_graph.py`, e T29 acrescenta a versão de `planeja` à constante. T30 usa a mesma versão e a função `retrieve_chunks` de T28, além da leitura de PDF de T37.
 
@@ -175,6 +190,10 @@ Na onda 6, T29 e T30 editam `docs/ARCHITECTURE.md`. T29 edita o fluxo, as regras
 
 T30 entrega o script de avaliação e o formato dos casos. T41 executa o trabalho de avaliação que T13 cita: uma pessoa escreve os casos sobre os documentos escolhidos e registra a primeira medição com a versão de geração que ela usou.
 
-T34 e T35 passaram a esperar T29. `ARCHITECTURE.md` diz que `planeja` entra antes da demonstração, e o diagrama de T35 precisa mostrar a etapa.
+T34 e T35 dependem de T29. A demonstração já usa a etapa `planeja`, e o diagrama de T35 precisa mostrá-la.
 
-T28 libera T29, T30, T31, T32, T33 e T36. Priorize a revisão de T28 quando o PR estiver pronto.
+T35 fica na onda 8. O guia usa o teste sem chaves de T31, o README usa o JSON de T34 e a documentação descreve o ciclo de vida entregue por T32 e T33.
+
+T32 recoloca o conteúdo na fila da tarefa ativa. T32 e T33 usam o lock da linha de `Course` para coordenar nova tentativa, expiração e exclusão.
+
+T28 libera T29, T30, T32, T33 e T36. T29 também é bloqueio de T31.

@@ -98,16 +98,20 @@ Tickets escritos da onda 3:
 
 O [T26](docs/tickets/completed/T26-agente-escreve-quiz.md), agente `escreve` para quiz, está completo.
 
-Tickets escritos das ondas 5 a 7:
+Tickets escritos das ondas 5 a 8:
 
 | Ticket | Entrega |
 | --- | --- |
 | [`T28`](docs/tickets/completed/T28-tarefa-de-fundo.md) | Tarefa de fundo para gerar os três formatos |
 | [`T29`](docs/tickets/completed/T29-etapa-planeja.md) | Etapa `planeja` |
 | [`T30`](docs/tickets/completed/T30-avaliacao-da-busca-e-do-revisor.md) | Avaliação da busca e do revisor, com medição de falsas reprovações |
+| [`T32`](docs/tickets/T32-nova-tentativa-e-regra-dos-10-minutos.md) | Nova tentativa e regra dos 10 minutos |
+| [`T33`](docs/tickets/T33-exclusao-de-curso.md) | Exclusão de curso e de conta com limpeza na OCI |
+| [`T31`](docs/tickets/T31-teste-no-navegador.md) | Teste no navegador da criação à leitura do conteúdo gerado |
 | [`T41`](docs/tickets/T41-casos-de-avaliacao-e-primeira-medicao.md) | Casos de avaliação sobre os documentos da demonstração e primeira medição |
+| [`T35`](docs/tickets/T35-readme-diagrama-e-guia-de-instalacao.md) | README, diagrama e guia de instalação |
 
-Os demais tickets das ondas 6 e 7 ainda não foram escritos e estão na [tabela de ondas](docs/tickets/README.md#ondas).
+T34 e T36 ainda não foram escritos e estão na [tabela de ondas](docs/tickets/README.md#ondas).
 
 ## Fora de `docs/`
 
