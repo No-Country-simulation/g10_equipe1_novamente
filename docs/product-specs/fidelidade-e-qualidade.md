@@ -66,11 +66,29 @@ A medição usa a primeira rodada do Pix e do Open Finance no commit `06a945b` e
 | Versão dos prompts | `planeja-v1+escreve-v4+revisa-v2` |
 | Busca | 20 de 20 trechos esperados entre os 8 (100%). |
 | Revisor | 4 de 5 erros plantados identificados na conferência. 0 alarmes falsos em 5 casos fiéis. |
-| Clareza | Não medida. A equipe não tem quem julgue o assunto dos documentos. A conferência passa para o teste de adaptação ao público com uma pessoa de fora no T34. |
+| Clareza | Não medida. A equipe não tem quem julgue o assunto dos documentos. |
 | Geração | 4 de 4 conteúdos aprovados para publicação. 0 reprovações, 0 falsas reprovações e 0 casos sem causa confirmada. |
 | Erros de execução | 2 de 6 gerações receberam HTTP 503 do Gemini. A primeira tentativa de indexar o Open Finance falhou antes dos casos. A repetição mediu o arquivo completo. |
 
 No quiz da LAI com erro plantado, a resposta marcada e a justificativa davam 30 dias como prazo inicial. O revisor reprovou o quiz ao marcar como sem apoio a alternativa de 20 dias, que o art. 11, § 1º, sustenta. O erro de 30 dias ficou sem marcação.
+
+### Rodada com `revisa-v3`
+
+A rodada rodou no commit `996991b`. Após o rebase, o commit `8c6f019` mantém o mesmo código e os mesmos casos de avaliação.
+
+| O que mede | Resultado da rodada |
+| --- | --- |
+| Data (UTC) | 2026-11-21 |
+| Modelo de texto | `gemini-3.5-flash-lite` |
+| Modelo de embeddings | `gemini-embedding-2` |
+| Versão dos prompts | `planeja-v1+escreve-v4+revisa-v3` |
+| Busca | 20 de 20 trechos esperados entre os 8 (100%). |
+| Revisor | 5 de 5 erros plantados detectados. 0 alarmes falsos em 5 casos fiéis. |
+| Clareza | Não medida. |
+| Geração | 6 de 6 conteúdos aprovados para publicação. 0 reprovações. |
+| Erros de execução | Nenhum. |
+
+Em `lai-pedido-erro`, o revisor marcou como sem apoio o prazo inicial de 30 dias da resposta e da justificativa. Nos dois casos da LAI, a lista de afirmações sem apoio trouxe apenas fatos do material. Os quatro erros plantados do Pix e do Open Finance também apareceram nessa lista nos respectivos casos.
 
 ## O que fica fora
 
