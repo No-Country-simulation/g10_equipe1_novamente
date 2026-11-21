@@ -1,6 +1,9 @@
 import logging
 import uuid
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
+from datetime import timedelta
+from threading import Barrier
 from unittest.mock import Mock
 
 import pytest
@@ -11,8 +14,18 @@ from sqlmodel import Session, select
 from app.core import llm
 from app.core.config import settings
 from app.core.db import engine
-from app.core.storage import InMemoryStorage, StorageError
-from app.models import ContentCitation, Course, CourseContent, Niche, SourceDocument
+from app.core.security import create_access_token
+from app.core.storage import InMemoryStorage, StorageError, get_storage
+from app.main import app
+from app.models import (
+    ContentCitation,
+    Course,
+    CourseContent,
+    DocumentChunk,
+    Niche,
+    SourceDocument,
+    get_datetime_utc,
+)
 from app.services import course_generation, generation_graph, indexing
 from app.services.content_schemas import GENERATED_MODELS
 from app.services.generation_graph import GenerationResult
@@ -32,10 +45,20 @@ class CourseSetup:
     document_ids: list[uuid.UUID]
     content_ids: list[uuid.UUID]
     storage: InMemoryStorage
+    generation_id: uuid.UUID
+    headers: dict[str, str]
 
     def run(self):
         course_generation.run_course_generation(
-            storage=self.storage, course_id=self.course_id
+            storage=self.storage,
+            course_id=self.course_id,
+            generation_id=self.generation_id,
+        )
+
+    def retry(self, client, position):
+        return client.post(
+            f"/api/v1/courses/{self.course_id}/contents/{self.content_ids[position]}/retry",
+            headers=self.headers,
         )
 
     def contents(self, session):
@@ -61,6 +84,11 @@ def setup(client, db, monkeypatch):
         contents=[{"format": fmt, "status": "pending"} for fmt in FORMATS],
     )
     storage = InMemoryStorage()
+    monkeypatch.setitem(app.dependency_overrides, get_storage, lambda: storage)
+    course_id = uuid.UUID(data["id"])
+    generation_id = uuid.uuid4()
+    db.get_one(Course, course_id).generation_id = generation_id
+    token = create_access_token(owner.id, timedelta(minutes=5))
     documents = sorted(data["documents"], key=lambda doc: doc["original_filename"])
     document_ids = [uuid.UUID(doc["id"]) for doc in documents]
     for document_id, document_text in zip(document_ids, TEXTS, strict=True):
@@ -70,7 +98,14 @@ def setup(client, db, monkeypatch):
     for content_id, fmt in zip(content_ids, FORMATS, strict=True):
         db.get_one(CourseContent, content_id).focus = f"Redes na OCI para {fmt}"
     db.commit()
-    return CourseSetup(uuid.UUID(data["id"]), document_ids, content_ids, storage)
+    return CourseSetup(
+        course_id,
+        document_ids,
+        content_ids,
+        storage,
+        generation_id,
+        {"Authorization": f"Bearer {token}"},
+    )
 
 
 def _embedding(texts, *, task):  # noqa: ARG001
@@ -199,10 +234,10 @@ def test_indexing_failure_stops_generation(
     if unexpected:
         index = indexing.index_document
 
-        def index_or_raise(*, session, storage, document_id):
+        def index_or_raise(*, document_id, **kwargs):
             if document_id == second_id:
                 raise RuntimeError("falha inesperada")
-            return index(session=session, storage=storage, document_id=document_id)
+            return index(document_id=document_id, **kwargs)
 
         monkeypatch.setattr(indexing, "index_document", index_or_raise)
         error = "Não foi possível indexar o documento b.md."
@@ -394,43 +429,7 @@ def test_recovery_write_failure_stops_task_without_raising(
     )
 
 
-@pytest.mark.parametrize("unexpected", [False, True])
-def test_content_returned_to_pending_is_preserved(setup, agents, caplog, unexpected):
-    _, graph = agents
-    first_id = setup.content_ids[0]
-
-    def generate(request):
-        if request.content_format == "quiz":
-            with Session(engine) as other:
-                other.get_one(CourseContent, first_id).status = "pending"
-                other.commit()
-            if unexpected:
-                raise RuntimeError("falha inesperada na geração")
-        return _reject()
-
-    graph.side_effect = generate
-    with caplog.at_level(logging.INFO, logger=course_generation.logger.name):
-        setup.run()
-
-    with Session(engine) as db:
-        first, second, third = setup.contents(db)
-        assert (first.status, second.status, third.status) == (
-            "pending",
-            "failed",
-            "failed",
-        )
-        assert first.error_message is None
-        assert db.get_one(Course, setup.course_id).status == "initializing"
-    info_messages = [
-        record.message for record in caplog.records if record.levelno == logging.INFO
-    ]
-    assert all(f"content_id={first_id}" not in message for message in info_messages)
-    assert any(
-        f"content_id={setup.content_ids[1]}" in message for message in info_messages
-    )
-
-
-def test_rejected_retry_preserves_publication(setup, db, agents):
+def test_rejected_retry_preserves_publication(setup, db, agents, client):
     _, second, third = setup.contents(db)
     second.status = third.status = "failed"
     db.commit()
@@ -442,11 +441,11 @@ def test_rejected_retry_preserves_publication(setup, db, agents):
     before_citations = [row.model_dump() for row in db.exec(citations)]
     key = content.oci_object_key
     old_object = setup.storage.get(key)
-    content.status = "pending"
+    content.status = "failed"
     db.commit()
     _, graph = agents
     graph.side_effect = lambda _request: _reject()
-    setup.run()
+    assert setup.retry(client, 0).status_code == 202
     db.expire_all()
     assert (content.status, content.error_message) == ("failed", REJECTED)
     assert (
@@ -460,7 +459,7 @@ def test_rejected_retry_preserves_publication(setup, db, agents):
 def test_missing_course_logs_warning(caplog, agents):
     course_id = uuid.uuid4()
     course_generation.run_course_generation(
-        storage=InMemoryStorage(), course_id=course_id
+        storage=InMemoryStorage(), course_id=course_id, generation_id=uuid.uuid4()
     )
     assert f"Curso não encontrado course_id={course_id}" in caplog.text
     for mock in agents:
@@ -483,3 +482,232 @@ def test_no_chunks_for_current_model(setup, db, agents, monkeypatch):
             content.error_message
             == "Não foi possível gerar o conteúdo, porque o curso não tem trechos indexados."
         )
+
+
+def test_retry_joins_active_queue_once(setup, agents, client, monkeypatch):
+    _, graph = agents
+    run = course_generation.run_course_generation
+    task = Mock()
+    monkeypatch.setattr(course_generation, "run_course_generation", task)
+    barrier = Barrier(2, timeout=5)
+    calls = []
+
+    def retry():
+        barrier.wait()
+        return setup.retry(client, 0)
+
+    def generate(request):
+        calls.append(request.content_format)
+        if calls == ["quiz"]:
+            return _reject()
+        if request.content_format == "tutorial":
+            with ThreadPoolExecutor(max_workers=2) as workers:
+                replies = list(workers.map(lambda _: retry(), range(2)))
+            assert sorted(reply.status_code for reply in replies) == [202, 409]
+            with Session(engine) as other:
+                assert (
+                    other.get_one(Course, setup.course_id).generation_id
+                    == setup.generation_id
+                )
+        return _approve(request)
+
+    graph.side_effect = generate
+    run(
+        storage=setup.storage,
+        course_id=setup.course_id,
+        generation_id=setup.generation_id,
+    )
+    assert calls == ["quiz", "tutorial", "quiz", "flashcards"]
+    task.assert_not_called()
+    with Session(engine) as db:
+        assert [c.status for c in setup.contents(db)] == ["succeeded"] * 3
+        assert db.get_one(Course, setup.course_id).generation_id is None
+
+
+@pytest.fixture
+def stalled_clock(monkeypatch):
+    now = get_datetime_utc()
+    monkeypatch.setattr(course_generation, "get_datetime_utc", lambda: now)
+
+    def advance():
+        nonlocal now
+        now = get_datetime_utc() + timedelta(minutes=10)
+
+    return advance
+
+
+@pytest.mark.parametrize("late_error", [False, True])
+def test_stalled_indexing_cannot_write_into_retry(
+    setup, db, agents, client, monkeypatch, stalled_clock, late_error
+):
+    run = course_generation.run_course_generation
+    task = Mock()
+    monkeypatch.setattr(course_generation, "run_course_generation", task)
+    doc_id = setup.document_ids[0]
+
+    def embed(texts, *, task):
+        assert task == "document"
+        stalled_clock()
+        course_generation.expire_stalled_courses()
+        with Session(engine) as other:
+            document = other.get_one(SourceDocument, doc_id)
+            assert (document.status, document.error_message) == (
+                "failed",
+                course_generation.GENERATION_INTERRUPTED,
+            )
+            assert [c.status for c in setup.contents(other)] == ["failed"] * 3
+            assert other.get_one(Course, setup.course_id).status == "failed"
+        assert setup.retry(client, 0).status_code == 202
+        if late_error:
+            raise llm.LLMError("erro da tarefa que expirou")
+        return _embedding(texts, task=task)
+
+    agents[0].side_effect = embed
+    run(
+        storage=setup.storage,
+        course_id=setup.course_id,
+        generation_id=setup.generation_id,
+    )
+    db.expire_all()
+    assert (
+        db.exec(select(DocumentChunk).where(DocumentChunk.document_id == doc_id)).all()
+        == []
+    )
+    assert setup.contents(db)[0].error_message is None
+    assert (
+        db.get_one(SourceDocument, doc_id).error_message
+        == course_generation.GENERATION_INTERRUPTED
+    )
+    next_generation = task.call_args.kwargs["generation_id"]
+    assert next_generation != setup.generation_id
+    assert db.get_one(Course, setup.course_id).generation_id == next_generation
+
+    db.rollback()
+    agents[0].side_effect = _embedding
+    monkeypatch.setattr(course_generation, "get_datetime_utc", get_datetime_utc)
+    run(**task.call_args.kwargs)
+    db.expire_all()
+    assert db.get_one(SourceDocument, doc_id).status == "indexed"
+    assert setup.contents(db)[0].status == "succeeded"
+
+
+@pytest.mark.parametrize("late_error", [False, True])
+def test_stalled_generation_preserves_publication_and_retry(
+    setup, agents, client, monkeypatch, stalled_clock, late_error
+):
+    run = course_generation.run_course_generation
+    task = Mock()
+    monkeypatch.setattr(course_generation, "run_course_generation", task)
+    _, graph = agents
+    prefix = f"courses/{setup.course_id}/contents/"
+    published = []
+
+    def generate(request):
+        if request.content_format == "quiz":
+            return _approve(request)
+        with Session(engine) as other:
+            first = setup.contents(other)[0]
+            published.extend((first.content, first.oci_object_key))
+        stalled_clock()
+        course_generation.expire_stalled_courses()
+        with Session(engine) as other:
+            assert other.get_one(Course, setup.course_id).status == "ready"
+            assert [c.status for c in setup.contents(other)] == [
+                "succeeded",
+                "failed",
+                "failed",
+            ]
+            assert (
+                setup.contents(other)[1].error_message
+                == course_generation.GENERATION_INTERRUPTED
+            )
+        assert setup.retry(client, 1).status_code == 202
+        if late_error:
+            raise RuntimeError("erro da tarefa que expirou")
+        return _approve(request)
+
+    graph.side_effect = generate
+    run(
+        storage=setup.storage,
+        course_id=setup.course_id,
+        generation_id=setup.generation_id,
+    )
+    task.assert_called_once()
+    with Session(engine) as db:
+        first, second, third = setup.contents(db)
+        assert (second.status, second.error_message) == ("pending", None)
+        assert third.error_message == course_generation.GENERATION_INTERRUPTED
+        assert [first.content, first.oci_object_key] == published
+        assert db.exec(
+            select(ContentCitation.content_id).where(
+                ContentCitation.course_id == setup.course_id
+            )
+        ).all() == [first.id, first.id]
+        assert setup.storage.list(prefix) == [first.oci_object_key]
+
+
+def test_recovery_keeps_old_pending_while_course_makes_progress(setup, db):
+    first, second, third = setup.contents(db)
+    first.updated_at = third.updated_at = get_datetime_utc() - timedelta(minutes=10)
+    second.status = "running"
+    db.commit()
+    course_generation.expire_stalled_courses()
+    db.expire_all()
+    assert [c.status for c in setup.contents(db)] == ["pending", "running", "pending"]
+    assert db.get_one(Course, setup.course_id).generation_id == setup.generation_id
+
+
+def test_recovery_skips_locked_course(setup, db):
+    expired = get_datetime_utc() - timedelta(minutes=10)
+    for content in setup.contents(db):
+        content.updated_at = expired
+    db.commit()
+    db.get_one(Course, setup.course_id, with_for_update=True)
+    try:
+        course_generation.expire_stalled_courses()
+        assert [c.status for c in setup.contents(db)] == ["pending"] * 3
+    finally:
+        db.rollback()
+    course_generation.expire_stalled_courses()
+    assert [c.status for c in setup.contents(db)] == ["failed"] * 3
+
+
+def test_retry_after_indexing_failure_reuses_indexed_documents(
+    setup, db, agents, client
+):
+    second = db.get_one(SourceDocument, setup.document_ids[1])
+    key = second.oci_object_key
+    mime_type = second.mime_type
+    setup.storage.delete(key)
+    db.rollback()
+    setup.run()
+    setup.storage.put(key, TEXTS[1].encode(), mime_type)
+    agents[0].reset_mock()
+    assert setup.retry(client, 0).status_code == 202
+    documents = [
+        call.args[0]
+        for call in agents[0].call_args_list
+        if call.kwargs["task"] == "document"
+    ]
+    assert documents == [[TEXTS[1]]]
+    db.expire_all()
+    assert [c.status for c in setup.contents(db)] == ["succeeded", "failed", "failed"]
+
+
+def test_worker_cannot_publish_after_deadline_before_recovery(
+    setup, agents, stalled_clock
+):
+    def generate(request):
+        stalled_clock()
+        return _approve(request)
+
+    agents[1].side_effect = generate
+    setup.run()
+    with Session(engine) as db:
+        assert db.get_one(Course, setup.course_id).generation_id == setup.generation_id
+        assert [c.status for c in setup.contents(db)] == [
+            "running",
+            "pending",
+            "pending",
+        ]
+    assert setup.storage.list(f"courses/{setup.course_id}/contents/") == []

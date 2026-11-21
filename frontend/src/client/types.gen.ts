@@ -860,6 +860,40 @@ export type coursesReadCourseResponses = {
 
 export type coursesReadCourseResponse = coursesReadCourseResponses[keyof coursesReadCourseResponses];
 
+export type coursesRetryContentData = {
+    body?: never;
+    path: {
+        /**
+         * Course Id
+         */
+        course_id: string;
+        /**
+         * Content Id
+         */
+        content_id: string;
+    };
+    query?: never;
+    url: '/api/v1/courses/{course_id}/contents/{content_id}/retry';
+};
+
+export type coursesRetryContentErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type coursesRetryContentError = coursesRetryContentErrors[keyof coursesRetryContentErrors];
+
+export type coursesRetryContentResponses = {
+    /**
+     * Successful Response
+     */
+    202: CourseDetail;
+};
+
+export type coursesRetryContentResponse = coursesRetryContentResponses[keyof coursesRetryContentResponses];
+
 export type privateCreateUserData = {
     body: PrivateUserCreate;
     path?: never;

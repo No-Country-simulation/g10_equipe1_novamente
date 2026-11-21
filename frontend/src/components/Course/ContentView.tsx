@@ -5,12 +5,14 @@ import { Card } from "@/components/ui/card"
 import { FORMAT_LABELS } from "@/lib/courses"
 import { ContentEvaluation } from "./ContentEvaluation"
 import { ContentReader } from "./ContentReader"
+import { RetryButton } from "./RetryButton"
 
 interface ContentViewProps {
+  courseId: string
   content: ContentPublic
 }
 
-export function ContentView({ content }: ContentViewProps) {
+export function ContentView({ courseId, content }: ContentViewProps) {
   return (
     <div className="space-y-6">
       {content.status === "pending" && (
@@ -33,6 +35,11 @@ export function ContentView({ content }: ContentViewProps) {
           <AlertDescription className="whitespace-pre-wrap">
             {content.error_message || "Não foi possível gerar este conteúdo."}
           </AlertDescription>
+          <RetryButton
+            courseId={courseId}
+            contentId={content.id}
+            className="mt-2 w-fit"
+          />
         </Alert>
       )}
       {content.content !== null && (

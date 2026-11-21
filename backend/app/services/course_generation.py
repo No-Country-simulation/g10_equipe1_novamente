@@ -1,8 +1,9 @@
 import logging
 import uuid
+from datetime import timedelta
 from time import monotonic
 
-from sqlalchemy import or_, update
+from sqlalchemy import func, or_, update
 from sqlalchemy.sql.dml import Update
 from sqlmodel import Session, col, select
 
@@ -33,6 +34,83 @@ INDEXING_FAILED = "O conteúdo não foi gerado, porque um documento do curso fal
 NO_CHUNKS = (
     "Não foi possível gerar o conteúdo, porque o curso não tem trechos indexados."
 )
+GENERATION_INTERRUPTED = "A geração foi interrompida. Tente novamente."
+GENERATION_TIMEOUT = timedelta(minutes=10)
+ACTIVE_STATUSES = (GenerationStatus.pending, GenerationStatus.running)
+
+
+def _last_progress():
+    return func.max(col(CourseContent.updated_at))
+
+
+def _has_active_contents():
+    return func.bool_or(col(CourseContent.status).in_(ACTIVE_STATUSES))
+
+
+def generation_activity(session: Session, course_id: uuid.UUID) -> tuple[bool, bool]:
+    last_progress, active = session.exec(
+        select(_last_progress(), _has_active_contents()).where(
+            col(CourseContent.course_id) == course_id
+        )
+    ).one()
+    stalled = (
+        last_progress is not None
+        and last_progress <= get_datetime_utc() - GENERATION_TIMEOUT
+    )
+    return bool(active), stalled
+
+
+def _lock_generation(
+    session: Session, course_id: uuid.UUID, generation_id: uuid.UUID
+) -> Course | None:
+    course = session.get(
+        Course, course_id, with_for_update=True, populate_existing=True
+    )
+    if course is None or course.generation_id != generation_id:
+        return None
+    _, stalled = generation_activity(session, course_id)
+    return None if stalled else course
+
+
+def expire_stalled_courses() -> None:
+    with Session(engine) as session:
+        course_ids = session.exec(
+            select(col(CourseContent.course_id))
+            .group_by(col(CourseContent.course_id))
+            .having(
+                _has_active_contents(),
+                _last_progress() <= get_datetime_utc() - GENERATION_TIMEOUT,
+            )
+        ).all()
+        session.rollback()
+        for course_id in course_ids:
+            with session.begin():
+                course = session.get(
+                    Course, course_id, with_for_update={"skip_locked": True}
+                )
+                if course is None:
+                    continue
+                active, stalled = generation_activity(session, course_id)
+                if not (active and stalled):
+                    continue
+                session.exec(
+                    _fail_content_update(GENERATION_INTERRUPTED).where(
+                        col(CourseContent.course_id) == course_id,
+                        col(CourseContent.status).in_(ACTIVE_STATUSES),
+                    )
+                )
+                session.exec(
+                    update(SourceDocument)
+                    .where(
+                        col(SourceDocument.course_id) == course_id,
+                        col(SourceDocument.status) == DocumentStatus.processing,
+                    )
+                    .values(
+                        status=DocumentStatus.failed,
+                        error_message=GENERATION_INTERRUPTED,
+                    )
+                )
+                _finish_course(session, course)
 
 
 def retrieve_chunks(
@@ -84,14 +162,15 @@ def _fail_pending_contents(session: Session, course_id: uuid.UUID) -> None:
         )
         .returning(col(CourseContent.id), col(CourseContent.format))
     ).all()
-    session.commit()
     for content_id, content_format in contents:
         _log_content(
             course_id, content_id, content_format, GenerationStatus.failed, None, 0
         )
 
 
-def _index_documents(session: Session, storage: Storage, course_id: uuid.UUID) -> bool:
+def _index_documents(
+    session: Session, storage: Storage, course_id: uuid.UUID, generation_id: uuid.UUID
+) -> bool:
     documents = session.exec(
         select(col(SourceDocument.id), col(SourceDocument.original_filename))
         .where(
@@ -100,20 +179,37 @@ def _index_documents(session: Session, storage: Storage, course_id: uuid.UUID) -
         )
         .order_by(col(SourceDocument.created_at), col(SourceDocument.id))
     ).all()
+    session.rollback()
+
+    def validate_generation(session: Session) -> None:
+        if _lock_generation(session, course_id, generation_id) is None:
+            raise indexing.IndexingInterrupted
+
     for document_id, name in documents:
         try:
             indexing.index_document(
-                session=session, storage=storage, document_id=document_id
+                session=session,
+                storage=storage,
+                document_id=document_id,
+                validate_generation=validate_generation,
             )
-        except indexing.IndexingError:
-            _fail_pending_contents(session, course_id)
+        except indexing.IndexingInterrupted:
             return False
+        except indexing.IndexingError:
+            unexpected = False
         except Exception:
             logger.exception(
                 "Falha na indexação course_id=%s document_id=%s", course_id, document_id
             )
-            session.rollback()
-            with Session(engine) as recovery:
+            unexpected = True
+        else:
+            continue
+        session.rollback()
+        with Session(engine) as recovery:
+            course = _lock_generation(recovery, course_id, generation_id)
+            if course is None:
+                return False
+            if unexpected:
                 recovery.exec(
                     update(SourceDocument)
                     .where(
@@ -125,8 +221,10 @@ def _index_documents(session: Session, storage: Storage, course_id: uuid.UUID) -
                         error_message=f"Não foi possível indexar o documento {name}.",
                     )
                 )
-                _fail_pending_contents(recovery, course_id)
-            return False
+            _fail_pending_contents(recovery, course_id)
+            _finish_course(recovery, course)
+            recovery.commit()
+        return False
     return True
 
 
@@ -182,10 +280,10 @@ def _process_content(
     session: Session,
     storage: Storage,
     course: Course,
-    course_id: uuid.UUID,
-    content_id: uuid.UUID,
-    content_format: ContentFormat,
+    content: CourseContent,
+    generation_id: uuid.UUID,
 ) -> None:
+    course_id, content_id, content_format = course.id, content.id, content.format
     started = monotonic()
     expected_status = GenerationStatus.pending
     status = GenerationStatus.failed
@@ -210,7 +308,6 @@ def _process_content(
         if reserved is None:
             return
         expected_status = GenerationStatus.running
-        content = session.get_one(CourseContent, content_id)
         request, error_message = _write_request(session, course, content)
         if request is not None:
             # A chamada ao Gemini pode levar dezenas de segundos.
@@ -219,6 +316,15 @@ def _process_content(
             attempts = result.attempts
             error_message = result.error_message
             if result.decision == Decision.publish:
+                if _lock_generation(session, course_id, generation_id) is None or (
+                    session.exec(
+                        select(col(CourseContent.status)).where(
+                            col(CourseContent.id) == content_id
+                        )
+                    ).one()
+                    != GenerationStatus.running
+                ):
+                    return
                 error_message = _publish(session, storage, content_id, result, request)
                 if error_message is None:
                     status = GenerationStatus.succeeded
@@ -229,12 +335,22 @@ def _process_content(
         session.rollback()
         with Session(engine) as recovery:
             if not _fail_content(
-                recovery, content_id, expected_status, GENERATION_FAILED
+                recovery,
+                course_id,
+                generation_id,
+                content_id,
+                expected_status,
+                GENERATION_FAILED,
             ):
                 return
     else:
         if status == GenerationStatus.failed and not _fail_content(
-            session, content_id, expected_status, error_message
+            session,
+            course_id,
+            generation_id,
+            content_id,
+            expected_status,
+            error_message,
         ):
             return
 
@@ -245,10 +361,14 @@ def _process_content(
 
 def _fail_content(
     session: Session,
+    course_id: uuid.UUID,
+    generation_id: uuid.UUID,
     content_id: uuid.UUID,
     expected_status: GenerationStatus,
     message: str | None,
 ) -> bool:
+    if _lock_generation(session, course_id, generation_id) is None:
+        return False
     failed = session.exec(
         _fail_content_update(message)
         .where(
@@ -261,54 +381,60 @@ def _fail_content(
     return failed is not None
 
 
-def _finish_course(session: Session, course_id: uuid.UUID) -> CourseStatus | None:
+def _finish_course(session: Session, course: Course) -> CourseStatus:
     active_or_published = select(col(CourseContent.id)).where(
-        col(CourseContent.course_id) == course_id,
+        col(CourseContent.course_id) == course.id,
         or_(
-            col(CourseContent.status).in_(
-                (GenerationStatus.pending, GenerationStatus.running)
-            ),
+            col(CourseContent.status).in_(ACTIVE_STATUSES),
             col(CourseContent.content).is_not(None)
             & col(CourseContent.oci_object_key).is_not(None),
         ),
     )
-    session.exec(
-        update(Course)
-        .where(
-            col(Course.id) == course_id,
-            col(Course.status) == CourseStatus.initializing,
-            ~active_or_published.exists(),
-        )
-        .values(status=CourseStatus.failed, updated_at=get_datetime_utc())
-    )
-    session.commit()
-    return session.exec(
-        select(col(Course.status)).where(col(Course.id) == course_id)
-    ).first()
+    if (
+        course.status == CourseStatus.initializing
+        and not session.exec(select(active_or_published.exists())).one()
+    ):
+        course.status = CourseStatus.failed
+        course.updated_at = get_datetime_utc()
+    course.generation_id = None
+    return course.status
 
 
-def run_course_generation(*, storage: Storage, course_id: uuid.UUID) -> None:
+def run_course_generation(
+    *, storage: Storage, course_id: uuid.UUID, generation_id: uuid.UUID
+) -> None:
     started = monotonic()
+    status: CourseStatus | None
     try:
-        with Session(engine) as session:
-            course = session.get(Course, course_id)
-            if course is None:
+        with Session(engine, expire_on_commit=False) as session:
+            if session.get(Course, course_id) is None:
                 logger.warning("Curso não encontrado course_id=%s", course_id)
                 return
-            if _index_documents(session, storage, course_id):
-                contents = session.exec(
-                    select(col(CourseContent.id), col(CourseContent.format))
-                    .where(
-                        col(CourseContent.course_id) == course_id,
-                        col(CourseContent.status) == GenerationStatus.pending,
-                    )
-                    .order_by(col(CourseContent.position))
-                ).all()
-                for content_id, content_format in contents:
-                    _process_content(
-                        session, storage, course, course_id, content_id, content_format
-                    )
-            status = _finish_course(session, course_id)
+            if _index_documents(session, storage, course_id, generation_id):
+                while True:
+                    course = _lock_generation(session, course_id, generation_id)
+                    if course is None:
+                        return
+                    content = session.exec(
+                        select(CourseContent)
+                        .where(
+                            col(CourseContent.course_id) == course_id,
+                            col(CourseContent.status) == GenerationStatus.pending,
+                        )
+                        .order_by(col(CourseContent.position))
+                        .limit(1)
+                    ).first()
+                    if content is None:
+                        status = _finish_course(session, course)
+                        session.commit()
+                        break
+                    _process_content(session, storage, course, content, generation_id)
+                    session.rollback()
+            else:
+                session.rollback()
+                status = session.exec(
+                    select(col(Course.status)).where(col(Course.id) == course_id)
+                ).first()
         logger.info(
             "course_id=%s estado=%s segundos=%.3f",
             course_id,
