@@ -6,7 +6,7 @@ from app.models import AudienceLevel, ContentFormat
 from app.services.content_schemas import GENERATED_MODELS, GeneratedBase
 from app.services.retrieval import RetrievedChunk
 
-PROMPT_VERSION = "escreve-v2"
+PROMPT_VERSION = "escreve-v3"
 
 TUTORIAL_INSTRUCTION = (
     "Escreva um tutorial com resumo de abertura, de 1 a 8 seções em Markdown "
@@ -19,9 +19,20 @@ FLASHCARDS_INSTRUCTION = (
     "trechos do documento. A dica é opcional e ajuda a lembrar a resposta sem "
     "trazer um fato técnico novo. Cartões diferentes não podem repetir a mesma pergunta."
 )
+QUIZ_INSTRUCTION = (
+    "Escreva exatamente 5 perguntas. Cada pergunta deve tratar de um fato ou "
+    "conceito dos trechos do documento. Perguntas diferentes devem tratar de fatos distintos. "
+    "Dê exatamente 4 opções distintas por pergunta, com uma única resposta correta. "
+    "Use correct_index de 0 a 3 para indicar a resposta correta e varie a posição "
+    "da resposta correta entre as perguntas. As opções incorretas devem ser plausíveis "
+    "para o nível de público. Os trechos devem permitir distinguir a resposta correta "
+    "das demais. Explique a resposta correta na justificativa com fatos dos trechos. "
+    "Todo fato no enunciado ou na justificativa deve ter apoio nos trechos."
+)
 FORMAT_INSTRUCTIONS = {
     ContentFormat.tutorial: TUTORIAL_INSTRUCTION,
     ContentFormat.flashcards: FLASHCARDS_INSTRUCTION,
+    ContentFormat.quiz: QUIZ_INSTRUCTION,
 }
 AUDIENCE_INSTRUCTIONS = {
     AudienceLevel.non_technical: "Evite jargão, use analogias cotidianas e explique para que serve antes de como funciona.",
