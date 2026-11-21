@@ -85,9 +85,9 @@ Depois de uma falha, a pessoa clica em "Tentar novamente" no conteúdo que falho
 
 ## Excluir um curso
 
-A pessoa exclui um curso que não está em geração. O produto apaga o curso, os documentos e os conteúdos, no banco e no OCI. Um curso em geração não pode ser excluído.
+No resumo do curso, clique em "Excluir curso" e confirme. Se algum conteúdo estiver na fila ou em geração, o botão fica desabilitado.
 
-Excluir a conta apaga todos os cursos da pessoa da mesma forma. A rota de exclusão de conta já existe e ainda não limpa o OCI, porque o produto ainda não grava arquivos lá.
+Para excluir a conta, todos os cursos precisam estar fora da fila e da geração. Em ambos os casos, o produto apaga os dados no banco e remove os documentos e os JSON da OCI em segundo plano.
 
 ## O que fica fora
 

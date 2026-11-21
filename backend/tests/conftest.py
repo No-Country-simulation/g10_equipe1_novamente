@@ -7,7 +7,7 @@ from sqlmodel import Session, delete
 from app.core.config import settings
 from app.core.db import engine
 from app.main import app
-from app.models import User
+from app.models import CourseObjectCleanup, User
 from tests.utils.user import authentication_token_from_email
 
 
@@ -15,15 +15,16 @@ from tests.utils.user import authentication_token_from_email
 def db() -> Generator[Session]:
     with Session(engine) as session:
         yield session
+        session.exec(delete(CourseObjectCleanup))
         statement = delete(User)
         session.execute(statement)
         session.commit()
 
 
 @pytest.fixture(scope="module")
-def client() -> Generator[TestClient]:
-    with TestClient(app) as c:
-        yield c
+def client() -> TestClient:
+    # Os testes de rotas inspecionam as pendências com o limpador parado.
+    return TestClient(app)
 
 
 @pytest.fixture(scope="module")

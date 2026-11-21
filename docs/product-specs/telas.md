@@ -15,7 +15,7 @@ As cores e as fontes da marca já estão aplicadas no frontend.
 | Acesso | Entra com e-mail e senha, ou cria uma conta | `/login`, `/signup` | Existe |
 | Cursos | Vê seus cursos com título, nível e estado. Abre um curso. Clica em "Novo curso" | `/courses` | A construir |
 | Novo curso | Preenche o curso em 3 passos (ver abaixo) | `/courses/new` | A construir |
-| Curso | Vê os conteúdos do curso em ordem, com o estado de cada um, e lê um conteúdo | `/courses/$courseId`, `/courses/$courseId/contents/$contentId` | A construir |
+| Curso | Vê os conteúdos em ordem e seus estados, lê um conteúdo e pode excluir o curso pelo resumo | `/courses/$courseId`, `/courses/$courseId/contents/$contentId` | A construir |
 | Dados da conta | Muda nome, e-mail e senha. Exclui a conta | `/settings` | Existe |
 
 Com um só conteúdo, `/courses/$courseId` mostra o conteúdo direto. Com mais de um, ela mostra um cartão por conteúdo, e cada cartão abre o conteúdo em `/courses/$courseId/contents/$contentId`.

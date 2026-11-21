@@ -2,7 +2,7 @@
 
 import { type Client, formDataBodySerializer, type Options as Options2, type TDataShape, urlSearchParamsBodySerializer } from './client';
 import { client } from './client.gen';
-import type { coursesCreateCourseData, coursesCreateCourseErrors, coursesCreateCourseResponses, coursesReadCourseData, coursesReadCourseErrors, coursesReadCourseResponses, coursesReadCoursesData, coursesReadCoursesResponses, loginLoginAccessTokenData, loginLoginAccessTokenErrors, loginLoginAccessTokenResponses, loginTestTokenData, loginTestTokenResponses, nichesReadNichesData, nichesReadNichesResponses, privateCreateCourseData, privateCreateCourseErrors, privateCreateCourseResponses, privateCreateUserData, privateCreateUserErrors, privateCreateUserResponses, usersDeleteUserMeData, usersDeleteUserMeResponses, usersReadUserMeData, usersReadUserMeResponses, usersRegisterUserData, usersRegisterUserErrors, usersRegisterUserResponses, usersUpdatePasswordMeData, usersUpdatePasswordMeErrors, usersUpdatePasswordMeResponses, usersUpdateUserMeData, usersUpdateUserMeErrors, usersUpdateUserMeResponses, utilsHealthCheckData, utilsHealthCheckResponses } from './types.gen';
+import type { coursesCreateCourseData, coursesCreateCourseErrors, coursesCreateCourseResponses, coursesDeleteCourseData, coursesDeleteCourseErrors, coursesDeleteCourseResponses, coursesReadCourseData, coursesReadCourseErrors, coursesReadCourseResponses, coursesReadCoursesData, coursesReadCoursesResponses, loginLoginAccessTokenData, loginLoginAccessTokenErrors, loginLoginAccessTokenResponses, loginTestTokenData, loginTestTokenResponses, nichesReadNichesData, nichesReadNichesResponses, privateCreateCourseData, privateCreateCourseErrors, privateCreateCourseResponses, privateCreateUserData, privateCreateUserErrors, privateCreateUserResponses, usersDeleteUserMeData, usersDeleteUserMeResponses, usersReadUserMeData, usersReadUserMeResponses, usersRegisterUserData, usersRegisterUserErrors, usersRegisterUserResponses, usersUpdatePasswordMeData, usersUpdatePasswordMeErrors, usersUpdatePasswordMeResponses, usersUpdateUserMeData, usersUpdateUserMeErrors, usersUpdateUserMeResponses, utilsHealthCheckData, utilsHealthCheckResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -189,6 +189,17 @@ export class CoursesService {
                 'Content-Type': null,
                 ...options.headers
             }
+        });
+    }
+    
+    /**
+     * Delete Course
+     */
+    public static deleteCourse<ThrowOnError extends boolean = true>(options: Options<coursesDeleteCourseData, ThrowOnError>) {
+        return (options.client ?? client).delete<coursesDeleteCourseResponses, coursesDeleteCourseErrors, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/courses/{course_id}',
+            ...options
         });
     }
     

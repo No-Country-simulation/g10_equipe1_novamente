@@ -1,10 +1,32 @@
+from concurrent.futures import ThreadPoolExecutor
+from queue import Queue
+from threading import Event
+from time import monotonic, sleep
+from unittest.mock import Mock
+
 from fastapi.testclient import TestClient
-from sqlmodel import Session, select
+from sqlalchemy import event, text
+from sqlmodel import Session, col, select
 
 from app import crud
 from app.core.config import settings
+from app.core.db import engine
 from app.core.security import verify_password
-from app.models import User, UserCreate, UserUpdate
+from app.core.storage import InMemoryStorage, get_storage
+from app.main import app
+from app.models import (
+    AudienceLevel,
+    ContentFormat,
+    Course,
+    CourseContent,
+    CourseObjectCleanup,
+    GenerationStatus,
+    Niche,
+    User,
+    UserCreate,
+    UserUpdate,
+)
+from app.services import course_generation
 from tests.utils.user import create_random_user, user_authentication_headers
 from tests.utils.utils import random_email, random_lower_string
 
@@ -162,6 +184,24 @@ def test_delete_user_me(client: TestClient, db: Session) -> None:
     user_in = UserCreate(email=username, password=password)
     user = crud.create_user(session=db, user_create=user_in)
     user_id = user.id
+    niche_id = db.exec(select(Niche.id).where(col(Niche.slug) == "geral")).one()
+    courses = [
+        Course(
+            owner_id=user_id,
+            niche_id=niche_id,
+            title=title,
+            audience_level=AudienceLevel.non_technical,
+        )
+        for title in ("Curso A", "Curso B")
+    ]
+    course_ids = [course.id for course in courses]
+    active = CourseContent(
+        course_id=course_ids[1], format=ContentFormat.tutorial, focus="Foco"
+    )
+    db.add_all(courses)
+    db.flush()
+    db.add(active)
+    db.commit()
 
     login_data = {
         "username": username,
@@ -172,16 +212,102 @@ def test_delete_user_me(client: TestClient, db: Session) -> None:
     a_token = tokens["access_token"]
     headers = {"Authorization": f"Bearer {a_token}"}
 
-    r = client.delete(
-        f"{settings.API_V1_STR}/users/me",
-        headers=headers,
+    url = f"{settings.API_V1_STR}/users/me"
+    r = client.delete(url, headers=headers)
+    assert r.status_code == 409
+    assert (
+        r.json()["detail"]
+        == "Espere a geração dos seus cursos terminar para excluir a conta."
     )
-    assert r.status_code == 200
-    deleted_user = r.json()
-    assert deleted_user["message"] == "User deleted successfully"
-    result = db.exec(select(User).where(User.id == user_id)).first()
-    assert result is None
+    assert client.get(url, headers=headers).status_code == 200
+    for course_id in course_ids:
+        assert (
+            client.get(
+                f"{settings.API_V1_STR}/courses/{course_id}", headers=headers
+            ).status_code
+            == 200
+        )
+        assert db.get(CourseObjectCleanup, course_id) is None
 
-    user_query = select(User).where(User.id == user_id)
-    user_db = db.execute(user_query).first()
-    assert user_db is None
+    active.status = GenerationStatus.failed
+    db.commit()
+    active_id = active.id
+    r = client.delete(url, headers=headers)
+    assert r.status_code == 200
+    assert r.json()["message"] == "User deleted successfully"
+    db.expire_all()
+    assert db.get(User, user_id) is None
+    assert db.get(CourseContent, active_id) is None
+    for course_id in course_ids:
+        assert db.get(Course, course_id) is None
+        assert db.get(CourseObjectCleanup, course_id) is not None
+
+
+def test_account_deletion_waits_for_upload_and_sees_new_course(client, db, monkeypatch):
+    password = random_lower_string()
+    owner = crud.create_user(
+        session=db, user_create=UserCreate(email=random_email(), password=password)
+    )
+    headers = user_authentication_headers(
+        client=client, email=owner.email, password=password
+    )
+    niche_id = db.exec(select(Niche.id).where(col(Niche.slug) == "geral")).one()
+    uploading, finish_upload = Event(), Event()
+    deleting_pid: Queue[int] = Queue()
+
+    class PausedStorage(InMemoryStorage):
+        def put(self, key, data, content_type):
+            uploading.set()
+            assert finish_upload.wait(10)
+            super().put(key, data, content_type)
+
+    def observe_owner_lock(connection, _cursor, statement, *_args):
+        if 'FROM "user"' in statement and "FOR UPDATE" in statement:
+            deleting_pid.put(connection.connection.driver_connection.info.backend_pid)
+
+    monkeypatch.setitem(app.dependency_overrides, get_storage, PausedStorage)
+    monkeypatch.setattr(course_generation, "run_course_generation", Mock())
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        creation = pool.submit(
+            client.post,
+            f"{settings.API_V1_STR}/courses/",
+            headers=headers,
+            data={
+                "title": "Curso novo",
+                "niche_id": niche_id,
+                "audience_level": "non_technical",
+                "formats": "tutorial",
+            },
+            files={"files": ("guia.md", b"Texto do curso", "text/markdown")},
+        )
+        try:
+            assert uploading.wait(5)
+            event.listen(engine, "before_cursor_execute", observe_owner_lock)
+            try:
+                deletion = pool.submit(
+                    client.delete, f"{settings.API_V1_STR}/users/me", headers=headers
+                )
+                pid = deleting_pid.get(timeout=5)
+                deadline = monotonic() + 5
+                while not db.execute(
+                    text("SELECT pg_blocking_pids(:pid)"), {"pid": pid}
+                ).scalar_one():
+                    assert monotonic() < deadline, (
+                        "A exclusão deveria esperar o lock da criação."
+                    )
+                    sleep(0.01)
+            finally:
+                event.remove(engine, "before_cursor_execute", observe_owner_lock)
+        finally:
+            finish_upload.set()
+
+        created = creation.result(timeout=5)
+        assert created.status_code == 201, created.text
+        assert deletion.result(timeout=5).status_code == 409
+
+    assert (
+        client.get(
+            f"{settings.API_V1_STR}/courses/{created.json()['id']}", headers=headers
+        ).status_code
+        == 200
+    )

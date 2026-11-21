@@ -141,9 +141,9 @@ As dez regras de ciclo de vida do curso ficam em [`generated/db-schema.md`](gene
 | Segunda revisão com foco coberto e afirmações sem apoio | O conteúdo fica `failed`. `error_message` começa com “Afirmações sem apoio no documento:” e lista cada afirmação sem apoio em uma linha. |
 | Processo cai durante a geração | A geração conta como interrompida quando nenhum conteúdo do curso muda de estado por 10 minutos e algum está `pending` ou `running`. O backend marca esses conteúdos como `failed` na próxima consulta ao curso. |
 | Nova tentativa | A pessoa pede a nova tentativa de um conteúdo. O backend muda o conteúdo de `failed` para `pending` em uma única operação. Um segundo pedido recebe HTTP 409. A tarefa só indexa de novo o documento que não está `indexed`. |
-| Exclusão de curso | O backend recusa com HTTP 409 se há geração ativa. Depois apaga as linhas e, em tarefa de fundo, os objetos sob `courses/{course_id}/`. |
-| Exclusão de conta | `DELETE /api/v1/users/me` já existe e apaga os cursos em cascata. O backend precisa coletar os `course_id` antes e fazer a mesma limpeza. |
-| Limpeza no OCI falha | O backend registra o `course_id` e o erro no log. O objeto fica sem uso. |
+| Exclusão de curso | A API responde HTTP 409 se há conteúdo na fila ou em geração. Caso contrário, apaga o curso em cascata e registra a limpeza de `courses/{course_id}/` na mesma transação. |
+| Exclusão de conta | A API responde HTTP 409 se algum curso tem conteúdo na fila ou em geração. Caso contrário, apaga a conta em cascata e registra uma pendência por curso na mesma transação. |
+| Limpeza no OCI falha | A tarefa de fundo busca pendências ao iniciar e a cada 30 segundos. Se a OCI falhar, registra os metadados do erro e tenta de novo após pelo menos um minuto. |
 
 A API trata as falhas na criação e a tarefa de fundo trata as falhas na geração. A exclusão de conta já apaga as linhas no banco. A regra dos 10 minutos, a nova tentativa e a limpeza de objetos ao excluir um curso ou uma conta estão a construir.
 
