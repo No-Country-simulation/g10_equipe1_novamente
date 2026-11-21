@@ -17,7 +17,7 @@ Cada trecho citado existe no documento que a pessoa enviou.
 
 ## Como o produto decide publicar
 
-1. O revisor confere o material de estudo (`content`) e verifica se ele trata diretamente do foco com apoio nos trechos recuperados. Os metadados da raiz do JSON ficam fora da revisão.
+1. O revisor confere o material de estudo e verifica se ele trata diretamente do foco com apoio nos trechos recuperados. Para quiz, o material traz o enunciado, a resposta marcada e a justificativa de cada pergunta. Para tutorial e flashcards, o revisor recebe o campo `content`. Os trechos servem de evidência para os fatos do material. Os metadados da raiz do JSON ficam fora da revisão.
 2. O revisor lista as afirmações técnicas e aponta o trecho que sustenta cada uma, ou indica que não há apoio.
 3. O produto divide o número de afirmações sustentadas pelo total de afirmações. Se a revisão não lista afirmações, a nota é zero.
 4. Se o foco não é coberto, a geração falha de imediato com “O documento não trata do assunto pedido.”

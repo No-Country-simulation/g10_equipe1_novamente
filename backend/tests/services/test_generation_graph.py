@@ -190,7 +190,7 @@ def test_plan_error_stops_before_first_write(request_data, agents):
 
 
 def test_prompt_version_includes_all_agents():
-    assert PROMPT_VERSION == "planeja-v1+escreve-v4+revisa-v2"
+    assert PROMPT_VERSION == "planeja-v1+escreve-v4+revisa-v3"
 
 
 @pytest.mark.parametrize(
