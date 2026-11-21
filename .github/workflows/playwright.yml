@@ -45,6 +45,8 @@ jobs:
     if: ${{ needs.changes.outputs.changed == 'true' }}
     timeout-minutes: 15
     runs-on: ubuntu-latest
+    env:
+      COMPOSE_FILE: compose.yml:compose.override.yml:compose.playwright.yml
     strategy:
       matrix:
         shardIndex: [1, 2, 3, 4]
@@ -82,7 +84,9 @@ jobs:
     - run: docker compose down -v --remove-orphans
     - run: docker compose run --rm backend bash scripts/prestart.sh
     - name: Run Playwright tests
-      run: docker compose run --rm playwright bunx playwright test --fail-on-flaky-tests --trace=retain-on-failure --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
+      run: |
+        docker compose up -d --wait backend
+        docker compose run --rm playwright bunx playwright test --fail-on-flaky-tests --trace=retain-on-failure --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
     - run: docker compose down -v --remove-orphans
     - name: Upload blob report to GitHub Actions Artifacts
       if: ${{ !cancelled() }}
