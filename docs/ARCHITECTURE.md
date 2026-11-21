@@ -219,7 +219,7 @@ A equipe usa só recursos marcados como Always Free e não muda a conta para Pay
 - **Esquema**: `backend/tests/test_schema.py` compara o catálogo do PostgreSQL com o ERD.
 - **Modelo**: os testes trocam as funções de `llm.py` por funções determinísticas. Nenhum teste automático chama a API Gemini.
 - **Frontend**: Playwright contra o backend do Compose, sem chave Gemini.
-- **Revisor**: um conjunto de casos com erros plantados mede o revisor com o modelo real. Roda à mão, fora do CI. A construir.
+- **Avaliação**: [`backend/scripts/evaluate.py`](../backend/scripts/evaluate.py). O script mede a busca, o revisor e a geração com o modelo real, a partir dos [casos de avaliação](../examples/evals/README.md). Roda à mão, fora do CI.
 
 ## Decisões
 

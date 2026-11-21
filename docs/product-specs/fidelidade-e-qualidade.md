@@ -41,7 +41,7 @@ O revisor só vê os trechos que a busca encontrou. Uma afirmação correta, bas
 
 ## Como a equipe mede a qualidade
 
-O T30 mede quantos conteúdos fiéis a regra reprova após a reescrita, quando houver. A avaliação distingue os trechos de apoio que a busca deixou de recuperar dos trechos disponíveis que o revisor deixou de reconhecer.
+[`backend/scripts/evaluate.py`](../../backend/scripts/evaluate.py) mede a busca, registra as decisões do revisor e da geração e mostra pistas para a equipe conferir as reprovações em T41. Veja o [guia de casos de avaliação](../../examples/evals/README.md).
 
 As metas abaixo são o ponto de partida. Nenhuma foi medida ainda. A equipe ajusta cada meta depois da primeira medição.
 
