@@ -1,18 +1,22 @@
 import uuid
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from datetime import timedelta
 from threading import Event
+from time import monotonic, sleep
 from unittest.mock import Mock
 
 import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy import text
 from sqlmodel import Session
 
 from app.api.routes import courses
+from app.core.db import engine
 from app.core.security import create_access_token
 from app.core.storage import InMemoryStorage, StorageError, get_storage
 from app.main import app
-from app.models import Course, CourseContent, get_datetime_utc
+from app.models import Course, CourseContent, CourseObjectCleanup, get_datetime_utc
 from app.services import course_generation
 from tests.utils.course import create_course
 from tests.utils.user import create_random_user
@@ -84,6 +88,66 @@ def test_retry_returns_pending_and_starts_one_task(client, db, case, task, ready
     generation.assert_called_once_with(
         storage=storage, course_id=case.course_id, generation_id=course.generation_id
     )
+
+
+@pytest.mark.parametrize("retry_first", [True, False])
+def test_delete_and_retry_lock_the_same_course(
+    client, db, case, task, monkeypatch, retry_first
+):
+    at_commit, release = Event(), Event()
+    commit = Session.commit
+
+    def hold_first_commit(session):
+        if not at_commit.is_set():
+            at_commit.set()
+            assert release.wait(10)
+        commit(session)
+
+    monkeypatch.setattr(Session, "commit", hold_first_commit)
+    retry = (client.post, case.url)
+    delete = (client.delete, f"/api/v1/courses/{case.course_id}")
+    first, second = (retry, delete) if retry_first else (delete, retry)
+
+    with ThreadPoolExecutor(max_workers=2) as workers:
+        first_response = workers.submit(*first, headers=case.headers)
+        try:
+            assert at_commit.wait(5)
+            second_response = workers.submit(*second, headers=case.headers)
+            with engine.connect().execution_options(
+                isolation_level="AUTOCOMMIT"
+            ) as observer:
+                deadline = monotonic() + 5
+                while monotonic() < deadline:
+                    waiting = observer.execute(
+                        text("""
+                        SELECT EXISTS (
+                            SELECT FROM pg_stat_activity
+                            WHERE datname = current_database()
+                              AND wait_event_type = 'Lock'
+                              AND query LIKE 'SELECT course.%FOR UPDATE%'
+                        )
+                        """)
+                    ).scalar_one()
+                    if waiting:
+                        break
+                    sleep(0.01)
+                else:
+                    pytest.fail("O segundo pedido não esperou pelo lock do curso.")
+        finally:
+            release.set()
+
+        expected = (202, 409) if retry_first else (204, 404)
+        assert (
+            first_response.result(5).status_code,
+            second_response.result(5).status_code,
+        ) == expected
+
+    if retry_first:
+        task[0].assert_called_once()
+        assert db.get(CourseObjectCleanup, case.course_id) is None
+    else:
+        task[0].assert_not_called()
+        assert db.get(CourseObjectCleanup, case.course_id) is not None
 
 
 @pytest.mark.parametrize(
