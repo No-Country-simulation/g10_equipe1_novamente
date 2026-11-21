@@ -96,7 +96,7 @@ Tickets escritos da onda 3:
 | [`T27`](docs/tickets/completed/T27-novo-curso-passos-2-e-3.md) | Novo curso, passos 2 e 3, e envio |
 | [`T38`](docs/tickets/completed/T38-tela-curso-avaliacao.md) | Tela "Curso": fidelidade, clareza, observações e trechos citados |
 
-Na onda 4, só o [T26](docs/tickets/T26-agente-escreve-quiz.md), agente `escreve` para quiz, está escrito. Os demais tickets das ondas 4 a 6 estão na [tabela de ondas](docs/tickets/README.md#ondas).
+O [T26](docs/tickets/completed/T26-agente-escreve-quiz.md), agente `escreve` para quiz, está completo. Os demais tickets das ondas 4 a 6 ainda não foram escritos e estão na [tabela de ondas](docs/tickets/README.md#ondas).
 
 ## Fora de `docs/`
 

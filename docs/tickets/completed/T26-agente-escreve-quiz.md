@@ -13,7 +13,7 @@ size: 2
 
 ## Contexto
 
-`write_content` aceita tutorial (T20) e passa a aceitar flashcards com T25. Um pedido de quiz levanta `UnsupportedFormatError` até este ticket. T05 entregou `GeneratedQuiz`. A [verificação de 19/11/2026 com o Gemini](../ARCHITECTURE.md#modelos-de-ia) confirmou que a API aceita o schema.
+`write_content` aceita tutorial (T20) e passa a aceitar flashcards com T25. Um pedido de quiz levanta `UnsupportedFormatError` até este ticket. T05 entregou `GeneratedQuiz`. A [verificação de 19/11/2026 com o Gemini](../../ARCHITECTURE.md#modelos-de-ia) confirmou que a API aceita o schema.
 
 T40 faz `revisa` conferir só `content`. No quiz, a revisão confere as afirmações técnicas do enunciado, da resposta correta e da justificativa. As opções erradas funcionam como alternativas de resposta.
 
@@ -21,7 +21,7 @@ O JSON conserva `correct_index` para a revisão e para a correção imediata, qu
 
 T25 e T26 editam `PROMPT_VERSION` e `FORMAT_INSTRUCTIONS` em `writer.py`, além do teste de formato sem instrução em `test_writer.py`. Por isso T26 espera T25.
 
-Leia antes a seção [Quiz](../product-specs/conteudos-e-formatos.md#quiz), [T20](completed/T20-agente-escreve-tutorial.md), [T25](completed/T25-agente-escreve-flashcards.md), [T40](completed/T40-regras-de-fidelidade.md) e `backend/app/services/writer.py`.
+Leia antes a seção [Quiz](../../product-specs/conteudos-e-formatos.md#quiz), [T20](T20-agente-escreve-tutorial.md), [T25](T25-agente-escreve-flashcards.md), [T40](T40-regras-de-fidelidade.md) e `backend/app/services/writer.py`.
 
 ## Escopo
 
@@ -89,18 +89,18 @@ Em `backend/tests/services/test_writer.py`, retire de `test_writer` o caso de qu
 
 ## Verificação com a API real
 
-Com o Gemini configurado, use o foco e os trechos do caso de assunto presente da [verificação de T40](completed/T40-regras-de-fidelidade.md#verificação-com-a-api-real). Rode `write_content` com `ContentFormat.quiz`. Passe o resultado a `review_content`, com o mesmo foco, nível e trechos. Chame `evaluate` e `decide` conforme o contrato de T40, com `attempt=1`.
+Com o Gemini configurado, use o foco e os trechos do caso de assunto presente da [verificação de T40](T40-regras-de-fidelidade.md#verificação-com-a-api-real). Rode `write_content` com `ContentFormat.quiz`. Passe o resultado a `review_content`, com o mesmo foco, nível e trechos. Chame `evaluate` e `decide` conforme o contrato de T40, com `attempt=1`.
 
 Registre no PR o `correct_index` de cada pergunta, a decisão, `focus_covered`, as contagens de afirmações com e sem apoio e a lista das que ficaram sem apoio. Indique se a revisão contou alguma afirmação presente só nas opções erradas ou nos metadados. Mantenha o código da verificação fora do PR. Sem acesso ao Gemini, registre que você pulou a verificação.
 
 ## Critérios de aceite
 
-- [ ] `write_content` com `ContentFormat.quiz` chama o modelo uma vez, com `response_model=GeneratedQuiz`, e devolve a instância.
-- [ ] A reescrita de quiz traz a versão anterior e as afirmações sem apoio, como no tutorial.
-- [ ] Os três formatos têm instruções, a conferência de formato sem instrução tem teste e `PROMPT_VERSION` é `"escreve-v3"` neste ticket.
-- [ ] Nenhum teste chama o Gemini.
-- [ ] Os hooks e os testes passam, com cobertura de 90% ou mais.
-- [ ] O PR relata a verificação com a API real, ou diz que ela não rodou.
+- [x] `write_content` com `ContentFormat.quiz` chama o modelo uma vez, com `response_model=GeneratedQuiz`, e devolve a instância.
+- [x] A reescrita de quiz traz a versão anterior e as afirmações sem apoio, como no tutorial.
+- [x] Os três formatos têm instruções, a conferência de formato sem instrução tem teste e `PROMPT_VERSION` é `"escreve-v3"` neste ticket.
+- [x] Nenhum teste chama o Gemini.
+- [x] Os hooks e os testes passam, com cobertura de 90% ou mais.
+- [x] O PR relata a verificação com a API real, ou diz que ela não rodou.
 
 ## Cenários de teste
 
@@ -112,3 +112,11 @@ Em `backend/tests/services/test_writer.py`, troque `llm.generate_structured` por
 4. A reescrita com um `Rewrite` de quiz traz no `prompt` o JSON da versão anterior e cada afirmação sem apoio. Use um enunciado anterior distinto para identificar a versão.
 5. Um `Rewrite` com um `GeneratedFlashcards` para um pedido de quiz levanta `ValueError`, com zero chamadas.
 6. Retire a entrada do quiz com `monkeypatch.delitem(writer.FORMAT_INSTRUCTIONS, ContentFormat.quiz)`. O pedido de quiz levanta `UnsupportedFormatError`, com zero chamadas. `monkeypatch` restaura a entrada ao fim do teste.
+
+## Verificação do aceite
+
+- PR revisado: [#41](https://github.com/No-Country-simulation/g10_equipe1_novamente/pull/41), integrado no commit `e55afd5`.
+- CI do PR: todos os checks obrigatórios passaram, com escopo dentro de `touches`.
+- Revisão automática sobre o commit `7b81e26`: sem achados. Só o prompt pede que a posição da opção correta varie, porque o ticket não permite mudar `GeneratedQuiz`. O schema já garante uma única opção correta.
+- Testes: 334 testes passaram, com 98% de cobertura no backend.
+- Verificação com a API real: relatada no PR, com `correct_index` `[0, 2, 1, 1, 0]`, decisão `publish`, 5 afirmações com apoio e nenhuma tirada de opções incorretas ou dos metadados.
