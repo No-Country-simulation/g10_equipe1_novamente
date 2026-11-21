@@ -10,7 +10,7 @@ from sqlmodel import Session, select
 from app.core.config import settings
 from app.core.storage import InMemoryStorage, StorageError, document_key, get_storage
 from app.main import app
-from app.models import CourseContent, Niche, SourceDocument
+from app.models import Course, CourseContent, Niche, SourceDocument
 from app.services import course_generation
 from tests.utils.user import authentication_token_from_email, create_random_user
 
@@ -66,9 +66,13 @@ def test_create_course(client: TestClient, db: Session, headers, storage, genera
     response = send(client, headers, title=" Curso ", niche=str(niche.id))
     assert response.status_code == 201, response.text
     course = response.json()
+    course_id = uuid.UUID(course["id"])
+    generation_id = db.get_one(Course, course_id).generation_id
+    assert isinstance(generation_id, uuid.UUID)
     generation.assert_called_once_with(
-        storage=storage, course_id=uuid.UUID(course["id"])
+        storage=storage, course_id=course_id, generation_id=generation_id
     )
+    assert "generation_id" not in course
     assert course["title"] == "Curso"
     assert course["status"] == "initializing"
     assert course["niche"]["id"] == niche.id

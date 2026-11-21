@@ -136,6 +136,7 @@ class Niche(SQLModel, table=True):
 class Course(SQLModel, table=True):
     __tablename__ = "course"
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    generation_id: uuid.UUID | None = None
     owner_id: uuid.UUID = Field(foreign_key="user.id", ondelete="CASCADE", index=True)
     niche_id: int = Field(
         sa_column=sa.Column(

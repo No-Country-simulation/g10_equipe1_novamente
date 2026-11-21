@@ -106,7 +106,7 @@ A rota de criação agenda a tarefa de fundo após confirmar a transação.
 
 | Tabela | Coluna | Caminho comum | Caminho de falha |
 | --- | --- | --- | --- |
-| `course` | `status` | `initializing` → `ready`, no primeiro conteúdo publicado | `initializing` → `failed`, se nenhum conteúdo inicial é publicado |
+| `course` | `status` | `initializing` → `ready`, no primeiro conteúdo publicado | `initializing` → `failed` quando a fila acaba sem publicação. Uma nova tentativa muda `failed` → `initializing`. |
 | `source_document` | `status` | `uploaded` → `processing` → `indexed` | `processing` → `failed` |
 | `course_content` | `status` | `pending` → `running` → `succeeded` | `pending` ou `running` → `failed` |
 
@@ -139,21 +139,23 @@ As dez regras de ciclo de vida do curso ficam em [`generated/db-schema.md`](gene
 | Material sem cobertura do foco na revisão | O conteúdo fica `failed` de imediato, com “O documento não trata do assunto pedido.” |
 | Segunda revisão sem afirmações | O conteúdo fica `failed`, com “O documento não trata do assunto pedido.” |
 | Segunda revisão com foco coberto e afirmações sem apoio | O conteúdo fica `failed`. `error_message` começa com “Afirmações sem apoio no documento:” e lista cada afirmação sem apoio em uma linha. |
-| Processo cai durante a geração | A geração conta como interrompida quando nenhum conteúdo do curso muda de estado por 10 minutos e algum está `pending` ou `running`. O backend marca esses conteúdos como `failed` na próxima consulta ao curso. |
-| Nova tentativa | A pessoa pede a nova tentativa de um conteúdo. O backend muda o conteúdo de `failed` para `pending` em uma única operação. Um segundo pedido recebe HTTP 409. A tarefa só indexa de novo o documento que não está `indexed`. |
+| Processo cai durante a geração | Após 10 minutos sem progresso, o backend marca os conteúdos `pending` ou `running` e os documentos `processing` como `failed`. |
+| Nova tentativa | A API muda o conteúdo de `failed` para `pending` sob o lock do curso. O conteúdo entra na fila ativa ou a API agenda uma tarefa após o `commit`. Um segundo pedido recebe HTTP 409. |
 | Exclusão de curso | A API responde HTTP 409 se há conteúdo na fila ou em geração. Caso contrário, apaga o curso em cascata e registra a limpeza de `courses/{course_id}/` na mesma transação. |
 | Exclusão de conta | A API responde HTTP 409 se algum curso tem conteúdo na fila ou em geração. Caso contrário, apaga a conta em cascata e registra uma pendência por curso na mesma transação. |
 | Limpeza no OCI falha | A tarefa de fundo busca pendências ao iniciar e a cada 30 segundos. Se a OCI falhar, registra os metadados do erro e tenta de novo após pelo menos um minuto. |
 
-A API trata as falhas na criação e a tarefa de fundo trata as falhas na geração. A exclusão de conta já apaga as linhas no banco. A regra dos 10 minutos, a nova tentativa e a limpeza de objetos ao excluir um curso ou uma conta estão a construir.
+A API trata as falhas na criação e as tarefas de fundo tratam as falhas na geração e na limpeza de objetos.
+
+O UUID interno `course.generation_id` identifica a tarefa que pode gravar resultados. A tarefa valida o UUID e o prazo sob o lock do curso antes de gravar. Quando encerra, limpa o UUID na mesma transação.
+
+O backend recupera gerações paradas na inicialização e a cada 30 segundos. A recuperação fecha a fila e limpa o UUID na mesma transação. Linhas antigas sem UUID seguem o mesmo prazo. A pessoa inicia a nova tentativa pela tela do curso.
+
+O prazo usa o `updated_at` mais recente entre os conteúdos do curso. Sob o lock do curso, a tarefa atualiza o `updated_at` das saídas na fila na mesma transação que grava os chunks e marca cada documento como `indexed`. Cada documento concluído renova o prazo. Se a indexação ficar 10 minutos sem registrar progresso, a recuperação encerra a geração. A recuperação preserva publicações anteriores.
 
 O tempo de 10 minutos é uma estimativa. A equipe ajusta depois de medir o pior caso de uma geração.
 
-A tarefa de fundo não sobrevive a uma queda do processo e não tenta de novo sozinha. A equipe aceita esse limite para 10 usuários.
-
-A regra dos 10 minutos olha o `updated_at` mais recente entre os conteúdos do curso. Um conteúdo que espera a vez não conta sozinho como interrompido.
-
-`source_document` não tem `updated_at`. A regra cobre a indexação feita na criação do curso. Um documento adicionado depois a um curso pronto vai precisar de outra regra.
+`source_document` não tem `updated_at`. A regra cobre a indexação na criação do curso e na nova tentativa. Um documento adicionado depois a um curso pronto vai precisar de outra regra.
 
 ## Armazenamento de objetos
 
