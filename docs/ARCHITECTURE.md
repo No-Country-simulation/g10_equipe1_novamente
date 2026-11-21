@@ -218,7 +218,21 @@ A equipe usa só recursos marcados como Always Free e não muda a conta para Pay
 - **Backend**: `pytest` contra o PostgreSQL do Compose. O CI exige 90% de cobertura de `backend/app`.
 - **Esquema**: `backend/tests/test_schema.py` compara o catálogo do PostgreSQL com o ERD.
 - **Modelo**: os testes trocam as funções de `llm.py` por funções determinísticas. Nenhum teste automático chama a API Gemini.
-- **Frontend**: Playwright contra o backend do Compose, sem chave Gemini.
+- **Frontend**: O Playwright usa Chromium, a API do produto e PostgreSQL com pgvector. `compose.playwright.yml` monta um ponto de entrada de teste que substitui o OCI por armazenamento em memória e as chamadas ao Gemini por respostas determinísticas. A tarefa de fundo, a busca, o grafo, o cálculo da nota e a publicação usam o código do produto. O CI roda a suíte completa com a sobreposição.
+
+  Para rodar os dois cenários de geração, use um clone de teste com as portas do Compose livres. Na raiz do clone, rode:
+
+  ```bash
+  cp .env.example .env
+  cp frontend/.env.example frontend/.env
+  export COMPOSE_FILE=compose.yml:compose.override.yml:compose.playwright.yml
+  export COMPOSE_PROJECT_NAME=novamente-e2e
+  docker compose build backend playwright
+  docker compose run --rm backend bash scripts/prestart.sh
+  docker compose up -d --wait backend
+  docker compose run --rm playwright bunx playwright test tests/generation.spec.ts
+  ```
+
 - **Avaliação**: [`backend/scripts/evaluate.py`](../backend/scripts/evaluate.py). O script mede a busca, o revisor e a geração com o modelo real, a partir dos [casos de avaliação](../examples/evals/README.md). Roda à mão, fora do CI.
 
 ## Decisões
