@@ -1,0 +1,37 @@
+{
+  "title": "Fundamentos de HTTP, Requisições, Respostas e Segurança em APIs",
+  "estimated_minutes": 15,
+  "key_concepts": [
+    "HTTP",
+    "Códigos de Status",
+    "Autenticação",
+    "Autorização",
+    "JSON"
+  ],
+  "prerequisites": [
+    "Conceitos básicos de rede e desenvolvimento web"
+  ],
+  "content": {
+    "summary": "Este tutorial aborda os fundamentos do protocolo HTTP, incluindo métodos de requisição, códigos de status de sucesso, cliente e servidor, representações em JSON e a diferença entre autenticação e autorização.",
+    "sections": [
+      {
+        "title": "Métodos e Códigos de Status HTTP",
+        "body": "Requisições HTTP utilizam métodos como GET para consultar recursos e POST para criá-los. Os códigos de status indicam o resultado da operação: 200 (OK) sinaliza sucesso, 201 (Created) informa criação de recurso, 400 indica requisição inválida, 401 indica falta de credenciais válidas, 403 sinaliza acesso proibido, 404 indica recurso não encontrado e 500 representa falha inesperada no servidor."
+      },
+      {
+        "title": "Representações JSON",
+        "body": "O formato JSON pode representar objetos com pares chave/valor, arrays, textos, números, booleanos e null. O cabeçalho Content-Type: application/json descreve o formato enviado, embora o HTTP não obrigue que toda resposta utilize JSON."
+      },
+      {
+        "title": "Autenticação e Autorização",
+        "body": "Autenticação verifica a identidade do solicitante, enquanto autorização valida se essa identidade possui permissão para realizar determinada ação sobre um recurso. O backend valida os dados e confere tais permissões antes de executar operações."
+      }
+    ],
+    "takeaways": [
+      "Códigos de status como 200 e 201 indicam sucesso, enquanto códigos na faixa de 400 e 500 sinalizam erros do cliente ou do servidor.",
+      "O cabeçalho Content-Type: application/json é utilizado para descrever o formato JSON enviado nas mensagens.",
+      "Autenticação valida a identidade, e autorização valida se o usuário possui permissão para executar uma ação.",
+      "Respostas de erro devem informar o ocorrido sem expor segredos internos."
+    ]
+  }
+}

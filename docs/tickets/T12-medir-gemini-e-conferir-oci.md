@@ -85,6 +85,12 @@ Depois que T15 estiver no `master`, abra um PR de uma linha com o modelo escolhi
 
 ## Andamento
 
-Em 19/11/2026, `docs/ARCHITECTURE.md` e `.env.example` receberam os resultados: `gemini-embedding-2` devolve 768 dimensões, `gemini-3.5-flash-lite` aceita os quatro schemas e valida com `strict=True`, e `verify_storage.py` passou em `novamente-docs` (`sa-saopaulo-1`). A cota de embeddings não comporta documentos grandes no ritmo atual da indexação, e T39 corrige isso.
+Verificações e medições consolidadas em 16–18/11/2026. As evidências apontam `gemini-embedding-2` com 768 dimensões e `gemini-3.5-flash-lite` como modelo de texto selecionado. A chamada estruturada com `GeneratedTutorial` validou no Pydantic. O teste de recuperação foi sintético e controlado; os resultados não garantem precisão em produção.
+
+O bucket de desenvolvimento testado foi `novamente-docs`, na região `sa-saopaulo-1`, usando autenticação local por API signing key. PUT, GET, LIST e DELETE foram reportados como aprovados. A captura local confirma as configurações, mas não contém a saída das operações. Instance principal e publicação ponta a ponta continuam sem validação.
+
+O [registro de evidências do T12](evidences/t12/T12-evidencias.md) detalha resultados, consumo, latências, quotas, ocorrências e limitações. Ele também registra divergências identificadas nos artefatos e as referências primárias.
+
+A cota de embeddings não comporta documentos grandes no ritmo atual da indexação, e T39 corrige isso.
 
 Falta uma API signing key própria para cada pessoa que desenvolve. Hoje duas pessoas têm.

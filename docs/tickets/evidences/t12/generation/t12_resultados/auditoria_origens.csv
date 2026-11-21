@@ -1,0 +1,13 @@
+data_utc,modelo,cenario,status,origem_csv,linha_csv_origem,duracao_s_original,duracao_s_consolidada,ajuste_duracao,arquivo_resposta_presente,arquivo_saida
+2026-11-16T19:10:15.175919+00:00,gemini-3.5-flash-lite,simples,ok,resultados_t12_202611161634/medicoes.csv,2,8.36,8.36,sem_ajuste,sim,20261116T191015175919Z_gemini-3.5-flash-lite_simples.txt
+2026-11-16T19:11:16.758144+00:00,gemini-3.8-flash,simples,erro,resultados_t12_202611161634/medicoes.csv,3,3141,3.141,confirmado_em_captura,não_aplicável,
+2026-11-16T19:20:26.916861+00:00,gemini-3.8-flash,simples,erro,resultados_t12_202611161634/medicoes.csv,4,28531,28.531,confirmado_em_captura,não_aplicável,
+2026-11-16T19:24:14.530597+00:00,gemini-3.5-flash-lite,tutorial,erro,resultados_t12_202611161634/medicoes.csv,5,2405,2.405,confirmado_em_captura,não_aplicável,
+2026-11-16T19:34:16.637750+00:00,gemini-3.5-flash-lite,tutorial,ok,resultados_t12-old/medicoes.csv,2,1.898,1.898,sem_ajuste,sim,20261116T193416637750Z_gemini-3.5-flash-lite_tutorial.txt
+2026-11-16T19:39:58.005501+00:00,gemini-3.8-flash,simples,erro,resultados_t12_20261116T193957662867Z/medicoes.csv,2,3.574,3.574,sem_ajuste,não_aplicável,
+2026-11-16T19:40:50.919960+00:00,gemini-3.8-flash,simples,erro,resultados_t12_20261116T194050459019Z/medicoes.csv,2,8.356,8.356,sem_ajuste,não_aplicável,
+2026-11-16T19:43:41.564126+00:00,gemini-3.5-flash-lite,tutorial,ok,resultados_t12_20261116T194341356776Z/medicoes.csv,2,9.417,9.417,sem_ajuste,sim,20261116T194341564126Z_gemini-3.5-flash-lite_tutorial.txt
+2026-11-16T20:04:59.528532+00:00,gemini-3.5-flash-lite,tutorial,ok,t12_resultados/medicoes.csv,2,2114,2.114,inferido_pela_formatação,sim,20261116T200459528532Z_gemini-3.5-flash-lite_tutorial.txt
+2026-11-16T20:05:23.777949+00:00,gemini-3.5-flash-lite,tutorial,ok,t12_resultados/medicoes.csv,3,1993,1.993,inferido_pela_formatação,sim,20261116T200523777949Z_gemini-3.5-flash-lite_tutorial.txt
+2026-11-16T20:11:55.535579+00:00,gemini-3.5-flash-lite,flashcards,ok,t12_resultados/medicoes.csv,4,21.687,21.687,sem_ajuste,sim,20261116T201155535579Z_gemini-3.5-flash-lite_flashcards.txt
+2026-11-16T20:12:28.900220+00:00,gemini-3.5-flash-lite,quiz,ok,t12_resultados/medicoes.csv,5,5.117,5.117,sem_ajuste,sim,20261116T201228900220Z_gemini-3.5-flash-lite_quiz.txt
