@@ -86,7 +86,7 @@ a) à implementação, acompanhamento e resultados dos programas, projetos e aç
 
 b) ao resultado de inspeções, auditorias, prestações e tomadas de contas realizadas pelos órgãos de controle interno e externo, incluindo prestações de contas relativas a exercícios anteriores.
 
-VIII - (VETADO)
+VIII - (VETADO na Lei nº 14.345, de 24/5/2022)
 
 § 1º O acesso à informação previsto no caput não compreende as informações referentes a projetos de pesquisa e desenvolvimento científicos ou tecnológicos cujo sigilo seja imprescindível à segurança da sociedade e do Estado.
 
@@ -146,9 +146,9 @@ II - o quantitativo total de empregados da entidade, discriminado por cargo e po
 
 III - lista, discriminada por faixas salariais, das parcelas remuneratórias e indenizatórias, ainda que eventuais, incluídos os auxílios, as ajudas de custo, as gratificações, os jetons e quaisquer outras vantagens pecuniárias, que os empregados possam receber em virtude de condições específicas; e
 
-IV - o quantitativo de funções gratificadas, os critérios para sua ocupação e o rol dos empregados que ocupam cada espécie de função gratificada.
+IV - o quantitativo de funções gratificadas, os critérios para sua ocupação e o rol dos empregados que ocupam cada espécie de função gratificada. (Artigo acrescido pela Lei nº 15.141, de 2/6/2025)
 
-Art. 8º-B. Os conselhos de fiscalização profissional devem divulgar, de forma nominal e individualizada, lista das parcelas remuneratórias e indenizatórias, ainda que eventuais, incluídos os auxílios, as ajudas de custo, as gratificações, os jetons e quaisquer outras vantagens pecuniárias, que os empregados possam receber em virtude de condições específicas.
+Art. 8º-B. Os conselhos de fiscalização profissional devem divulgar, de forma nominal e individualizada, lista das parcelas remuneratórias e indenizatórias, ainda que eventuais, incluídos os auxílios, as ajudas de custo, as gratificações, os jetons e quaisquer outras vantagens pecuniárias, que os empregados possam receber em virtude de condições específicas. (Artigo acrescido pela Lei nº 15.141, de 2/6/2025)
 
 Art. 9º O acesso a informações públicas será assegurado mediante:
 
@@ -194,11 +194,11 @@ III - comunicar que não possui a informação, indicar, se for do seu conhecime
 
 § 6º Caso a informação solicitada esteja disponível ao público em formato impresso, eletrônico ou em qualquer outro meio de acesso universal, serão informados ao requerente, por escrito, o lugar e a forma pela qual se poderá consultar, obter ou reproduzir a referida informação, procedimento esse que desonerará o órgão ou entidade pública da obrigação de seu fornecimento direto, salvo se o requerente declarar não dispor de meios para realizar por si mesmo tais procedimentos.
 
-Art. 12. O serviço de busca e de fornecimento de informação é gratuito.
+Art. 12. O serviço de busca e de fornecimento de informação é gratuito. (“Caput” do artigo com redação dada pela Lei nº 14.129, de 29/3/2021, publicada no DOU de 30/3/2021, em vigor 90 dias após a publicação para a União; 120 dias após a publicação para os Estados e o Distrito Federal; e 180 dias após a publicação para os Municípios)
 
-§ 1º O órgão ou a entidade poderá cobrar exclusivamente o valor necessário ao ressarcimento dos custos dos serviços e dos materiais utilizados, quando o serviço de busca e de fornecimento da informação exigir reprodução de documentos pelo órgão ou pela entidade pública consultada.
+§ 1º O órgão ou a entidade poderá cobrar exclusivamente o valor necessário ao ressarcimento dos custos dos serviços e dos materiais utilizados, quando o serviço de busca e de fornecimento da informação exigir reprodução de documentos pelo órgão ou pela entidade pública consultada. (Parágrafo acrescido pela Lei nº 14.129, de 29/3/2021, publicada no DOU de 30/3/2021, em vigor 90 dias após a publicação para a União; 120 dias após a publicação para os Estados e o Distrito Federal; e 180 dias após a publicação para os Municípios)
 
-§ 2º Estará isento de ressarcir os custos previstos no § 1º deste artigo aquele cuja situação econômica não lhe permita fazê-lo sem prejuízo do sustento próprio ou da família, declarada nos termos da Lei nº 7.115, de 29 de agosto de 1983.
+§ 2º Estará isento de ressarcir os custos previstos no § 1º deste artigo aquele cuja situação econômica não lhe permita fazê-lo sem prejuízo do sustento próprio ou da família, declarada nos termos da Lei nº 7.115, de 29 de agosto de 1983. (Parágrafo único transformado em § 2º e com redação dada pela Lei nº 14.129, de 29/3/2021, publicada no DOU de 30/3/2021, em vigor 90 dias após a publicação para a União; 120 dias após a publicação para os Estados e o Distrito Federal; e 180 dias após a publicação para os Municípios)
 
 Art. 13. Quando se tratar de acesso à informação contida em documento cuja manipulação possa prejudicar sua integridade, deverá ser oferecida a consulta de cópia, com certificação de que esta confere com o original.
 

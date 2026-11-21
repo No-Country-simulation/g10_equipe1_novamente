@@ -1,6 +1,6 @@
 # RESOLUÇÃO CONJUNTA Nº 1, DE 4 DE MAIO DE 2020
 
-> Texto consolidado da Resolução Conjunta nº 1/2020, versão 10, com as alterações da Resolução Conjunta nº 21/2026. Fonte: Banco Central do Brasil e Conselho Monetário Nacional.
+> Texto consolidado da Resolução Conjunta nº 1/2020, versão 10, com as alterações da Resolução Conjunta nº 21/2026. Fonte: Banco Central do Brasil e Conselho Monetário Nacional. Este texto não substitui o publicado no DOU de 5/5/2020, Seção 1, p. 34-38, e no Sisbacen.
 
 Dispõe sobre a implementação do Open Finance. (Redação dada, a partir de 2/5/2022, pela Resolução Conjunta nº 4, de 24/3/2022.)
 
