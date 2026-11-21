@@ -68,7 +68,7 @@ test("desabilita a exclusão quando uma das saídas está na fila", async ({
   await expect(page.getByText(blocked, { exact: true })).toBeVisible()
 })
 
-test("mostra o detalhe do 409 e mantém o curso com várias saídas aberto", async ({
+test("mostra o detalhe do 409 e atualiza o estado da geração", async ({
   page,
 }) => {
   const { course, trigger, dialog } = await openCourse(page, [
@@ -77,14 +77,33 @@ test("mostra o detalhe do 409 e mantém o curso com várias saídas aberto", asy
   ])
   await trigger.click()
   await page.route(`**/api/v1/courses/${course.id}`, async (route) => {
-    if (route.request().method() !== "DELETE") {
-      await route.continue()
+    if (route.request().method() === "DELETE") {
+      await route.fulfill({ status: 409, json: { detail: blocked } })
       return
     }
-    await route.fulfill({ status: 409, json: { detail: blocked } })
+    await route.fulfill({
+      json: {
+        ...course,
+        contents: course.contents.map((content) =>
+          content.format === "flashcards"
+            ? { ...content, status: "running" }
+            : content,
+        ),
+      },
+    })
   })
   await dialog.getByRole("button", { name: "Excluir", exact: true }).click()
-  await expect(page.getByText(blocked, { exact: true })).toBeVisible()
+  await expect(
+    page.locator("[data-sonner-toast]").getByText(blocked),
+  ).toBeVisible()
   await expect(page).toHaveURL(`/courses/${course.id}`)
   await expect(dialog).toBeVisible()
+  await expect(
+    dialog.getByRole("button", { name: "Excluir", exact: true }),
+  ).toBeDisabled()
+  await dialog.getByRole("button", { name: "Cancelar" }).click()
+  await expect(trigger).toBeDisabled()
+  await expect(
+    page.getByRole("region", { name: "Resumo do curso" }).getByText(blocked),
+  ).toBeVisible()
 })

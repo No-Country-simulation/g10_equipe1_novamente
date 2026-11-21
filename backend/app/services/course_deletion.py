@@ -3,6 +3,7 @@ import uuid
 from collections.abc import AsyncIterator, Callable, Sequence
 from contextlib import asynccontextmanager
 from datetime import timedelta
+from functools import partial
 
 import anyio
 from fastapi import FastAPI
@@ -10,7 +11,7 @@ from sqlmodel import Session, col, select
 from starlette.concurrency import run_in_threadpool
 
 from app.core.db import engine
-from app.core.storage import ObjectNotFoundError, Storage, course_prefix, get_storage
+from app.core.storage import Storage, course_prefix, get_storage
 from app.models import (
     CourseContent,
     CourseObjectCleanup,
@@ -54,10 +55,7 @@ def _clean_course(
         keys = storage.list(course_prefix(job.course_id))
         operation = "delete"
         for key in keys:
-            try:
-                storage.delete(key)
-            except ObjectNotFoundError:
-                continue
+            storage.delete(key)
     except Exception as exc:
         logger.warning(
             "Falha na limpeza course_id=%s operation=%s error=%s key=%s",
@@ -102,10 +100,13 @@ def process_pending_cleanups(storage_provider: Callable[[], Storage]) -> None:
             return
 
 
+def _resolve_storage(app: FastAPI) -> Storage:
+    return app.dependency_overrides.get(get_storage, get_storage)()
+
+
 @asynccontextmanager
 async def cleanup_lifespan(app: FastAPI) -> AsyncIterator[None]:
-    def storage_provider() -> Storage:
-        return app.dependency_overrides.get(get_storage, get_storage)()
+    storage_provider = partial(_resolve_storage, app)
 
     async def clean_periodically() -> None:
         while True:

@@ -128,3 +128,23 @@ def test_cleanup_lifespan_processes_at_startup_and_after_restart(db, seed, monke
         assert listed.wait(5)
     assert original(expected) == []
     assert db.get(CourseObjectCleanup, after_restart) is None
+
+
+def test_cleanup_lifespan_without_override_uses_test_storage(db, seed, monkeypatch):
+    storage, create = seed
+    course_id = create()
+    production_resolver = Mock(return_value=storage)
+    monkeypatch.setattr(course_deletion, "get_storage", production_resolver)
+    completed = Event()
+    process_batch = course_deletion.process_pending_cleanups
+
+    def signal_after_batch(provider):
+        process_batch(provider)
+        completed.set()
+
+    monkeypatch.setattr(course_deletion, "process_pending_cleanups", signal_after_batch)
+    with TestClient(app):
+        assert completed.wait(5)
+
+    assert db.get(CourseObjectCleanup, course_id) is None
+    production_resolver.assert_not_called()

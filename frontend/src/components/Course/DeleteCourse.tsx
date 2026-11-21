@@ -46,13 +46,19 @@ export function DeleteCourse({
         exact: true,
       })
     },
-    onError: (error) => {
-      const detail =
-        error instanceof AxiosError ? error.response?.data?.detail : undefined
+    onError: async (error) => {
+      const response = error instanceof AxiosError ? error.response : undefined
+      const detail = response?.data?.detail
       if (typeof detail === "string") {
         showErrorToast(detail)
       } else {
         handleError.call(showErrorToast, error)
+      }
+      if (response?.status === 409) {
+        await queryClient.invalidateQueries({
+          queryKey: courseQueryKey(courseId),
+          exact: true,
+        })
       }
     },
   })
@@ -89,6 +95,7 @@ export function DeleteCourse({
           </DialogClose>
           <LoadingButton
             variant="destructive"
+            disabled={active}
             loading={mutation.isPending}
             onClick={() => mutation.mutate()}
           >
