@@ -94,7 +94,7 @@ Em `docs/ARCHITECTURE.md`, no passo 8 de "A criação de um curso segue doze pas
 Em `docs/product-specs/fidelidade-e-qualidade.md`, atualize o contrato e registre a rodada.
 
 - No passo 1 de "Como o produto decide publicar", descreva a projeção usada no quiz e o papel dos trechos como evidência.
-- Na seção "Medições", preserve a primeira medição e o achado da LAI. Acrescente a rodada de `revisa-v3` com data, commit, modelos, versão, métricas e erros de execução. Registre se o revisor marcou o prazo inicial de 30 dias e se o relatório voltou a atribuir ao material um fato que só aparecia nas alternativas erradas ou nos trechos. A medição de clareza continua com T43.
+- Na seção "Medições", preserve a primeira medição e o achado da LAI. Acrescente a rodada de `revisa-v3` com data, commit, modelos, versão, métricas e erros de execução. Registre se o revisor marcou o prazo inicial de 30 dias e se o relatório voltou a atribuir ao material um fato que só aparecia nas alternativas erradas ou nos trechos. A clareza continua não medida. Retire da linha "Clareza" a menção ao T34, que a equipe descartou.
 
 Não edite os tickets em `docs/tickets/completed/`.
 
@@ -108,7 +108,7 @@ Não edite os tickets em `docs/tickets/completed/`.
     ```
 
 3. Confira se a linha de `lai-pedido-erro` lista o prazo **inicial** de 30 dias como afirmação sem apoio. Confira as linhas dos dois casos da LAI. Uma alternativa errada pode estar correta em outro contexto, como os 20 dias que a resposta marcada da quarta pergunta substituiu. Julgue a afirmação no contexto da pergunta. O relatório lista apenas afirmações sem apoio. O teste da projeção verifica o material enviado.
-4. Se o erro plantado passar, ajuste a redação sobre o quiz e a origem das afirmações e repita a LAI. Faça no máximo dois ajustes. Se o caso ainda falhar, registre o resultado e peça à equipe que decida o próximo passo antes de liberar T34.
+4. Se o erro plantado passar, ajuste a redação sobre o quiz e a origem das afirmações e repita a LAI. Faça no máximo dois ajustes. Se o caso ainda falhar, registre o resultado e peça à equipe que decida o próximo passo
 5. Com a versão final do prompt, rode Pix e Open Finance em sequência. Aguarde uma janela de um minuto entre arquivos, pois cada processo inicia seu próprio limitador.
 
     ```bash
