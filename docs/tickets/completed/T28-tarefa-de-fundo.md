@@ -247,20 +247,20 @@ Uma reprovação pela regra de fidelidade não é um defeito deste ticket. Regis
 
 ## Critérios de aceite
 
-- [ ] Criar um curso agenda `run_course_generation` uma vez, com o mesmo armazenamento e o `id` do curso. Falhas de validação, de armazenamento ou de `commit` não agendam a tarefa.
-- [ ] A tarefa indexa os documentos e gera os conteúdos `pending`, um por vez, na ordem de `position`.
-- [ ] Um conteúdo publicado fica `succeeded`. O primeiro deles muda o curso para `ready`.
-- [ ] Cada conteúdo gerado grava `llm_model` e `prompt_version` ao começar, com sucesso ou não.
-- [ ] Se um documento falha na indexação, nenhum conteúdo é gerado, cada conteúdo `pending` fica `failed` com a mensagem do contrato e o curso fica `failed`.
-- [ ] Cada falha de conteúdo grava a mensagem da tabela do contrato. Um conteúdo que falha não interrompe os seguintes.
-- [ ] Quando todos os conteúdos iniciais falham, o curso fica `failed`.
-- [ ] Uma falha não muda o conteúdo publicado antes, nem as notas e as citações.
-- [ ] Um conteúdo que não está `pending` quando a tarefa chega a ele não é gerado.
-- [ ] `run_course_generation` não levanta exceção.
-- [ ] Os documentos de `docs/` estão atualizados como descrito.
-- [ ] O PR traz o resultado da verificação manual ou diz que ela foi pulada.
-- [ ] Nenhum teste chama o Gemini nem o OCI.
-- [ ] Os hooks e os testes passam, com cobertura de 90% ou mais.
+- [x] Criar um curso agenda `run_course_generation` uma vez, com o mesmo armazenamento e o `id` do curso. Falhas de validação, de armazenamento ou de `commit` não agendam a tarefa.
+- [x] A tarefa indexa os documentos e gera os conteúdos `pending`, um por vez, na ordem de `position`.
+- [x] Um conteúdo publicado fica `succeeded`. O primeiro deles muda o curso para `ready`.
+- [x] Cada conteúdo gerado grava `llm_model` e `prompt_version` ao começar, com sucesso ou não.
+- [x] Se um documento falha na indexação, nenhum conteúdo é gerado, cada conteúdo `pending` fica `failed` com a mensagem do contrato e o curso fica `failed`.
+- [x] Cada falha de conteúdo grava a mensagem da tabela do contrato. Um conteúdo que falha não interrompe os seguintes.
+- [x] Quando todos os conteúdos iniciais falham, o curso fica `failed`.
+- [x] Uma falha não muda o conteúdo publicado antes, nem as notas e as citações.
+- [x] Um conteúdo que não está `pending` quando a tarefa chega a ele não é gerado.
+- [x] `run_course_generation` não levanta exceção.
+- [x] Os documentos de `docs/` estão atualizados como descrito.
+- [x] O PR traz o resultado da verificação manual ou diz que ela foi pulada.
+- [x] Nenhum teste chama o Gemini nem o OCI.
+- [x] Os hooks e os testes passam, com cobertura de 90% ou mais.
 
 ## Cenários de teste
 
@@ -284,3 +284,12 @@ Em `backend/tests/api/routes/test_courses_create.py`:
 
 14. Um curso criado com sucesso agenda a tarefa uma vez, com a instância de `storage` da fixture e `course_id` igual ao `id` da resposta.
 15. Os testes de falha de validação (HTTP 422 e 404), armazenamento (HTTP 503) e `commit` confirmam que a tarefa não foi agendada.
+
+## Verificação do aceite
+
+- PR revisado: [#42](https://github.com/No-Country-simulation/g10_equipe1_novamente/pull/42), integrado no commit `1f8f84f`.
+- CI do PR: todos os checks obrigatórios passaram.
+- Revisão automática sobre o commit `7ce0676`: três achados, corrigidos no commit `504fa31`. A tarefa agora encerra a transação de leitura antes de chamar o grafo. Os testes cobrem a falha na gravação da recuperação e o conteúdo que volta para `pending`. O módulo usa `logging.getLogger(__name__)`.
+- Escopo: `backend/app/main.py`, fora de `touches`, mudou com autorização para configurar o logger `app` em `INFO` uma vez.
+- Testes: 361 testes passaram, com 99% de cobertura no backend.
+- Verificação com a API real: relatada no PR. O curso "ConfigMaps no Kubernetes" gerou os três conteúdos com estado `succeeded`, em 175 s no total, e ficou `ready` no primeiro conteúdo publicado.

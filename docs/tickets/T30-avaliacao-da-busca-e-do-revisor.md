@@ -29,7 +29,7 @@ Este ticket entrega a ferramenta e o formato dos casos. T41 escreve os casos sob
 
 T30 espera T28 para usar `retrieve_chunks` e `PROMPT_VERSION`. Assim a avaliação busca os trechos pelo mesmo caminho da tarefa de fundo. O suporte a PDF usa a leitura por página de T37.
 
-Leia antes: `docs/product-specs/fidelidade-e-qualidade.md`, `docs/ARCHITECTURE.md`, seções "A criação de um curso segue doze passos" e "Testes", e `docs/tickets/T28-tarefa-de-fundo.md`, seção "Contrato".
+Leia antes: `docs/product-specs/fidelidade-e-qualidade.md`, `docs/ARCHITECTURE.md`, seções "A criação de um curso segue doze passos" e "Testes", e `docs/tickets/completed/T28-tarefa-de-fundo.md`, seção "Contrato".
 
 ## Escopo
 
