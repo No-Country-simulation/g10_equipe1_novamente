@@ -1,0 +1,124 @@
+{
+  "document": "examples/sources/open-finance.md",
+  "niche": "fintech",
+  "retrieval": [
+    {
+      "question": "Quais sistemas o Open Finance tem como objetivo tornar mais eficientes?",
+      "expected": "aumentar a eficiência do Sistema Financeiro Nacional e do Sistema de Pagamentos Brasileiro"
+    },
+    {
+      "question": "Como a instituição deve pedir o consentimento, em termos de linguagem?",
+      "expected": "ser solicitado por meio de linguagem clara, objetiva e adequada"
+    },
+    {
+      "question": "A instituição pode usar um formulário com aceite já preenchido para obter o consentimento?",
+      "expected": "por meio de formulário com opção de aceite previamente preenchida"
+    },
+    {
+      "question": "Qual é o prazo para efetuar a revogação do consentimento de iniciação de transação de pagamento previsto no art. 5º, II, a?",
+      "expected": "em até um dia, contado a partir da solicitação do cliente"
+    },
+    {
+      "question": "Quem deve pedir ao cliente a confirmação de compartilhamento no art. 20?",
+      "expected": "A instituição transmissora de dados ou detentora de conta deve solicitar confirmação de compartilhamento ao cliente."
+    },
+    {
+      "question": "Em qual formato as interfaces dedicadas devem representar os dados e serviços compartilhados?",
+      "expected": "em meio digital e processáveis por máquina, em formato livre de restrição quanto à sua utilização"
+    },
+    {
+      "question": "Quem deve receber a comunicação tempestiva sobre indisponibilidade que cause crise na instituição?",
+      "expected": "Os casos de indisponibilidade que gerem situação de crise na instituição devem ser comunicados tempestivamente ao Banco Central do Brasil."
+    }
+  ],
+  "review": [
+    {
+      "id": "open-finance-consentimento-fiel",
+      "focus": "Como obter o consentimento do cliente no Open Finance",
+      "audience_level": "non_technical",
+      "format": "tutorial",
+      "planted_error": null,
+      "content": {
+        "summary": "A instituição pede o consentimento antes de compartilhar.",
+        "sections": [
+          {
+            "title": "O pedido de consentimento",
+            "body": "A instituição que recebe os dados ou inicia o pagamento deve identificar o cliente e obter seu consentimento antes do compartilhamento. O pedido deve usar linguagem clara, objetiva e adequada."
+          }
+        ],
+        "takeaways": [
+          "O consentimento deve indicar para quais finalidades o cliente concorda com o compartilhamento."
+        ]
+      }
+    },
+    {
+      "id": "open-finance-consentimento-erro",
+      "focus": "Como obter o consentimento do cliente no Open Finance",
+      "audience_level": "non_technical",
+      "format": "tutorial",
+      "planted_error": "O consentimento pode deixar em aberto a finalidade do compartilhamento.",
+      "content": {
+        "summary": "A instituição pede o consentimento antes de compartilhar.",
+        "sections": [
+          {
+            "title": "O pedido de consentimento",
+            "body": "A instituição que recebe os dados ou inicia o pagamento deve identificar o cliente e obter seu consentimento antes do compartilhamento. O pedido deve usar linguagem clara, objetiva e adequada."
+          }
+        ],
+        "takeaways": [
+          "O consentimento pode deixar em aberto a finalidade do compartilhamento."
+        ]
+      }
+    },
+    {
+      "id": "open-finance-revogacao-fiel",
+      "focus": "Revogação do consentimento de compartilhamento no Open Finance",
+      "audience_level": "technical_basic",
+      "format": "tutorial",
+      "planted_error": null,
+      "content": {
+        "summary": "O cliente pode pedir a revogação do consentimento a qualquer tempo.",
+        "sections": [
+          {
+            "title": "Canal e comunicação da revogação",
+            "body": "Se o canal de atendimento usado para conceder o consentimento ainda existir, a instituição deve disponibilizar a revogação ao menos por esse canal."
+          }
+        ],
+        "takeaways": [
+          "Assim que a revogação for efetivada, informe as demais instituições participantes envolvidas no compartilhamento."
+        ]
+      }
+    },
+    {
+      "id": "open-finance-revogacao-erro",
+      "focus": "Revogação do consentimento de compartilhamento no Open Finance",
+      "audience_level": "technical_basic",
+      "format": "tutorial",
+      "planted_error": "As demais instituições participantes envolvidas devem ser avisadas somente cinco dias após a efetivação da revogação.",
+      "content": {
+        "summary": "O cliente pode pedir a revogação do consentimento a qualquer tempo.",
+        "sections": [
+          {
+            "title": "Canal e comunicação da revogação",
+            "body": "Se o canal de atendimento usado para conceder o consentimento ainda existir, a instituição deve disponibilizar a revogação ao menos por esse canal."
+          }
+        ],
+        "takeaways": [
+          "As demais instituições participantes envolvidas devem ser avisadas somente cinco dias após a efetivação da revogação."
+        ]
+      }
+    }
+  ],
+  "generation": [
+    {
+      "focus": "Consentimento do cliente no Open Finance conforme o art. 10, caput e §§ 1º a 3º",
+      "audience_level": "non_technical",
+      "format": "tutorial"
+    },
+    {
+      "focus": "Interfaces dedicadas ao compartilhamento no Open Finance conforme os arts. 23 a 25",
+      "audience_level": "technical_advanced",
+      "format": "flashcards"
+    }
+  ]
+}

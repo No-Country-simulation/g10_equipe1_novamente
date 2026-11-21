@@ -1,0 +1,126 @@
+{
+  "document": "examples/sources/lei-de-acesso-a-informacao.md",
+  "niche": "geral",
+  "retrieval": [
+    {
+      "question": "O que o pedido de acesso à informação precisa conter?",
+      "expected": "a identificação do requerente e a especificação da informação requerida"
+    },
+    {
+      "question": "Qual é o prazo inicial para o órgão responder quando o acesso imediato não for possível?",
+      "expected": "em prazo não superior a 20 (vinte) dias"
+    },
+    {
+      "question": "Em que situação a LAI permite cobrar custos de reprodução de documentos?",
+      "expected": "quando o serviço de busca e de fornecimento da informação exigir reprodução de documentos"
+    },
+    {
+      "question": "Como consultar uma informação se manusear o original pode danificá-lo?",
+      "expected": "deverá ser oferecida a consulta de cópia, com certificação de que esta confere com o original"
+    },
+    {
+      "question": "Qual é o prazo para recorrer de uma negativa de acesso depois de tomar ciência da decisão?",
+      "expected": "no prazo de 10 (dez) dias a contar da sua ciência"
+    },
+    {
+      "question": "O que acontece com o acesso à informação quando termina o prazo de classificação de sigilo?",
+      "expected": "a informação tornar-se-á, automaticamente, de acesso público"
+    }
+  ],
+  "review": [
+    {
+      "id": "lai-pedido-fiel",
+      "focus": "Pedido e resposta de acesso à informação conforme os arts. 10 e 11 da LAI",
+      "audience_level": "technical_basic",
+      "format": "quiz",
+      "planted_error": null,
+      "content": {
+        "questions": [
+          {
+            "prompt": "O que deve constar de um pedido de acesso à informação?",
+            "options": ["A identificação do requerente e a especificação da informação", "O prazo de prorrogação e o formato do arquivo", "A justificativa expressa do órgão e a data da consulta", "O local da consulta e o modo de obter a certidão"],
+            "correct_index": 0,
+            "explanation": "O pedido deve identificar quem solicita e especificar a informação pedida."
+          },
+          {
+            "prompt": "Qual exigência é vedada para um pedido de informação de interesse público?",
+            "options": ["Identificação do requerente", "Informação sobre os motivos do pedido", "Especificação da informação pedida", "Encaminhamento por meio legítimo"],
+            "correct_index": 1,
+            "explanation": "O órgão não pode exigir os motivos da solicitação de informações de interesse público."
+          },
+          {
+            "prompt": "O que o órgão deve fazer quando a informação está disponível?",
+            "options": ["Indicar as razões da recusa", "Prorrogar o prazo mediante justificativa", "Autorizar ou conceder o acesso imediato", "Comunicar que não possui a informação"],
+            "correct_index": 2,
+            "explanation": "Se a informação está disponível, o órgão ou a entidade deve autorizar ou conceder o acesso imediato."
+          },
+          {
+            "prompt": "Qual é o prazo inicial máximo de resposta quando o acesso imediato não é possível?",
+            "options": ["5 dias", "10 dias", "30 dias", "20 dias"],
+            "correct_index": 3,
+            "explanation": "O órgão ou a entidade que recebe o pedido tem prazo inicial de até 20 dias se o acesso imediato não for possível."
+          },
+          {
+            "prompt": "O que o órgão precisa fazer para prorrogar por mais 10 dias o prazo de resposta do art. 11, § 1º?",
+            "options": ["Apresentar justificativa expressa e dar ciência ao requerente", "Indicar a autoridade competente para apreciar recurso", "Indicar onde a informação já está disponível ao público", "Comunicar que não possui a informação"],
+            "correct_index": 0,
+            "explanation": "A prorrogação por mais 10 dias exige justificativa expressa da qual o requerente deve ser informado."
+          }
+        ]
+      }
+    },
+    {
+      "id": "lai-pedido-erro",
+      "focus": "Pedido e resposta de acesso à informação conforme os arts. 10 e 11 da LAI",
+      "audience_level": "technical_basic",
+      "format": "quiz",
+      "planted_error": "O órgão ou a entidade que recebe o pedido tem prazo inicial de até 30 dias se o acesso imediato não for possível.",
+      "content": {
+        "questions": [
+          {
+            "prompt": "O que deve constar de um pedido de acesso à informação?",
+            "options": ["A identificação do requerente e a especificação da informação", "O prazo de prorrogação e o formato do arquivo", "A justificativa expressa do órgão e a data da consulta", "O local da consulta e o modo de obter a certidão"],
+            "correct_index": 0,
+            "explanation": "O pedido deve identificar quem solicita e especificar a informação pedida."
+          },
+          {
+            "prompt": "Qual exigência é vedada para um pedido de informação de interesse público?",
+            "options": ["Identificação do requerente", "Informação sobre os motivos do pedido", "Especificação da informação pedida", "Encaminhamento por meio legítimo"],
+            "correct_index": 1,
+            "explanation": "O órgão não pode exigir os motivos da solicitação de informações de interesse público."
+          },
+          {
+            "prompt": "O que o órgão deve fazer quando a informação está disponível?",
+            "options": ["Indicar as razões da recusa", "Prorrogar o prazo mediante justificativa", "Autorizar ou conceder o acesso imediato", "Comunicar que não possui a informação"],
+            "correct_index": 2,
+            "explanation": "Se a informação está disponível, o órgão ou a entidade deve autorizar ou conceder o acesso imediato."
+          },
+          {
+            "prompt": "Qual é o prazo inicial máximo de resposta quando o acesso imediato não é possível?",
+            "options": ["5 dias", "10 dias", "30 dias", "20 dias"],
+            "correct_index": 3,
+            "explanation": "O órgão ou a entidade que recebe o pedido tem prazo inicial de até 30 dias se o acesso imediato não for possível."
+          },
+          {
+            "prompt": "O que o órgão precisa fazer para prorrogar por mais 10 dias o prazo de resposta do art. 11, § 1º?",
+            "options": ["Apresentar justificativa expressa e dar ciência ao requerente", "Indicar a autoridade competente para apreciar recurso", "Indicar onde a informação já está disponível ao público", "Comunicar que não possui a informação"],
+            "correct_index": 0,
+            "explanation": "A prorrogação por mais 10 dias exige justificativa expressa da qual o requerente deve ser informado."
+          }
+        ]
+      }
+    }
+  ],
+  "generation": [
+    {
+      "focus": "Graus, prazos e fim da restrição de acesso à informação no art. 24 da LAI",
+      "audience_level": "technical_advanced",
+      "format": "tutorial"
+    },
+    {
+      "focus": "Pedido de acesso à informação, prazos, custos e recurso nos arts. 10 a 15 da LAI",
+      "audience_level": "technical_basic",
+      "format": "quiz"
+    }
+  ]
+}
