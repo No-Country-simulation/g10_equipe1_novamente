@@ -98,7 +98,7 @@
           {
             "prompt": "Qual é o prazo inicial máximo de resposta quando o acesso imediato não é possível?",
             "options": ["5 dias", "10 dias", "30 dias", "20 dias"],
-            "correct_index": 3,
+            "correct_index": 2,
             "explanation": "O órgão ou a entidade que recebe o pedido tem prazo inicial de até 30 dias se o acesso imediato não for possível."
           },
           {
