@@ -63,7 +63,7 @@ Tickets escritos (onda 1):
 | [`T05`](docs/tickets/completed/T05-modelos-do-json-de-conteudo.md) | Modelos do JSON de tutorial, flashcards e quiz |
 | [`T06`](docs/tickets/completed/T06-navegacao-no-topo.md) | Navegação no topo, fontes, cores e base da tela "Novo curso" |
 | [`T12`](docs/tickets/T12-medir-gemini-e-conferir-oci.md) | Medir o plano gratuito do Gemini e conferir o bucket da OCI |
-| [`T13`](docs/tickets/T13-documentos-da-demonstracao.md) | Escolher os três documentos da demonstração |
+| [`T13`](docs/tickets/completed/T13-documentos-da-demonstracao.md) | Escolher os três documentos da demonstração |
 | [`T14`](docs/tickets/completed/T14-armazenamento-na-oci.md) | Módulo de armazenamento na OCI |
 | [`T15`](docs/tickets/completed/T15-acesso-ao-gemini.md) | Módulo de acesso ao Gemini |
 | [`T16`](docs/tickets/completed/T16-leitura-de-documentos-md.md) | Leitura e validação de documentos `.md` |

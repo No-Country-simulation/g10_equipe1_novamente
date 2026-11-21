@@ -63,10 +63,18 @@ Três documentos prontos para envio, com fonte e licença registradas, e o rotei
 
 ## Critérios de aceite
 
-- [ ] Os três documentos cumprem as regras do conjunto e de cada documento.
-- [ ] Cada documento tem fonte, licença e atribuição em `examples/README.md`.
-- [ ] Nenhum texto sem licença de cópia está no repositório.
-- [ ] O PR lista os candidatos e o motivo da escolha.
-- [ ] `demonstracao.md` traz o novo roteiro e não cita arquivo inexistente.
-- [ ] Os hooks passam.
-- [ ] Uma pessoa da equipe conferiu a tabela de licenças antes do merge.
+- [x] Os três documentos cumprem as regras do conjunto e de cada documento.
+- [x] Cada documento tem fonte, licença e atribuição em `examples/README.md`.
+- [x] Nenhum texto sem licença de cópia está no repositório.
+- [x] O PR lista os candidatos e o motivo da escolha.
+- [x] `demonstracao.md` traz o novo roteiro e não cita arquivo inexistente.
+- [x] Os hooks passam.
+- [x] Uma pessoa da equipe conferiu a tabela de licenças antes do merge.
+
+## Verificação do aceite
+
+- PR revisado: [#45](https://github.com/No-Country-simulation/g10_equipe1_novamente/pull/45), integrado no commit `8ffe599`.
+- CI do PR: todos os checks obrigatórios passaram, com escopo dentro de `touches`.
+- Documentos: Open Finance, Resolução Conjunta nº 1/2020, versão 10 (`fintech`, documento principal), Regulamento do Pix, Resolução BCB nº 1/2020, redação original (`fintech`), e Lei de Acesso à Informação, Lei nº 12.527/2011 (`geral`).
+- Revisão automática sobre o commit `507b41c`: conferiu cada fonte e cada base legal na página de origem. Três achados, corrigidos no commit `668b14e`: o link do Pix aponta para o DOU certificado, as notas de alteração da LAI voltaram ao texto e o aviso do Banco Central voltou à nota de origem do Open Finance.
+- A pessoa que fez o merge conferiu a tabela de licenças.
