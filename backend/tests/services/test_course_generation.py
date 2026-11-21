@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from unittest.mock import Mock
 
 import pytest
+from sqlalchemy import text
 from sqlalchemy.sql.dml import Update
 from sqlmodel import Session, select
 
@@ -62,9 +63,9 @@ def setup(client, db, monkeypatch):
     storage = InMemoryStorage()
     documents = sorted(data["documents"], key=lambda doc: doc["original_filename"])
     document_ids = [uuid.UUID(doc["id"]) for doc in documents]
-    for document_id, text in zip(document_ids, TEXTS, strict=True):
+    for document_id, document_text in zip(document_ids, TEXTS, strict=True):
         document = db.get_one(SourceDocument, document_id)
-        storage.put(document.oci_object_key, text.encode(), document.mime_type)
+        storage.put(document.oci_object_key, document_text.encode(), document.mime_type)
     content_ids = [uuid.UUID(content["id"]) for content in data["contents"]]
     for content_id, fmt in zip(content_ids, FORMATS, strict=True):
         db.get_one(CourseContent, content_id).focus = f"Redes na OCI para {fmt}"
@@ -161,6 +162,31 @@ def test_generates_and_publishes_three_formats_in_order(setup, agents, caplog):
     ]
     assert "formato=tutorial estado=succeeded tentativas=1 segundos=" in caplog.text
     assert f"course_id={setup.course_id} estado=ready segundos=" in caplog.text
+
+
+def test_ends_transaction_before_generation(setup, agents):
+    _, graph = agents
+    idle_transactions = []
+
+    def generate(request):
+        with Session(engine) as observer:
+            idle_transactions.append(
+                observer.execute(
+                    text("""
+                        SELECT pid FROM pg_stat_activity
+                        WHERE datname = current_database()
+                          AND pid <> pg_backend_pid()
+                          AND state = 'idle in transaction'
+                    """)
+                )
+                .scalars()
+                .all()
+            )
+        return _approve(request)
+
+    graph.side_effect = generate
+    setup.run()
+    assert idle_transactions == [[], [], []]
 
 
 @pytest.mark.parametrize("unexpected", [False, True])
@@ -338,6 +364,70 @@ def test_reservation_commit_failure_recovers_pending_content(
     assert first.llm_model is None and first.prompt_version is None
     _, graph = agents
     assert [call.args[0].content_format for call in graph.call_args_list] == FORMATS[1:]
+
+
+def test_recovery_write_failure_stops_task_without_raising(
+    setup, agents, caplog, monkeypatch
+):
+    _, graph = agents
+    graph.side_effect = RuntimeError("falha na geração")
+    recover = Mock(side_effect=RuntimeError("falha ao gravar a recuperação"))
+    monkeypatch.setattr(course_generation, "_fail_content", recover)
+
+    setup.run()
+
+    graph.assert_called_once()
+    recover.assert_called_once()
+    with Session(engine) as db:
+        assert [content.status for content in setup.contents(db)] == [
+            "running",
+            "pending",
+            "pending",
+        ]
+        assert db.get_one(Course, setup.course_id).status == "initializing"
+    assert any(
+        record.levelno == logging.ERROR
+        and record.message == f"Falha na tarefa de fundo course_id={setup.course_id}"
+        and record.exc_info is not None
+        and str(record.exc_info[1]) == "falha ao gravar a recuperação"
+        for record in caplog.records
+    )
+
+
+@pytest.mark.parametrize("unexpected", [False, True])
+def test_content_returned_to_pending_is_preserved(setup, agents, caplog, unexpected):
+    _, graph = agents
+    first_id = setup.content_ids[0]
+
+    def generate(request):
+        if request.content_format == "quiz":
+            with Session(engine) as other:
+                other.get_one(CourseContent, first_id).status = "pending"
+                other.commit()
+            if unexpected:
+                raise RuntimeError("falha inesperada na geração")
+        return _reject()
+
+    graph.side_effect = generate
+    with caplog.at_level(logging.INFO, logger=course_generation.logger.name):
+        setup.run()
+
+    with Session(engine) as db:
+        first, second, third = setup.contents(db)
+        assert (first.status, second.status, third.status) == (
+            "pending",
+            "failed",
+            "failed",
+        )
+        assert first.error_message is None
+        assert db.get_one(Course, setup.course_id).status == "initializing"
+    info_messages = [
+        record.message for record in caplog.records if record.levelno == logging.INFO
+    ]
+    assert all(f"content_id={first_id}" not in message for message in info_messages)
+    assert any(
+        f"content_id={setup.content_ids[1]}" in message for message in info_messages
+    )
 
 
 def test_rejected_retry_preserves_publication(setup, db, agents):

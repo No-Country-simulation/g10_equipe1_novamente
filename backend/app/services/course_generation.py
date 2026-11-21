@@ -26,8 +26,7 @@ from app.services.grounding import Decision
 from app.services.retrieval import RetrievedChunk, search_chunks
 from app.services.writer import WriteRequest
 
-# O Uvicorn envia os registros INFO deste logger ao log do servidor.
-logger = logging.getLogger("uvicorn.error").getChild(__name__)
+logger = logging.getLogger(__name__)
 
 GENERATION_FAILED = "Não foi possível gerar o conteúdo."
 INDEXING_FAILED = "O conteúdo não foi gerado, porque um documento do curso falhou."
@@ -214,6 +213,8 @@ def _process_content(
         content = session.get_one(CourseContent, content_id)
         request, error_message = _write_request(session, course, content)
         if request is not None:
+            # A chamada ao Gemini pode levar dezenas de segundos.
+            session.rollback()
             result = generation_graph.generate_content(request)
             attempts = result.attempts
             error_message = result.error_message
