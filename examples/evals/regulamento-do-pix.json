@@ -1,0 +1,126 @@
+{
+  "document": "examples/sources/regulamento-do-pix.md",
+  "niche": "fintech",
+  "retrieval": [
+    {
+      "question": "Onde ficam as informações da transação no QR Code estático do Pix?",
+      "expected": "as informações da transação de pagamento estão dentro da codificação do QR Code"
+    },
+    {
+      "question": "Caso faltem recursos na data marcada para o Pix Agendado, o participante autoriza a iniciação?",
+      "expected": "Caso não haja recursos suficientes na conta do usuário pagador na data prevista para a realização do Pix, a iniciação da transação não será autorizada."
+    },
+    {
+      "question": "A oferta de Pix Agendado é obrigatória para os participantes?",
+      "expected": "A oferta do Pix Agendado pelos participantes do Pix é facultativa."
+    },
+    {
+      "question": "Em qual diretório ficam armazenadas as chaves Pix de que trata o art. 12, I?",
+      "expected": "As chaves Pix de que trata o inciso I do art. 12 ficam armazenadas no DICT"
+    },
+    {
+      "question": "Qual antecedência mínima o participante responsável deve dar ao contratante ao decidir encerrar o serviço?",
+      "expected": "deverá comunicar a decisão ao participante contratante com antecedência mínima de 90 (noventa) dias"
+    },
+    {
+      "question": "Quem deve iniciar a devolução de um Pix?",
+      "expected": "A devolução de um Pix deve ser iniciada pelo usuário recebedor."
+    },
+    {
+      "question": "Qual é o prazo máximo para iniciar a solicitação de devolução de um Pix?",
+      "expected": "no máximo, em até 90 (noventa) dias da data da transação de pagamento original"
+    }
+  ],
+  "review": [
+    {
+      "id": "pix-agendado-fiel",
+      "focus": "Oferta, funcionamento e condições do Pix Agendado no Regulamento de 2020",
+      "audience_level": "technical_basic",
+      "format": "flashcards",
+      "planted_error": null,
+      "content": {
+        "introduction": "Revise as regras do Pix Agendado no Regulamento de 2020.",
+        "cards": [
+          {"front": "Para quando o pagador pode agendar um Pix?", "back": "Para uma data futura."},
+          {"front": "A oferta de Pix Agendado é obrigatória?", "back": "A oferta é facultativa."},
+          {"front": "Onde a solicitação fica retida até a iniciação efetiva?", "back": "Nos sistemas internos do participante."},
+          {"front": "O agendamento altera o saldo da conta transacional antes da iniciação?", "back": "O agendamento não altera o saldo antes da iniciação."},
+          {"front": "O que acontece se faltarem recursos na data prevista?", "back": "A iniciação não é autorizada."},
+          {"front": "Que limite de data o participante deve definir ao ofertar o serviço?", "back": "O limite de data futura para o agendamento."},
+          {"front": "O que o participante deve definir para agendamentos recorrentes?", "back": "A forma e as condições dos agendamentos recorrentes."},
+          {"front": "Quando deve ficar o horário limite para alterar ou cancelar o agendamento, se for o caso?", "back": "Antes da efetiva iniciação do Pix."}
+        ]
+      }
+    },
+    {
+      "id": "pix-agendado-erro",
+      "focus": "Oferta, funcionamento e condições do Pix Agendado no Regulamento de 2020",
+      "audience_level": "technical_basic",
+      "format": "flashcards",
+      "planted_error": "A oferta é obrigatória para todos os participantes.",
+      "content": {
+        "introduction": "Revise as regras do Pix Agendado no Regulamento de 2020.",
+        "cards": [
+          {"front": "Para quando o pagador pode agendar um Pix?", "back": "Para uma data futura."},
+          {"front": "A oferta de Pix Agendado é obrigatória?", "back": "A oferta é obrigatória para todos os participantes."},
+          {"front": "Onde a solicitação fica retida até a iniciação efetiva?", "back": "Nos sistemas internos do participante."},
+          {"front": "O agendamento altera o saldo da conta transacional antes da iniciação?", "back": "O agendamento não altera o saldo antes da iniciação."},
+          {"front": "O que acontece se faltarem recursos na data prevista?", "back": "A iniciação não é autorizada."},
+          {"front": "Que limite de data o participante deve definir ao ofertar o serviço?", "back": "O limite de data futura para o agendamento."},
+          {"front": "O que o participante deve definir para agendamentos recorrentes?", "back": "A forma e as condições dos agendamentos recorrentes."},
+          {"front": "Quando deve ficar o horário limite para alterar ou cancelar o agendamento, se for o caso?", "back": "Antes da efetiva iniciação do Pix."}
+        ]
+      }
+    },
+    {
+      "id": "pix-devolucao-fiel",
+      "focus": "Iniciação e prazo da devolução de um Pix no Regulamento de 2020",
+      "audience_level": "non_technical",
+      "format": "tutorial",
+      "planted_error": null,
+      "content": {
+        "summary": "É possível devolver todo ou parte do valor de um Pix cujos fundos já estejam disponíveis na conta do recebedor.",
+        "sections": [
+          {
+            "title": "Quem pede a devolução",
+            "body": "Quem recebeu o Pix inicia a devolução. Para isso, informa ao seu prestador de serviço de pagamento o valor e o motivo da devolução."
+          }
+        ],
+        "takeaways": [
+          "A solicitação deve ser iniciada em até 90 dias a partir da data da transação original."
+        ]
+      }
+    },
+    {
+      "id": "pix-devolucao-erro",
+      "focus": "Iniciação e prazo da devolução de um Pix no Regulamento de 2020",
+      "audience_level": "non_technical",
+      "format": "tutorial",
+      "planted_error": "A solicitação deve ser iniciada em até 30 dias a partir da data da transação original.",
+      "content": {
+        "summary": "É possível devolver todo ou parte do valor de um Pix cujos fundos já estejam disponíveis na conta do recebedor.",
+        "sections": [
+          {
+            "title": "Quem pede a devolução",
+            "body": "Quem recebeu o Pix inicia a devolução. Para isso, informa ao seu prestador de serviço de pagamento o valor e o motivo da devolução."
+          }
+        ],
+        "takeaways": [
+          "A solicitação deve ser iniciada em até 30 dias a partir da data da transação original."
+        ]
+      }
+    }
+  ],
+  "generation": [
+    {
+      "focus": "Pix Agendado no Regulamento original de 2020: oferta, saldo e condições de agendamento",
+      "audience_level": "technical_basic",
+      "format": "flashcards"
+    },
+    {
+      "focus": "Devolução do Pix nos arts. 40 a 42 do Regulamento original de 2020",
+      "audience_level": "non_technical",
+      "format": "quiz"
+    }
+  ]
+}

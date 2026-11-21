@@ -43,7 +43,7 @@ O revisor só vê os trechos que a busca encontrou. Uma afirmação correta, bas
 
 [`backend/scripts/evaluate.py`](../../backend/scripts/evaluate.py) mede a busca, registra as decisões do revisor e da geração e mostra pistas para a equipe conferir as reprovações em T41. Veja o [guia de casos de avaliação](../../examples/evals/README.md).
 
-As metas abaixo são o ponto de partida. Nenhuma foi medida ainda. A equipe ajusta cada meta depois da primeira medição.
+As metas abaixo são o ponto de partida. A equipe ajusta cada meta depois de revisar as medições.
 
 | O que mede | Como | Meta inicial |
 | --- | --- | --- |
@@ -53,6 +53,24 @@ As metas abaixo são o ponto de partida. Nenhuma foi medida ainda. A equipe ajus
 | A adaptação ao público funciona | Uma pessoa de fora indica o nível de cada conteúdo sem ver o rótulo | Acerta todos |
 
 Pessoas sem experiência em programação podem escrever os casos: a tarefa é ler um documento e criar perguntas ou afirmações erradas.
+
+## Medições
+
+A medição usa a primeira rodada do Pix e do Open Finance no commit `06a945b` e a repetição da LAI após a correção do quiz no commit `09e0a82`.
+
+| O que mede | Resultado da rodada |
+| --- | --- |
+| Data (UTC) | 2026-11-21 |
+| Modelo de texto | `gemini-3.5-flash-lite` |
+| Modelo de embeddings | `gemini-embedding-2` |
+| Versão dos prompts | `planeja-v1+escreve-v4+revisa-v2` |
+| Busca | 20 de 20 trechos esperados entre os 8 (100%). |
+| Revisor | 4 de 5 erros plantados identificados na conferência. 0 alarmes falsos em 5 casos fiéis. |
+| Clareza | Não medida. A equipe não tem quem julgue o assunto dos documentos. A conferência passa para o teste de adaptação ao público com uma pessoa de fora no T34. |
+| Geração | 4 de 4 conteúdos aprovados para publicação. 0 reprovações, 0 falsas reprovações e 0 casos sem causa confirmada. |
+| Erros de execução | 2 de 6 gerações receberam HTTP 503 do Gemini. A primeira tentativa de indexar o Open Finance falhou antes dos casos. A repetição mediu o arquivo completo. |
+
+No quiz da LAI com erro plantado, a resposta marcada e a justificativa davam 30 dias como prazo inicial. O revisor reprovou o quiz ao marcar como sem apoio a alternativa de 20 dias, que o art. 11, § 1º, sustenta. O erro de 30 dias ficou sem marcação.
 
 ## O que fica fora
 
