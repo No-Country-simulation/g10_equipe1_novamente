@@ -17,6 +17,8 @@ from app.services.grounding import (
 )
 from app.services.writer import Rewrite, WriteRequest
 
+PROMPT_VERSION = f"{writer.PROMPT_VERSION}+{reviewer.PROMPT_VERSION}"
+
 logger = logging.getLogger(__name__)
 
 

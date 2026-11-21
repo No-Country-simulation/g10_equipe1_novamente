@@ -13,6 +13,13 @@ from app.core.storage import StorageError
 
 FRONTEND_DIR = Path(__file__).parent / "frontend"
 
+app_logger = logging.getLogger("app")
+app_logger.setLevel(logging.INFO)
+if not app_logger.hasHandlers():
+    handler = logging.StreamHandler()
+    handler.setFormatter(logging.Formatter(logging.BASIC_FORMAT))
+    app_logger.addHandler(handler)
+
 
 def custom_generate_unique_id(route: APIRoute) -> str:
     return f"{route.tags[0]}-{route.name}"

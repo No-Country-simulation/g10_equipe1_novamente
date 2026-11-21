@@ -18,7 +18,7 @@ O conteúdo de todos os documentos vale para todas as saídas. A pessoa não lig
 
 O foco de cada saída começa igual ao título do curso. Por isso o curso aceita só uma saída de cada formato: duas saídas iguais no formato e no foco sairiam quase iguais.
 
-A equipe mede o tempo de um curso com três saídas e ajusta os limites se for preciso.
+Em 21/11/2026, a geração de um curso com três saídas levou 175,024 segundos. A equipe usou um documento Markdown de 12.932 caracteres, com `gemini-3.5-flash-lite` para geração e `gemini-embedding-2` para embeddings.
 
 O nível e o setor ficam fixos depois da primeira geração com sucesso. Para outro nível, a pessoa cria outro curso com os mesmos arquivos.
 
@@ -65,7 +65,7 @@ A tela não mostra um curso "Gerando" ou "Falhou" como produto pronto.
 | Mesmo arquivo duas vezes no curso | HTTP 422 | Este arquivo já está no curso. |
 | Setor inexistente | HTTP 404 | Setor não encontrado. |
 | Armazenamento de arquivos fora do ar | HTTP 503 | O armazenamento de arquivos não está disponível. Tente novamente mais tarde. |
-| Falha ao ler ou indexar um documento | Curso "Falhou" | O documento que falhou e o motivo. |
+| Falha ao ler ou indexar um documento | Curso "Falhou" | O documento que falhou e o motivo. Cada conteúdo mostra: O conteúdo não foi gerado, porque um documento do curso falhou. |
 | Falha no modelo ou no armazenamento | Conteúdo "Falhou" | O que falhou e o botão "Tentar novamente". |
 | Foco não coberto ou segunda revisão sem afirmações | Conteúdo "Falhou" | O documento não trata do assunto pedido. |
 | Segunda revisão com foco coberto e afirmações sem apoio | Conteúdo "Falhou" | Afirmações sem apoio no documento: uma linha por afirmação. |

@@ -50,7 +50,7 @@ O CHECK `ck_course_content_published_pair` mantém as duas cópias em par: `cont
 | `backend/app/core/config.py` | Classe `Settings`, lida do `.env` | Existe |
 | `backend/app/core/storage.py` | Único módulo que chama o OCI Python SDK | A construir |
 | `backend/app/core/llm.py` | Único módulo que chama a API Gemini | A construir |
-| `backend/app/services/course_generation.py` | Indexação, busca, geração e publicação | A construir |
+| `backend/app/services/course_generation.py` | Tarefa de fundo: indexação, busca, geração e publicação | Existe |
 | `backend/tests/` | Testes `pytest` contra um PostgreSQL real | Existe |
 | `frontend/src/routes/` | Rotas do TanStack Router. A navegação fica no topo, com "Home" e "Novo curso" | Existe para login, cadastro, painel e configurações. A navegação no topo e `/courses/new` faltam |
 | `frontend/src/client/` | Cliente HTTP gerado do OpenAPI. Não edite à mão. | Existe |
@@ -99,7 +99,7 @@ A tarefa repete os passos 6 a 11 para cada conteúdo. Se nenhum conteúdo criado
 
 Todos os documentos do curso entram na busca de cada conteúdo. A busca devolve os 8 chunks mais próximos do `focus`, então um conteúdo pode citar só parte dos documentos.
 
-O fluxo completo depende do grafo de geração (T24) e da tarefa de fundo (T28).
+A rota de criação agenda a tarefa de fundo após confirmar a transação.
 
 ## Os estados tornam a tarefa de fundo observável
 
@@ -133,6 +133,7 @@ As dez regras de ciclo de vida do curso ficam em [`generated/db-schema.md`](gene
 | --- | --- |
 | Validação da entrada | A API responde HTTP 422 ou 404 e não grava nada. |
 | `commit` da criação falha | A API apaga o arquivo já enviado ao OCI. |
+| Falha de indexação | A tarefa para e marca os conteúdos `pending` como `failed`, com “O conteúdo não foi gerado, porque um documento do curso falhou.” Se o curso ainda está `initializing`, sem publicação e sem conteúdo `pending` ou `running`, ele fica `failed`. |
 | Exceção na tarefa de fundo | A tarefa faz `rollback`, abre uma sessão nova e marca como `failed` o documento ou o conteúdo, com `error_message`. Se nenhum conteúdo inicial é publicado, marca também o curso. |
 | Material sem cobertura do foco na revisão | O conteúdo fica `failed` de imediato, com “O documento não trata do assunto pedido.” |
 | Segunda revisão sem afirmações | O conteúdo fica `failed`, com “O documento não trata do assunto pedido.” |
@@ -143,7 +144,7 @@ As dez regras de ciclo de vida do curso ficam em [`generated/db-schema.md`](gene
 | Exclusão de conta | `DELETE /api/v1/users/me` já existe e apaga os cursos em cascata. O backend precisa coletar os `course_id` antes e fazer a mesma limpeza. |
 | Limpeza no OCI falha | O backend registra o `course_id` e o erro no log. O objeto fica sem uso. |
 
-Só a exclusão de conta sem limpeza existe hoje. O resto desta tabela está a construir.
+A API trata as falhas na criação e a tarefa de fundo trata as falhas na geração. A exclusão de conta já apaga as linhas no banco. A regra dos 10 minutos, a nova tentativa e a limpeza de objetos ao excluir um curso ou uma conta estão a construir.
 
 O tempo de 10 minutos é uma estimativa. A equipe ajusta depois de medir o pior caso de uma geração.
 
@@ -227,7 +228,7 @@ A equipe usa só recursos marcados como Always Free e não muda a conta para Pay
 | Um só banco: PostgreSQL com pgvector | Evita operar um vector store separado. | Existe |
 | Busca exata, sem índice HNSW | Cerca de 15.000 chunks na escala planejada. | Existe |
 | Gemini para embeddings e texto | Uma só chave e um só cliente. | A construir |
-| Tarefa de fundo com `BackgroundTasks` | Uma fila externa é uma peça a mais para 10 usuários. | A construir |
+| Tarefa de fundo com `BackgroundTasks` | Uma fila externa é uma peça a mais para 10 usuários. | Existe |
 | JSON publicado no banco e no OCI | A API lê do banco. O OCI atende ao hackathon. | A construir |
 | OCI Python SDK, sem MinIO e sem `boto3` | Permite instance principal na VM e testa o OCI desde o início. | A construir |
 | `escreve` e `revisa`, com uma reescrita | A promessa do produto é fidelidade ao documento. | A construir |
@@ -243,7 +244,7 @@ A equipe usa só recursos marcados como Always Free e não muda a conta para Pay
 | Até 3 documentos e até 3 saídas, uma de cada formato | Todas as saídas têm o mesmo foco. Cada saída usa até quatro chamadas ao modelo. | A construir |
 | Até 5 MiB por arquivo e 150 mil caracteres de texto por documento | Mantém cada documento perto da escala prevista no esquema. | A construir |
 | Arquivo no OCI com conteúdo, metadados e avaliação | Um sistema externo entende o arquivo sem consultar o banco. | A construir |
-| Publicar só com foco coberto e pelo menos uma afirmação, todas com apoio | Em 19/11/2026, a regra anterior aprovou um tutorial com dois fatos falsos e outro que fugiu do foco. | Decisão em `grounding.py`. O fluxo depende de T24 e T28. |
+| Publicar só com foco coberto e pelo menos uma afirmação, todas com apoio | Em 19/11/2026, a regra anterior aprovou um tutorial com dois fatos falsos e outro que fugiu do foco. | Existe |
 
 Os limites de documentos, de saídas e de formato são regras da API. O banco não os impõe.
 
