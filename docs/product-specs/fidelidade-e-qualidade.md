@@ -74,7 +74,7 @@ No quiz da LAI com erro plantado, a resposta marcada e a justificativa davam 30 
 
 ### Rodada com `revisa-v3`
 
-A rodada rodou no commit `996991b`. Após o rebase, o commit `8c6f019` mantém o mesmo código e os mesmos casos de avaliação.
+A rodada usou o código do commit `8c6f019` e ocorreu antes de um rebase que manteve o código e os casos de avaliação.
 
 | O que mede | Resultado da rodada |
 | --- | --- |
@@ -85,7 +85,7 @@ A rodada rodou no commit `996991b`. Após o rebase, o commit `8c6f019` mantém o
 | Busca | 20 de 20 trechos esperados entre os 8 (100%). |
 | Revisor | 5 de 5 erros plantados detectados. 0 alarmes falsos em 5 casos fiéis. |
 | Clareza | Não medida. |
-| Geração | 6 de 6 conteúdos aprovados para publicação. 0 reprovações. |
+| Geração | 6 de 6 conteúdos aprovados para publicação. 1 de 6 precisou de uma segunda tentativa (flashcards de Pix Agendado, causa não confirmada). |
 | Erros de execução | Nenhum. |
 
 Em `lai-pedido-erro`, o revisor marcou como sem apoio o prazo inicial de 30 dias da resposta e da justificativa. Nos dois casos da LAI, a lista de afirmações sem apoio trouxe apenas fatos do material. Os quatro erros plantados do Pix e do Open Finance também apareceram nessa lista nos respectivos casos.
