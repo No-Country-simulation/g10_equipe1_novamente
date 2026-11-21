@@ -80,7 +80,7 @@ Depois que T15 estiver no `master`, abra um PR de uma linha com o modelo escolhi
 - [x] O nome do modelo de embeddings e as 768 dimensões estão confirmados, ou a equipe foi avisada do erro.
 - [x] Uma chamada real com `GeneratedTutorial` foi feita, e o resultado está anotado.
 - [x] Um arquivo foi enviado, lido, listado e apagado em `novamente-docs`.
-- [ ] Cada pessoa que desenvolve tem uma chave própria, fora do repositório.
+- [x] Cada pessoa que desenvolve tem uma chave própria, fora do repositório.
 - [x] Se algum limite não comporta um curso com três saídas, a equipe sabe antes de T19 começar.
 
 ## Andamento
