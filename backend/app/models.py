@@ -400,6 +400,14 @@ class ContentCitation(SQLModel, table=True):
     )
 
 
+class CourseObjectCleanup(SQLModel, table=True):
+    __tablename__ = "course_object_cleanup"
+    course_id: uuid.UUID = Field(primary_key=True)
+    next_attempt_at: datetime = Field(
+        default_factory=get_datetime_utc, sa_type=sa.DateTime(timezone=True)
+    )
+
+
 class NichePublic(SQLModel):
     id: int
     slug: str

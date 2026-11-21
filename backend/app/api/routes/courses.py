@@ -11,7 +11,7 @@ from fastapi import (
     Request,
     UploadFile,
 )
-from sqlmodel import Session, col, select
+from sqlmodel import Session, col, delete, select
 
 from app.api.deps import CurrentUser, SessionDep
 from app.core.storage import document_key, get_storage
@@ -32,8 +32,9 @@ from app.models import (
     Niche,
     NichePublic,
     SourceDocument,
+    User,
 )
-from app.services import course_generation
+from app.services import course_deletion, course_generation
 from app.services.documents import MAX_FILE_BYTES, DocumentError, read_documents
 
 router = APIRouter(prefix="/courses", tags=["courses"])
@@ -212,6 +213,25 @@ def read_course(
     )
 
 
+@router.delete("/{course_id}", status_code=204)
+def delete_course(
+    *, session: SessionDep, current_user: CurrentUser, course_id: uuid.UUID
+) -> None:
+    course = session.exec(
+        select(Course.id)
+        .where(col(Course.id) == course_id, col(Course.owner_id) == current_user.id)
+        .with_for_update()
+    ).first()
+    if course is None:
+        raise HTTPException(404, "Curso não encontrado.")
+    if course_deletion.has_active_content(session, [course_id]):
+        raise HTTPException(409, "Espere a geração terminar para excluir o curso.")
+
+    course_deletion.enqueue_cleanup(session, [course_id])
+    session.exec(delete(Course).where(col(Course.id) == course_id))
+    session.commit()
+
+
 @router.post("/", status_code=201, response_model=CourseDetail)
 def create_course(
     *,
@@ -246,6 +266,11 @@ def create_course(
         raise HTTPException(422, detail) from exc
     if session.get(Niche, niche_id) is None:
         raise HTTPException(404, "Setor não encontrado.")
+    owner_id = session.exec(
+        select(User.id).where(col(User.id) == current_user.id).with_for_update()
+    ).first()
+    if owner_id is None:
+        raise HTTPException(404, "User not found")
     storage = request.app.dependency_overrides.get(get_storage, get_storage)()
     course = Course(
         owner_id=current_user.id,

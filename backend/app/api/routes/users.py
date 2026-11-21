@@ -1,6 +1,7 @@
 from typing import Any
 
 from fastapi import APIRouter, HTTPException
+from sqlmodel import col, delete, select
 
 from app import crud
 from app.api.deps import (
@@ -9,15 +10,20 @@ from app.api.deps import (
 )
 from app.core.security import get_password_hash, verify_password
 from app.models import (
+    Course,
     Message,
     UpdatePassword,
+    User,
     UserCreate,
     UserPublic,
     UserRegister,
     UserUpdateMe,
 )
+from app.services import course_deletion
 
-router = APIRouter(prefix="/users", tags=["users"])
+router = APIRouter(
+    prefix="/users", tags=["users"], lifespan=course_deletion.cleanup_lifespan
+)
 
 
 @router.patch("/me", response_model=UserPublic)
@@ -76,7 +82,24 @@ def delete_user_me(session: SessionDep, current_user: CurrentUser) -> Any:
     """
     Delete own user.
     """
-    session.delete(current_user)
+    owner_id = session.exec(
+        select(User.id).where(col(User.id) == current_user.id).with_for_update()
+    ).first()
+    if owner_id is None:
+        raise HTTPException(404, "User not found")
+    course_ids = session.exec(
+        select(Course.id)
+        .where(col(Course.owner_id) == owner_id)
+        .order_by(col(Course.id))
+        .with_for_update()
+    ).all()
+    if course_deletion.has_active_content(session, course_ids):
+        raise HTTPException(
+            409, "Espere a geração dos seus cursos terminar para excluir a conta."
+        )
+
+    course_deletion.enqueue_cleanup(session, course_ids)
+    session.exec(delete(User).where(col(User.id) == owner_id))
     session.commit()
     return Message(message="User deleted successfully")
 
