@@ -218,7 +218,7 @@ A equipe usa só recursos marcados como Always Free e não muda a conta para Pay
 - **Backend**: `pytest` contra o PostgreSQL do Compose. O CI exige 90% de cobertura de `backend/app`.
 - **Esquema**: `backend/tests/test_schema.py` compara o catálogo do PostgreSQL com o ERD.
 - **Modelo**: os testes trocam as funções de `llm.py` por funções determinísticas. Nenhum teste automático chama a API Gemini.
-- **Frontend**. O Playwright usa Chromium, a API do produto e PostgreSQL com pgvector. `compose.playwright.yml` monta um ponto de entrada de teste que substitui o OCI por armazenamento em memória e as chamadas ao Gemini por respostas determinísticas. A tarefa de fundo, a busca, o grafo, o cálculo da nota e a publicação usam o código do produto. O CI roda a suíte completa com a sobreposição.
+- **Frontend**: O Playwright usa Chromium, a API do produto e PostgreSQL com pgvector. `compose.playwright.yml` monta um ponto de entrada de teste que substitui o OCI por armazenamento em memória e as chamadas ao Gemini por respostas determinísticas. A tarefa de fundo, a busca, o grafo, o cálculo da nota e a publicação usam o código do produto. O CI roda a suíte completa com a sobreposição.
 
   Para rodar os dois cenários de geração, use um clone de teste com as portas do Compose livres. Na raiz do clone, rode:
 
