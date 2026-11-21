@@ -56,7 +56,7 @@ Pessoas sem experiência em programação podem escrever os casos: a tarefa é l
 
 ## Medições
 
-A primeira rodada usou os três documentos da demonstração e os casos do commit `06a945b`.
+A medição usa a primeira rodada do Pix e do Open Finance no commit `06a945b` e a repetição da LAI após a correção do quiz no commit `09e0a82`.
 
 | O que mede | Resultado da rodada |
 | --- | --- |
@@ -65,12 +65,12 @@ A primeira rodada usou os três documentos da demonstração e os casos do commi
 | Modelo de embeddings | `gemini-embedding-2` |
 | Versão dos prompts | `planeja-v1+escreve-v4+revisa-v2` |
 | Busca | 20 de 20 trechos esperados entre os 8 (100%). |
-| Revisor | 5 de 5 erros plantados identificados na conferência. 0 alarmes falsos em 5 casos fiéis. |
-| Clareza | Pendente das notas de uma pessoa. |
-| Geração | 3 de 4 conteúdos aprovados para publicação. 1 reprovação com apoio não reconhecido pelo revisor. Na mesma versão, outra afirmação não tem apoio. 0 falsas reprovações e 0 casos sem causa confirmada. |
+| Revisor | 4 de 5 erros plantados identificados na conferência. 0 alarmes falsos em 5 casos fiéis. |
+| Clareza | Não medida. A equipe não tem quem julgue o assunto dos documentos. A conferência passa para o teste de adaptação ao público com uma pessoa de fora no T34. |
+| Geração | 4 de 4 conteúdos aprovados para publicação. 0 reprovações, 0 falsas reprovações e 0 casos sem causa confirmada. |
 | Erros de execução | 2 de 6 gerações receberam HTTP 503 do Gemini. A primeira tentativa de indexar o Open Finance falhou antes dos casos. A repetição mediu o arquivo completo. |
 
-A reprovação foi no tutorial sobre graus de sigilo da LAI. O revisor recebeu o trecho do art. 24 que sustenta as opções de classificação do exemplo. O tutorial também afirmou que informações sobre a segurança do Presidente e do Vice-Presidente ficam sob sigilo até o fim do mandato. O § 2º exige que a informação possa colocar essa segurança em risco.
+No quiz da LAI com erro plantado, a resposta marcada e a justificativa davam 30 dias como prazo inicial. O revisor reprovou o quiz ao marcar como sem apoio a alternativa de 20 dias, que o art. 11, § 1º, sustenta. O erro de 30 dias ficou sem marcação.
 
 ## O que fica fora
 
