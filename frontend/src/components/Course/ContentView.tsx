@@ -3,6 +3,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
 import { FORMAT_LABELS } from "@/lib/courses"
+import { ContentEvaluation } from "./ContentEvaluation"
 import { ContentReader } from "./ContentReader"
 
 interface ContentViewProps {
@@ -92,6 +93,7 @@ export function ContentView({ content }: ContentViewProps) {
             </dl>
           </Card>
           <ContentReader format={content.format} content={content.content} />
+          <ContentEvaluation content={content} />
         </>
       )}
     </div>

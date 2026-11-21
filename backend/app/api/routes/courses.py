@@ -2,7 +2,15 @@ import logging
 import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, File, Form, HTTPException, Request, UploadFile
+from fastapi import (
+    APIRouter,
+    BackgroundTasks,
+    File,
+    Form,
+    HTTPException,
+    Request,
+    UploadFile,
+)
 from sqlmodel import Session, col, select
 
 from app.api.deps import CurrentUser, SessionDep
@@ -25,6 +33,7 @@ from app.models import (
     NichePublic,
     SourceDocument,
 )
+from app.services import course_generation
 from app.services.documents import MAX_FILE_BYTES, DocumentError, read_documents
 
 router = APIRouter(prefix="/courses", tags=["courses"])
@@ -209,6 +218,7 @@ def create_course(
     session: SessionDep,
     current_user: CurrentUser,
     request: Request,
+    background_tasks: BackgroundTasks,
     niche_id: Annotated[int, Form()],
     audience_level: Annotated[AudienceLevel, Form()],
     title: Annotated[str, Form()] = "",
@@ -280,4 +290,7 @@ def create_course(
             except Exception:
                 logging.exception("Falha ao limpar objetos do curso %s", course.id)
         raise
+    background_tasks.add_task(
+        course_generation.run_course_generation, storage=storage, course_id=course.id
+    )
     return read_course(session=session, current_user=current_user, course_id=course.id)

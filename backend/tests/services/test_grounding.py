@@ -15,42 +15,51 @@ from app.services.grounding import (
 )
 
 
-def review(claims: list[ClaimReview]) -> ReviewResult:
-    return ReviewResult(claims=claims, clarity=ClarityLevel.high, review_notes="Claro")
+def review(claims: list[ClaimReview], *, focus_covered: bool = True) -> ReviewResult:
+    return ReviewResult(
+        claims=claims,
+        clarity=ClarityLevel.high,
+        review_notes="Claro",
+        focus_covered=focus_covered,
+    )
 
 
 @pytest.mark.parametrize(
-    "supported,total,score,passed",
+    "supported,total,focus_covered,score,first_decision,last_decision",
     [
-        (8, 10, "0.80", True),
-        (7, 10, "0.70", False),
-        (159, 200, "0.79", False),
-        (0, 0, "0.00", False),
-        (1, 3, "0.33", False),
-        (3, 3, "1.00", True),
+        (12, 12, True, "1.00", Decision.publish, Decision.publish),
+        (16, 18, True, "0.88", Decision.rewrite, Decision.fail),
+        (8, 10, True, "0.80", Decision.rewrite, Decision.fail),
+        (159, 200, True, "0.79", Decision.rewrite, Decision.fail),
+        (10, 10, False, "1.00", Decision.fail, Decision.fail),
+        (0, 0, True, "0.00", Decision.rewrite, Decision.fail),
     ],
 )
 def test_evaluate_and_decide(
-    supported: int, total: int, score: str, passed: bool
+    supported: int,
+    total: int,
+    focus_covered: bool,
+    score: str,
+    first_decision: Decision,
+    last_decision: Decision,
 ) -> None:
     chunk = uuid.uuid4()
     claims = [
         ClaimReview(claim=str(i), supported=i < supported, chunk_id=chunk)
         for i in range(total)
     ]
-    result = evaluate(review(claims), {chunk})
+    result = evaluate(review(claims, focus_covered=focus_covered), {chunk})
     assert result.score == Decimal(score)
     assert result.score.as_tuple().exponent == -2
-    assert result.passed is passed
+    assert result.focus_covered is focus_covered
+    assert result.passed is (first_decision == Decision.publish)
     assert result.supported == claims[:supported]
     assert result.unsupported == claims[supported:]
-    for attempt in (1, 2, 3):
-        expected = (
-            Decision.publish
-            if passed
-            else (Decision.rewrite if attempt == 1 else Decision.fail)
-        )
-        assert decide(result, attempt=attempt) == expected
+    assert decide(result, attempt=1) == first_decision
+    assert decide(result, attempt=2) == last_decision
+    assert decide(result, attempt=3) == last_decision
+    if not focus_covered or not claims:
+        assert failure_message(result) == "O documento não trata do assunto pedido."
 
 
 def test_invalid_chunks_and_ordered_unique_citations() -> None:
@@ -69,50 +78,58 @@ def test_invalid_chunks_and_ordered_unique_citations() -> None:
     assert result.cited_chunk_ids == [first, second]
     assert result.score == Decimal("0.50")
     assert not result.passed
+    assert decide(result, attempt=1) == Decision.rewrite
     assert failure_message(result) == (
         "Afirmações sem apoio no documento:\nSem trecho\nTrecho desconhecido\nReprovada"
     )
 
 
-def test_empty_review_never_passes() -> None:
-    result = evaluate(review([]), set(), min_score=Decimal("0"))
-    assert not result.passed
-    assert result.cited_chunk_ids == []
-    assert failure_message(result) == "O documento não trata do assunto pedido."
-
-
-def test_custom_threshold_uses_fraction_before_rounding() -> None:
+@pytest.mark.parametrize(
+    "invalid_chunk_id", [None, uuid.UUID(int=0)], ids=["missing", "unknown"]
+)
+def test_invalid_chunk_alone_blocks_publication(
+    invalid_chunk_id: uuid.UUID | None,
+) -> None:
     chunk = uuid.uuid4()
-    result = evaluate(
-        review(
-            [
-                ClaimReview(claim=str(i), supported=i < 2, chunk_id=chunk)
-                for i in range(3)
-            ]
+    claims = [
+        ClaimReview(claim="Com citação válida", supported=True, chunk_id=chunk),
+        ClaimReview(
+            claim="Sem citação válida", supported=True, chunk_id=invalid_chunk_id
         ),
-        {chunk},
-        min_score=Decimal("0.665"),
+    ]
+    result = evaluate(review(claims), {chunk})
+
+    assert result.passed is False
+    assert decide(result, attempt=1) == Decision.rewrite
+    assert decide(result, attempt=2) == Decision.fail
+    assert failure_message(result) == (
+        "Afirmações sem apoio no documento:\nSem citação válida"
     )
-    assert result.score == Decimal("0.66")
-    assert result.passed
 
 
 @pytest.mark.parametrize("attempt", [0, -1])
-@pytest.mark.parametrize("passed", [True, False])
-def test_invalid_attempt(attempt: int, passed: bool) -> None:
+@pytest.mark.parametrize(
+    "focus_covered,supported", [(True, True), (True, False), (False, True)]
+)
+def test_invalid_attempt(attempt: int, focus_covered: bool, supported: bool) -> None:
     chunk = uuid.uuid4()
     result = evaluate(
-        review([ClaimReview(claim="Fato", supported=passed, chunk_id=chunk)]), {chunk}
+        review(
+            [ClaimReview(claim="Fato", supported=supported, chunk_id=chunk)],
+            focus_covered=focus_covered,
+        ),
+        {chunk},
     )
     with pytest.raises(ValueError):
         decide(result, attempt=attempt)
 
 
 def test_review_validates_model_response() -> None:
-    with pytest.raises(ValidationError):
+    with pytest.raises(ValidationError, match="focus_covered") as error:
         ReviewResult.model_validate(
-            {"claims": [], "clarity": "invalid", "review_notes": ""}
+            {"claims": [], "clarity": "high", "review_notes": "Claro"}
         )
+    assert error.value.error_count() == 1
     with pytest.raises(ValidationError):
         ClaimReview.model_validate(
             {"claim": "Fato", "supported": True, "chunk_id": "invalid"}

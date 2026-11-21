@@ -1,6 +1,6 @@
 # Mapa da base de conhecimento
 
-Este arquivo indica onde achar cada informação do NovaMente. Leia só o documento que a tarefa pede. Arquivos fora de `docs/` não valem (veja o fim deste arquivo).
+Este arquivo indica onde achar cada informação do NovaMente. Leia só os documentos que a tarefa pede.
 
 O NovaMente transforma um documento técnico em conteúdos de estudo fiéis a ele. A base de conhecimento fica em `docs/`.
 
@@ -51,7 +51,7 @@ O índice [`docs/product-specs/index.md`](docs/product-specs/index.md) lista os 
 
 ## Tickets
 
-Cada ticket `TNN-*.md` é uma unidade de trabalho que um agente executa do branch ao PR. [`docs/tickets/README.md`](docs/tickets/README.md) traz o fluxo, as verificações, as regras de conflito e a tabela de ondas com as dependências.
+Cada ticket `TNN-*.md` é uma unidade de trabalho que uma pessoa ou um agente executa do branch ao PR. [`docs/tickets/README.md`](docs/tickets/README.md) traz o fluxo, as verificações, as regras de conflito e a tabela de ondas com as dependências.
 
 Tickets escritos (onda 1):
 
@@ -81,10 +81,34 @@ Tickets escritos (onda 2):
 | [`T22`](docs/tickets/completed/T22-publicacao.md) | Publicação: JSON na OCI e transação no banco |
 | [`T23`](docs/tickets/completed/T23-api-de-criacao-de-curso.md) | API de criação de curso |
 | [`T37`](docs/tickets/completed/T37-leitura-de-pdf.md) | Leitura de PDF com texto |
-| [`T39`](docs/tickets/T39-ritmo-dos-limites-do-gemini.md) | Ritmo dos limites por minuto do Gemini |
+| [`T39`](docs/tickets/completed/T39-ritmo-dos-limites-do-gemini.md) | Ritmo dos limites por minuto do Gemini |
 
-Os tickets das ondas 3 a 5 estão só na tabela de ondas do README dos tickets.
+Tickets escritos da onda 3:
+
+| Ticket | Entrega |
+| --- | --- |
+| [`T08`](docs/tickets/completed/T08-leitor-de-tutorial.md) | Leitor de tutorial |
+| [`T09`](docs/tickets/completed/T09-leitor-de-flashcards.md) | Leitor de flashcards |
+| [`T10`](docs/tickets/completed/T10-leitor-de-quiz.md) | Leitor de quiz com justificativa após a resposta |
+| [`T40`](docs/tickets/completed/T40-regras-de-fidelidade.md) | Revisão de conteúdo, cobertura do foco e publicação só com afirmações sustentadas |
+| [`T24`](docs/tickets/completed/T24-grafo-de-geracao.md) | Grafo de geração: escreve, revisa, reescreve uma vez |
+| [`T25`](docs/tickets/completed/T25-agente-escreve-flashcards.md) | Agente `escreve`: flashcards |
+| [`T27`](docs/tickets/completed/T27-novo-curso-passos-2-e-3.md) | Novo curso, passos 2 e 3, e envio |
+| [`T38`](docs/tickets/completed/T38-tela-curso-avaliacao.md) | Tela "Curso": fidelidade, clareza, observações e trechos citados |
+
+O [T26](docs/tickets/completed/T26-agente-escreve-quiz.md), agente `escreve` para quiz, está completo.
+
+Tickets escritos das ondas 5 a 7:
+
+| Ticket | Entrega |
+| --- | --- |
+| [`T28`](docs/tickets/completed/T28-tarefa-de-fundo.md) | Tarefa de fundo para gerar os três formatos |
+| [`T29`](docs/tickets/T29-etapa-planeja.md) | Etapa `planeja` |
+| [`T30`](docs/tickets/T30-avaliacao-da-busca-e-do-revisor.md) | Avaliação da busca e do revisor, com medição de falsas reprovações |
+| [`T41`](docs/tickets/T41-casos-de-avaliacao-e-primeira-medicao.md) | Casos de avaliação sobre os documentos da demonstração e primeira medição |
+
+Os demais tickets das ondas 6 e 7 ainda não foram escritos e estão na [tabela de ondas](docs/tickets/README.md#ondas).
 
 ## Fora de `docs/`
 
-Ignore os arquivos fora de `docs/`, como `README.md`, `CONTRIBUTING.md`, `development.md` e `deployment.md`. Eles vêm do template ou estão velhos e não descrevem o projeto. Só o código em `backend/` e `frontend/` e os documentos de `docs/` valem.
+Use o código em `backend/` e `frontend/` e os documentos de `docs/` como fontes do projeto. Use também os arquivos em `examples/` quando o ticket os citar. Os arquivos `README.md`, `CONTRIBUTING.md`, `development.md` e `deployment.md` da raiz vêm do template ou estão velhos.

@@ -9,12 +9,15 @@ test.use({ storageState: { cookies: [], origins: [] } })
 
 const unknownId = "00000000-0000-0000-0000-000000000000"
 const generationError = "linha um\nlinha dois"
-const readerPlaceholder = "O leitor deste formato ainda não está disponível."
 const publishedTutorial = {
   format: "tutorial",
   status: "succeeded",
   title: "Introdução",
-  content: {},
+  content: {
+    summary: "Aprenda os conceitos básicos do curso.",
+    sections: [{ title: "Primeiros passos", body: "Comece pela base." }],
+    takeaways: ["Pratique os conceitos do curso."],
+  },
   estimated_minutes: 12,
   key_concepts: ["Conceito A", "Conceito B"],
   prerequisites: ["Base"],
@@ -67,7 +70,7 @@ test("abre diretamente o único conteúdo com seus metadados", async ({
   for (const text of ["cerca de 12 min", "Conceito A", "Conceito B", "Base"]) {
     await expect(metadata.getByText(text, { exact: true })).toBeVisible()
   }
-  await expect(page.getByText(readerPlaceholder)).toBeVisible()
+  await expect(page.getByText(publishedTutorial.content.summary)).toBeVisible()
   await expect(page.getByRole("button", { name: /^Abrir / })).toHaveCount(0)
   await expect(page.getByRole("link", { name: /^Abrir / })).toHaveCount(0)
 })
@@ -194,6 +197,10 @@ test("abre o tutorial pela grade e volta ao curso", async ({ page }) => {
 test("mantém o conteúdo publicado legível durante falha ou geração", async ({
   page,
 }) => {
+  const cards = Array.from({ length: 8 }, (_, index) => ({
+    front: `Pergunta ${index + 1}`,
+    back: `Resposta ${index + 1}`,
+  }))
   const course = await setup(page, {
     contents: [
       {
@@ -201,7 +208,11 @@ test("mantém o conteúdo publicado legível durante falha ou geração", async 
         status: "failed",
         error_message: generationError,
       },
-      { format: "flashcards", status: "running", content: {} },
+      {
+        format: "flashcards",
+        status: "running",
+        content: { introduction: "Revise os conceitos do curso.", cards },
+      },
     ],
   })
   const coursePath = `/courses/${course.id}`
@@ -222,13 +233,13 @@ test("mantém o conteúdo publicado legível durante falha ou geração", async 
   await expect(
     page.getByRole("heading", { name: "Introdução", level: 2 }),
   ).toBeVisible()
-  await expect(page.getByText(readerPlaceholder)).toBeVisible()
+  await expect(page.getByText(publishedTutorial.content.summary)).toBeVisible()
 
   await page.goto(`${coursePath}/contents/${running.id}`)
   await expect(
     page.getByRole("alert").getByText("Gerando. A tela se atualiza sozinha."),
   ).toBeVisible()
-  await expect(page.getByText(readerPlaceholder)).toBeVisible()
+  await expect(page.getByText(cards[0].front, { exact: true })).toBeVisible()
 })
 
 for (const screen of ["curso", "conteúdo"] as const) {

@@ -50,7 +50,7 @@ O CHECK `ck_course_content_published_pair` mantém as duas cópias em par: `cont
 | `backend/app/core/config.py` | Classe `Settings`, lida do `.env` | Existe |
 | `backend/app/core/storage.py` | Único módulo que chama o OCI Python SDK | A construir |
 | `backend/app/core/llm.py` | Único módulo que chama a API Gemini | A construir |
-| `backend/app/services/course_generation.py` | Indexação, busca, geração e publicação | A construir |
+| `backend/app/services/course_generation.py` | Tarefa de fundo: indexação, busca, geração e publicação | Existe |
 | `backend/tests/` | Testes `pytest` contra um PostgreSQL real | Existe |
 | `frontend/src/routes/` | Rotas do TanStack Router. A navegação fica no topo, com "Home" e "Novo curso" | Existe para login, cadastro, painel e configurações. A navegação no topo e `/courses/new` faltam |
 | `frontend/src/client/` | Cliente HTTP gerado do OpenAPI. Não edite à mão. | Existe |
@@ -68,12 +68,14 @@ flowchart TD
     D --> E[5. Indexação grava chunks e embeddings]
     E --> F[6. Busca vetorial pelo focus do conteúdo]
     F --> G[7. escreve gera o JSON]
-    G --> H[8. revisa confere cada afirmação]
-    H --> I{9. Nota atinge o mínimo?}
-    I -- sim --> J[10. Backend grava o JSON no OCI]
+    G --> H[8. revisa confere o foco e as afirmações do material]
+    H --> I{9. Foco coberto?}
+    I -- não --> L[Conteúdo failed, sem nova publicação]
+    I -- sim --> P{Há afirmações e todas têm apoio?}
+    P -- sim --> J[10. Backend grava o JSON no OCI]
     J --> K[11. Backend publica conteúdo, notas e citações]
-    I -- não, primeira vez --> G
-    I -- não, segunda vez --> L[Conteúdo failed, nada publicado]
+    P -- não, primeira tentativa --> G
+    P -- não, segunda tentativa --> L
     K --> N{Há outro conteúdo pending?}
     L --> N
     N -- sim --> F
@@ -87,8 +89,8 @@ flowchart TD
 5. A tarefa divide o texto em chunks de cerca de 1.000 caracteres e pede um embedding por chunk. Ela grava os chunks e o estado `indexed` na mesma transação, um documento por vez. Se um documento falha, a tarefa para e nenhum conteúdo é gerado.
 6. A tarefa pega os conteúdos na ordem de `position`, um por vez, e marca o conteúdo como `running`. Ela gera o embedding de `course_content.focus` e busca os 8 chunks mais próximos. A busca usa todos os documentos `indexed` do curso com o mesmo `embedding_model`.
 7. `escreve` recebe os chunks, o `audience_level`, o `prompt_hint` do nicho e o formato. Ele devolve um JSON validado por um model Pydantic.
-8. `revisa` recebe o JSON e os mesmos chunks. Ele lista as afirmações técnicas, indica o chunk que sustenta cada uma e avalia a clareza.
-9. O backend confere a revisão, calcula `grounding_score` e decide. Abaixo do mínimo, `escreve` recebe as afirmações reprovadas e gera uma segunda versão. Se a segunda versão também falha, o conteúdo fica `failed`.
+8. `revisa` recebe o `content`, o foco, o nível de público e os mesmos chunks. Ele verifica se o material trata do foco com apoio nos chunks. Ele também lista as afirmações técnicas, indica o chunk que sustenta cada uma e avalia a clareza.
+9. O backend calcula `grounding_score` e decide. Se o foco não é coberto, o conteúdo fica `failed` de imediato. Com foco coberto, o backend aprova se a revisão lista pelo menos uma afirmação e todas têm apoio em chunks válidos. Se a primeira revisão não lista afirmações ou alguma fica sem apoio, `escreve` gera uma segunda versão com a lista de afirmações sem apoio. Se a segunda revisão ainda falha, o conteúdo fica `failed`.
 10. O backend grava o JSON aprovado no OCI, com uma chave nova.
 11. O backend grava, em uma transação, o conteúdo, as notas, as citações e `status = succeeded`. O primeiro conteúdo publicado muda `course.status` para `ready`. Se a transação falha, o backend apaga o objeto do passo 10.
 12. O frontend consulta a API a cada 3 segundos enquanto algum conteúdo do curso está `pending` ou `running`.
@@ -97,7 +99,7 @@ A tarefa repete os passos 6 a 11 para cada conteúdo. Se nenhum conteúdo criado
 
 Todos os documentos do curso entram na busca de cada conteúdo. A busca devolve os 8 chunks mais próximos do `focus`, então um conteúdo pode citar só parte dos documentos.
 
-Nenhum dos doze passos tem código ainda. A ordem de construção sugerida começa por um arquivo `.md` e um tutorial, de ponta a ponta.
+A rota de criação agenda a tarefa de fundo após confirmar a transação.
 
 ## Os estados tornam a tarefa de fundo observável
 
@@ -115,17 +117,15 @@ As dez regras de ciclo de vida do curso ficam em [`generated/db-schema.md`](gene
 
 1. Só `backend/app/core/storage.py` chama o OCI Python SDK. Só `backend/app/core/llm.py` chama a API Gemini.
 2. Os agentes só produzem texto e avaliações. O backend busca os dados, calcula a nota, decide o próximo passo e publica.
-3. O backend calcula `grounding_score` como a fração das afirmações técnicas sustentadas por um chunk existente. O modelo não escreve esse número.
+3. O backend calcula `grounding_score` como a fração das afirmações técnicas sustentadas por um chunk válido. Para publicar, o material deve cobrir o foco com apoio nos chunks, a revisão deve listar pelo menos uma afirmação e todas devem ter apoio em chunks válidos. Cada nova publicação tem nota 1,00.
 4. Uma afirmação marcada como sustentada sem chunk válido conta como não sustentada.
 5. Um erro ou uma resposta inválida de `revisa` nunca aprova o conteúdo.
 6. Analogias e exemplos do nicho não entram na nota, desde que não tragam fatos técnicos novos.
 7. A reescrita usa os mesmos chunks da primeira escrita. Não há nova busca.
 8. Cada conteúdo tem no máximo duas escritas e duas revisões por geração.
 9. As citações publicadas são só os chunks que sustentam afirmações aprovadas. A `similarity` é o valor da busca vetorial.
-10. Os prompts dizem que o documento e o rascunho são dados. Os agentes ignoram instruções escritas dentro deles.
+10. Os prompts tratam o documento e o rascunho como dados. O revisor também trata o foco como dado. Os agentes ignoram instruções escritas nesses dados.
 11. Nenhum JSON reprovado vai para o OCI nem para `course_content.content`.
-
-Nenhuma destas regras tem código ainda.
 
 ## Falhas e recuperação
 
@@ -133,15 +133,18 @@ Nenhuma destas regras tem código ainda.
 | --- | --- |
 | Validação da entrada | A API responde HTTP 422 ou 404 e não grava nada. |
 | `commit` da criação falha | A API apaga o arquivo já enviado ao OCI. |
+| Falha de indexação | A tarefa para e marca os conteúdos `pending` como `failed`, com “O conteúdo não foi gerado, porque um documento do curso falhou.” Se o curso ainda está `initializing`, sem publicação e sem conteúdo `pending` ou `running`, ele fica `failed`. |
 | Exceção na tarefa de fundo | A tarefa faz `rollback`, abre uma sessão nova e marca como `failed` o documento ou o conteúdo, com `error_message`. Se nenhum conteúdo inicial é publicado, marca também o curso. |
-| Conteúdo reprovado duas vezes | O conteúdo fica `failed`. `error_message` lista as afirmações reprovadas. |
+| Material sem cobertura do foco na revisão | O conteúdo fica `failed` de imediato, com “O documento não trata do assunto pedido.” |
+| Segunda revisão sem afirmações | O conteúdo fica `failed`, com “O documento não trata do assunto pedido.” |
+| Segunda revisão com foco coberto e afirmações sem apoio | O conteúdo fica `failed`. `error_message` começa com “Afirmações sem apoio no documento:” e lista cada afirmação sem apoio em uma linha. |
 | Processo cai durante a geração | A geração conta como interrompida quando nenhum conteúdo do curso muda de estado por 10 minutos e algum está `pending` ou `running`. O backend marca esses conteúdos como `failed` na próxima consulta ao curso. |
 | Nova tentativa | A pessoa pede a nova tentativa de um conteúdo. O backend muda o conteúdo de `failed` para `pending` em uma única operação. Um segundo pedido recebe HTTP 409. A tarefa só indexa de novo o documento que não está `indexed`. |
 | Exclusão de curso | O backend recusa com HTTP 409 se há geração ativa. Depois apaga as linhas e, em tarefa de fundo, os objetos sob `courses/{course_id}/`. |
 | Exclusão de conta | `DELETE /api/v1/users/me` já existe e apaga os cursos em cascata. O backend precisa coletar os `course_id` antes e fazer a mesma limpeza. |
 | Limpeza no OCI falha | O backend registra o `course_id` e o erro no log. O objeto fica sem uso. |
 
-Só a exclusão de conta sem limpeza existe hoje. O resto desta tabela está a construir.
+A API trata as falhas na criação e a tarefa de fundo trata as falhas na geração. A exclusão de conta já apaga as linhas no banco. A regra dos 10 minutos, a nova tentativa e a limpeza de objetos ao excluir um curso ou uma conta estão a construir.
 
 O tempo de 10 minutos é uma estimativa. A equipe ajusta depois de medir o pior caso de uma geração.
 
@@ -228,7 +231,7 @@ A equipe usa só recursos marcados como Always Free e não muda a conta para Pay
 | Um só banco: PostgreSQL com pgvector | Evita operar um vector store separado. | Existe |
 | Busca exata, sem índice HNSW | Cerca de 15.000 chunks na escala planejada. | Existe |
 | Gemini para embeddings e texto | Uma só chave e um só cliente. | A construir |
-| Tarefa de fundo com `BackgroundTasks` | Uma fila externa é uma peça a mais para 10 usuários. | A construir |
+| Tarefa de fundo com `BackgroundTasks` | Uma fila externa é uma peça a mais para 10 usuários. | Existe |
 | JSON publicado no banco e no OCI | A API lê do banco. O OCI atende ao hackathon. | A construir |
 | OCI Python SDK, sem MinIO e sem `boto3` | Permite instance principal na VM e testa o OCI desde o início. | A construir |
 | `escreve` e `revisa`, com uma reescrita | A promessa do produto é fidelidade ao documento. | A construir |
@@ -244,7 +247,7 @@ A equipe usa só recursos marcados como Always Free e não muda a conta para Pay
 | Até 3 documentos e até 3 saídas, uma de cada formato | Todas as saídas têm o mesmo foco. Cada saída usa até quatro chamadas ao modelo. | A construir |
 | Até 5 MiB por arquivo e 150 mil caracteres de texto por documento | Mantém cada documento perto da escala prevista no esquema. | A construir |
 | Arquivo no OCI com conteúdo, metadados e avaliação | Um sistema externo entende o arquivo sem consultar o banco. | A construir |
-| Nota mínima de 0,80 | Ponto de partida. A equipe mede com os casos de avaliação, ajusta e registra cada mudança. | A construir |
+| Publicar só com foco coberto e pelo menos uma afirmação, todas com apoio | Em 19/11/2026, a regra anterior aprovou um tutorial com dois fatos falsos e outro que fugiu do foco. | Existe |
 
 Os limites de documentos, de saídas e de formato são regras da API. O banco não os impõe.
 

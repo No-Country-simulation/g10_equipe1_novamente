@@ -6,14 +6,34 @@ from app.models import AudienceLevel, ContentFormat
 from app.services.content_schemas import GENERATED_MODELS, GeneratedBase
 from app.services.retrieval import RetrievedChunk
 
-PROMPT_VERSION = "escreve-v1"
+PROMPT_VERSION = "escreve-v3"
 
 TUTORIAL_INSTRUCTION = (
     "Escreva um tutorial com resumo de abertura, de 1 a 8 seções em Markdown "
-    "e de 1 a 5 itens Para levar. Inclua conceitos-chave presentes no documento, "
-    "pré-requisitos e tempo estimado em minutos."
+    "e de 1 a 5 itens Para levar."
 )
-FORMAT_INSTRUCTIONS = {ContentFormat.tutorial: TUTORIAL_INSTRUCTION}
+FLASHCARDS_INSTRUCTION = (
+    "Escreva uma introdução curta baseada nos trechos e de 8 a 12 cartões. "
+    "Cada cartão deve tratar de um só fato ou conceito. A frente deve ser uma "
+    "pergunta ou um termo. O verso deve responder à frente com um fato dos "
+    "trechos do documento. A dica é opcional e ajuda a lembrar a resposta sem "
+    "trazer um fato técnico novo. Cartões diferentes não podem repetir a mesma pergunta."
+)
+QUIZ_INSTRUCTION = (
+    "Escreva exatamente 5 perguntas. Cada pergunta deve tratar de um fato ou "
+    "conceito dos trechos do documento. Perguntas diferentes devem tratar de fatos distintos. "
+    "Dê exatamente 4 opções distintas por pergunta, com uma única resposta correta. "
+    "Use correct_index de 0 a 3 para indicar a resposta correta e varie a posição "
+    "da resposta correta entre as perguntas. As opções incorretas devem ser plausíveis "
+    "para o nível de público. Os trechos devem permitir distinguir a resposta correta "
+    "das demais. Explique a resposta correta na justificativa com fatos dos trechos. "
+    "Todo fato no enunciado ou na justificativa deve ter apoio nos trechos."
+)
+FORMAT_INSTRUCTIONS = {
+    ContentFormat.tutorial: TUTORIAL_INSTRUCTION,
+    ContentFormat.flashcards: FLASHCARDS_INSTRUCTION,
+    ContentFormat.quiz: QUIZ_INSTRUCTION,
+}
 AUDIENCE_INSTRUCTIONS = {
     AudienceLevel.non_technical: "Evite jargão, use analogias cotidianas e explique para que serve antes de como funciona.",
     AudienceLevel.technical_basic: "Use termos corretos e explique-os; inclua passos práticos e exemplos de comandos ou código.",
@@ -59,6 +79,9 @@ def write_content(
         f"{AUDIENCE_INSTRUCTIONS[request.audience_level]} "
         f"Use exemplos do setor {request.niche_name}: {request.niche_prompt_hint}. "
         "Os exemplos não devem acrescentar fatos técnicos ausentes do documento. "
+        "Use um título que descreva o material e coloque os fatos técnicos em content. "
+        "Escolha conceitos-chave que aparecem nos trechos e que o conteúdo ensina. "
+        "Indique os pré-requisitos necessários antes de estudar e o tempo estimado em minutos. "
         f"{FORMAT_INSTRUCTIONS[request.content_format]}"
     )
     chunks = "\n".join(

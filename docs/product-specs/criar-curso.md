@@ -18,7 +18,7 @@ O conteúdo de todos os documentos vale para todas as saídas. A pessoa não lig
 
 O foco de cada saída começa igual ao título do curso. Por isso o curso aceita só uma saída de cada formato: duas saídas iguais no formato e no foco sairiam quase iguais.
 
-A equipe mede o tempo de um curso com três saídas e ajusta os limites se for preciso.
+Em 21/11/2026, a geração de um curso com três saídas levou 175,024 segundos. A equipe usou um documento Markdown de 12.932 caracteres, com `gemini-3.5-flash-lite` para geração e `gemini-embedding-2` para embeddings.
 
 O nível e o setor ficam fixos depois da primeira geração com sucesso. Para outro nível, a pessoa cria outro curso com os mesmos arquivos.
 
@@ -27,11 +27,10 @@ O texto digitado em um campo conta como um documento. O navegador o envia como u
 ## O que a pessoa vê
 
 1. A pessoa clica em "Novo curso" e preenche os 3 passos de `/courses/new`: documentos, perfil (título, setor e nível) e formatos. O navegador confere tipo e tamanho dos arquivos. Ao clicar em "Criar curso", ele envia tudo em um só pedido.
-2. O curso aparece na lista com o estado "Gerando".
-3. A tela se atualiza sozinha a cada 3 segundos.
+2. Se o envio dá certo, a pessoa vai direto à tela do curso criado. Cada conteúdo mostra o próprio estado e começa como "Na fila". Na lista de cursos, o curso aparece como "Gerando".
+3. A lista de cursos e a tela do curso se atualizam a cada 3 segundos enquanto algum conteúdo está na fila ou em geração.
 4. O produto gera uma saída por vez, na ordem escolhida.
 5. O curso muda para "Pronto" quando a primeira saída é publicada. As outras saídas continuam em geração.
-6. A pessoa abre o curso e vê cada conteúdo com o seu estado.
 
 O briefing pede poucos cliques. Depois de preencher o formulário, a pessoa chega ao primeiro conteúdo com dois cliques.
 
@@ -66,9 +65,10 @@ A tela não mostra um curso "Gerando" ou "Falhou" como produto pronto.
 | Mesmo arquivo duas vezes no curso | HTTP 422 | Este arquivo já está no curso. |
 | Setor inexistente | HTTP 404 | Setor não encontrado. |
 | Armazenamento de arquivos fora do ar | HTTP 503 | O armazenamento de arquivos não está disponível. Tente novamente mais tarde. |
-| Falha ao ler ou indexar um documento | Curso "Falhou" | O documento que falhou e o motivo. |
+| Falha ao ler ou indexar um documento | Curso "Falhou" | O documento que falhou e o motivo. Cada conteúdo mostra: O conteúdo não foi gerado, porque um documento do curso falhou. |
 | Falha no modelo ou no armazenamento | Conteúdo "Falhou" | O que falhou e o botão "Tentar novamente". |
-| Conteúdo reprovado na revisão | Conteúdo "Falhou" | As afirmações sem apoio no documento. |
+| Foco não coberto ou segunda revisão sem afirmações | Conteúdo "Falhou" | O documento não trata do assunto pedido. |
+| Segunda revisão com foco coberto e afirmações sem apoio | Conteúdo "Falhou" | Afirmações sem apoio no documento: uma linha por afirmação. |
 | Geração parada por 10 minutos | Conteúdo "Falhou" | A geração foi interrompida. Tente novamente. |
 
 Quando o erro é de um documento, a mensagem vem depois do nome do arquivo: `guia.txt: Envie um arquivo .md ou PDF, ou digite o texto.`

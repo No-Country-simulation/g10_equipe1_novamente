@@ -1,7 +1,7 @@
 import hashlib
 import uuid
 from collections.abc import Iterator
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 import pytest
 from fastapi.testclient import TestClient
@@ -11,9 +11,17 @@ from app.core.config import settings
 from app.core.storage import InMemoryStorage, StorageError, document_key, get_storage
 from app.main import app
 from app.models import CourseContent, Niche, SourceDocument
+from app.services import course_generation
 from tests.utils.user import authentication_token_from_email, create_random_user
 
 URL = f"{settings.API_V1_STR}/courses/"
+
+
+@pytest.fixture(autouse=True)
+def generation(monkeypatch):
+    task = Mock()
+    monkeypatch.setattr(course_generation, "run_course_generation", task)
+    return task
 
 
 @pytest.fixture
@@ -53,11 +61,14 @@ def assert_empty(client, headers, storage):
     assert client.get(URL, headers=headers).json()["count"] == 0
 
 
-def test_create_course(client: TestClient, db: Session, headers, storage):
+def test_create_course(client: TestClient, db: Session, headers, storage, generation):
     niche = db.exec(select(Niche)).first()
     response = send(client, headers, title=" Curso ", niche=str(niche.id))
     assert response.status_code == 201, response.text
     course = response.json()
+    generation.assert_called_once_with(
+        storage=storage, course_id=uuid.UUID(course["id"])
+    )
     assert course["title"] == "Curso"
     assert course["status"] == "initializing"
     assert course["niche"]["id"] == niche.id
@@ -165,26 +176,29 @@ def test_three_files_and_order(client, headers, storage):
         ({"niche": "32767"}, 404, "Setor não encontrado."),
     ],
 )
-def test_invalid_input(client, headers, storage, kwargs, status, detail):
+def test_invalid_input(client, headers, storage, generation, kwargs, status, detail):
     response = send(client, headers, **kwargs)
     assert response.status_code == status
     assert response.json()["detail"] == detail
     assert_empty(client, headers, storage)
+    generation.assert_not_called()
 
 
-def test_max_title_and_invalid_types(client, headers, storage):
+def test_max_title_and_invalid_types(client, headers, storage, generation):
     assert send(client, headers, level="invalido").status_code == 422
     assert send(client, headers, formats=("invalido",)).status_code == 422
     assert send(client, headers, niche="invalido").status_code == 422
     assert_empty(client, headers, storage)
+    generation.assert_not_called()
     assert send(client, headers, title="a" * 255).status_code == 201
 
 
-def test_anonymous(client):
+def test_anonymous(client, generation):
     assert send(client, {}).status_code == client.get(URL).status_code
+    generation.assert_not_called()
 
 
-def test_second_put_failure(client, headers, storage, monkeypatch):
+def test_second_put_failure(client, headers, storage, monkeypatch, generation):
     original = storage.put
 
     def put(key, data, content_type):
@@ -200,16 +214,18 @@ def test_second_put_failure(client, headers, storage, monkeypatch):
         == "O armazenamento de arquivos não está disponível. Tente novamente mais tarde."
     )
     assert_empty(client, headers, storage)
+    generation.assert_not_called()
 
 
-def test_commit_failure(client, headers, storage):
+def test_commit_failure(client, headers, storage, generation):
     with patch.object(Session, "commit", side_effect=RuntimeError("commit")):
         with pytest.raises(RuntimeError, match="commit"):
             send(client, headers)
     assert_empty(client, headers, storage)
+    generation.assert_not_called()
 
 
-def test_unconfigured_storage(client, headers, monkeypatch):
+def test_unconfigured_storage(client, headers, monkeypatch, generation):
     monkeypatch.setattr(settings, "OCI_BUCKET", None)
     monkeypatch.setattr(settings, "OCI_NAMESPACE", None)
     get_storage.cache_clear()
@@ -221,4 +237,5 @@ def test_unconfigured_storage(client, headers, monkeypatch):
         response.json()["detail"]
         == "O armazenamento de arquivos não está disponível. Tente novamente mais tarde."
     )
+    generation.assert_not_called()
     get_storage.cache_clear()
