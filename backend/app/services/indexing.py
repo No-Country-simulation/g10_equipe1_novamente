@@ -70,6 +70,7 @@ def index_document(
     storage: Storage,
     document_id: uuid.UUID,
     validate_generation: Callable[[Session], None] | None = None,
+    on_indexed: Callable[[Session], None] | None = None,
 ) -> int:
     if validate_generation is not None:
         validate_generation(session)
@@ -123,6 +124,9 @@ def index_document(
         document.status = DocumentStatus.indexed
         document.embedding_model = settings.GEMINI_EMBEDDING_MODEL
         session.add(document)
+        if on_indexed is not None:
+            # O progresso e os chunks ficam visíveis no mesmo commit.
+            on_indexed(session)
         session.commit()
         return len(chunks)
     except IndexingInterrupted:

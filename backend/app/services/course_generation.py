@@ -185,6 +185,16 @@ def _index_documents(
         if _lock_generation(session, course_id, generation_id) is None:
             raise indexing.IndexingInterrupted
 
+    def record_indexing_progress(session: Session) -> None:
+        session.exec(
+            update(CourseContent)
+            .where(
+                col(CourseContent.course_id) == course_id,
+                col(CourseContent.status) == GenerationStatus.pending,
+            )
+            .values(updated_at=get_datetime_utc())
+        )
+
     for document_id, name in documents:
         try:
             indexing.index_document(
@@ -192,6 +202,7 @@ def _index_documents(
                 storage=storage,
                 document_id=document_id,
                 validate_generation=validate_generation,
+                on_indexed=record_indexing_progress,
             )
         except indexing.IndexingInterrupted:
             return False

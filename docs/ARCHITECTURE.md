@@ -151,7 +151,11 @@ O UUID interno `course.generation_id` identifica a tarefa que pode gravar result
 
 O backend recupera gerações paradas na inicialização e a cada 30 segundos. A recuperação fecha a fila e limpa o UUID na mesma transação. Linhas antigas sem UUID seguem o mesmo prazo. A pessoa inicia a nova tentativa pela tela do curso.
 
-O prazo usa o `updated_at` mais recente entre os conteúdos do curso e inclui a indexação. Enquanto o curso tem progresso recente, as saídas na fila continuam esperando. A recuperação preserva publicações anteriores.
+O prazo usa o `updated_at` mais recente entre os conteúdos do curso. Sob o lock do curso, a tarefa atualiza o `updated_at` das saídas na fila na mesma transação que grava os chunks e marca cada documento como `indexed`. Cada documento concluído renova o prazo. Se a indexação ficar 10 minutos sem registrar progresso, a recuperação encerra a geração. A recuperação preserva publicações anteriores.
+
+O tempo de 10 minutos é uma estimativa. A equipe ajusta depois de medir o pior caso de uma geração.
+
+`source_document` não tem `updated_at`. A regra cobre a indexação na criação do curso e na nova tentativa. Um documento adicionado depois a um curso pronto vai precisar de outra regra.
 
 ## Armazenamento de objetos
 

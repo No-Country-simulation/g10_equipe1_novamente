@@ -26,7 +26,7 @@ from app.models import (
     SourceDocument,
     get_datetime_utc,
 )
-from app.services import course_generation, generation_graph, indexing
+from app.services import course_generation, generation_graph, indexing, publishing
 from app.services.content_schemas import GENERATED_MODELS
 from app.services.generation_graph import GenerationResult
 from app.services.grounding import ClaimReview, Decision, ReviewResult, evaluate
@@ -522,6 +522,71 @@ def test_retry_joins_active_queue_once(setup, agents, client, monkeypatch):
     with Session(engine) as db:
         assert [c.status for c in setup.contents(db)] == ["succeeded"] * 3
         assert db.get_one(Course, setup.course_id).generation_id is None
+
+
+@pytest.mark.parametrize(
+    ("second_document_minutes", "content_status", "second_document_status"),
+    [(6, "succeeded", "indexed"), (11, "failed", "failed")],
+)
+def test_indexing_deadline_tracks_each_document(
+    client,
+    db,
+    agents,
+    monkeypatch,
+    second_document_minutes,
+    content_status,
+    second_document_status,
+):
+    owner = create_random_user(db)
+    token = create_access_token(owner.id, timedelta(minutes=5))
+    headers = {"Authorization": f"Bearer {token}"}
+    niche = db.exec(select(Niche).where(Niche.slug == "geral")).one()
+    monkeypatch.setitem(app.dependency_overrides, get_storage, InMemoryStorage)
+    monkeypatch.setattr(settings, "GEMINI_GENERATION_MODEL", "modelo-de-teste")
+    now = get_datetime_utc()
+    monkeypatch.setattr(course_generation, "get_datetime_utc", lambda: now)
+    monkeypatch.setattr(publishing, "datetime", Mock(now=lambda _tz: now))
+    document_times = iter((6, second_document_minutes))
+
+    def embed(texts, *, task):
+        nonlocal now
+        if task == "document":
+            now += timedelta(minutes=next(document_times))
+            course_generation.expire_stalled_courses()
+        return _embedding(texts, task=task)
+
+    agents[0].side_effect = embed
+    created = client.post(
+        "/api/v1/courses/",
+        headers=headers,
+        data={
+            "title": "Redes na OCI",
+            "niche_id": niche.id,
+            "audience_level": "technical_basic",
+            "formats": "tutorial",
+        },
+        files=[
+            ("files", (f"{name}.md", content.encode(), "text/markdown"))
+            for name, content in zip(("a", "b"), TEXTS, strict=True)
+        ],
+    )
+    assert created.status_code == 201
+    course_id = uuid.UUID(created.json()["id"])
+    result = client.get(f"/api/v1/courses/{course_id}", headers=headers)
+    assert result.status_code == 200
+    course = result.json()
+    assert course["contents"][0]["status"] == content_status
+    assert {doc["original_filename"]: doc["status"] for doc in course["documents"]} == {
+        "a.md": "indexed",
+        "b.md": second_document_status,
+    }
+    with Session(engine) as observer:
+        assert observer.get_one(Course, course_id).generation_id is None
+    if content_status == "failed":
+        assert course["contents"][0]["error_message"] == (
+            course_generation.GENERATION_INTERRUPTED
+        )
+        agents[1].assert_not_called()
 
 
 @pytest.fixture

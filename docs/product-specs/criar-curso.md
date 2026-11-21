@@ -81,7 +81,7 @@ Se um documento falha na indexação, o produto não gera nenhuma saída. Uma sa
 
 ## Nova tentativa
 
-Depois de uma falha, a pessoa clica em "Tentar novamente" no alerta ou no cartão do conteúdo que falhou. Essa saída volta para a fila. A tarefa reaproveita os documentos já indexados e indexa os demais. Se o curso já tem uma publicação, ela continua disponível.
+Depois de uma falha, a pessoa clica em "Tentar novamente" no alerta ou no cartão do conteúdo que falhou. Essa saída volta para a fila. Um segundo clique durante a geração não inicia outra. A tarefa reaproveita os documentos já indexados e indexa os demais. Se o curso já tem uma publicação, ela continua disponível.
 
 ## Excluir um curso
 
