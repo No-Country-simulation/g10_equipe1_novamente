@@ -4,7 +4,8 @@ from pathlib import Path
 from unittest.mock import Mock
 
 import pytest
-from sqlmodel import Session, col, select
+from sqlalchemy.exc import OperationalError, SQLAlchemyError
+from sqlmodel import Session, col, delete, select
 
 from app.core import llm
 from app.models import Course, CourseContent, DocumentChunk, SourceDocument, User
@@ -90,12 +91,19 @@ def test_load_cases(cases, write_cases, tmp_path, monkeypatch):
 
 
 @pytest.mark.parametrize(
-    "document", ["Pods existem.", "x" * 990 + "\n\nAntes\n\nDepois"]
+    ("document", "fix"),
+    [
+        ("Pods existem.", "Copie a frase exata do arquivo"),
+        (
+            "x" * 990 + "\n\nAntes\n\nDepois",
+            "Escolha uma frase mais curta de um único parágrafo",
+        ),
+    ],
 )
-def test_expected_must_fit_in_one_chunk(cases, write_cases, document):
+def test_expected_must_fit_in_one_chunk(cases, write_cases, document, fix):
     Path(cases["document"]).write_text(document, encoding="utf-8")
     cases["retrieval"][0]["expected"] = "Antes Depois"
-    with pytest.raises(evaluate.CaseError, match="Quantos contêineres cabem"):
+    with pytest.raises(evaluate.CaseError, match=f"Quantos contêineres cabem.*{fix}"):
         evaluate.load_cases(write_cases(cases))
 
 
@@ -106,7 +114,7 @@ def test_pdf_expected_must_fit_on_one_page(cases, write_cases, tmp_path):
     cases["retrieval"][0]["expected"] = "Segunda pagina"
     evaluate.load_cases(write_cases(cases))
     cases["retrieval"][0]["expected"] = "pagina Segunda"
-    with pytest.raises(evaluate.CaseError, match="Quantos contêineres cabem"):
+    with pytest.raises(evaluate.CaseError, match="cruza o limite entre dois trechos"):
         evaluate.load_cases(write_cases(cases))
 
 
@@ -116,8 +124,8 @@ def test_pdf_expected_must_fit_on_one_page(cases, write_cases, tmp_path):
         ({"content": {"summary": "Incompleto"}}, "plantado.*conteúdo inválido"),
         ({"planted_error": "Fato ausente"}, "plantado.*planted_error"),
         ({"id": " fiel "}, "fiel.*id repetido"),
-        ({"planted_error": " "}, r"review\.1\.planted_error"),
-        ({"focus": "x" * 256}, r"review\.1\.focus"),
+        ({"planted_error": " "}, "review 2.*plantado.*planted_error.*preencha"),
+        ({"focus": "x" * 256}, "review 2.*plantado.*focus.*até 255 caracteres"),
     ],
 )
 def test_invalid_review(cases, write_cases, update, message):
@@ -179,6 +187,34 @@ def test_main_check_and_invalid_file(cases, write_cases, monkeypatch, capsys):
     evaluate.Session.assert_not_called()
 
 
+def test_main_reports_json_error_location(tmp_path, capsys):
+    path = tmp_path / "cases.json"
+    path.write_text('{\n  "document": "pods.md",\n}', encoding="utf-8")
+
+    assert evaluate.main(["--check", str(path)]) == 1
+    assert (
+        "JSON inválido na linha 2, coluna 24. Confira as aspas, vírgulas e chaves"
+        in capsys.readouterr().err
+    )
+
+
+def test_main_reports_case_names_and_allowed_values(cases, write_cases, capsys):
+    cases["review"][1]["audience_level"] = "outro"
+    del cases["retrieval"][0]["expected"]
+    cases["generation"][0]["format"] = "outro"
+
+    assert evaluate.main(["--check", str(write_cases(cases))]) == 1
+    error = capsys.readouterr().err
+    assert "retrieval 1 ('Quantos contêineres cabem?') / expected: preencha" in error
+    assert (
+        "review 2 ('plantado') / audience_level: "
+        "use 'non_technical', 'technical_basic' ou 'technical_advanced'"
+    ) in error
+    assert (
+        "generation 1 ('Pods') / format: use 'tutorial', 'flashcards' ou 'quiz'"
+    ) in error
+
+
 def owner_ids():
     with Session(evaluate.engine) as session:
         return set(
@@ -189,18 +225,26 @@ def owner_ids():
 
 
 @pytest.mark.parametrize(
-    ("key", "model", "niche", "message"),
+    ("key", "model", "embedding_model", "niche", "message"),
     [
-        (None, "teste", "geral", "GEMINI_API_KEY"),
-        ("teste", None, "geral", "GEMINI_GENERATION_MODEL"),
-        ("teste", "teste", "inexistente", "Nicho 'inexistente' não encontrado"),
+        (None, "teste", "teste", "geral", "GEMINI_API_KEY"),
+        ("teste", None, "teste", "geral", "GEMINI_GENERATION_MODEL"),
+        ("teste", "teste", "", "geral", "GEMINI_EMBEDDING_MODEL"),
+        (
+            "teste",
+            "teste",
+            "teste",
+            "inexistente",
+            "Nicho 'inexistente' não encontrado",
+        ),
     ],
 )
 def test_main_rejects_missing_configuration_or_niche(
-    cases, write_cases, monkeypatch, capsys, key, model, niche, message
+    cases, write_cases, monkeypatch, capsys, key, model, embedding_model, niche, message
 ):
     monkeypatch.setattr(evaluate.settings, "GEMINI_API_KEY", key)
     monkeypatch.setattr(evaluate.settings, "GEMINI_GENERATION_MODEL", model)
+    monkeypatch.setattr(evaluate.settings, "GEMINI_EMBEDDING_MODEL", embedding_model)
     index = Mock()
     monkeypatch.setattr(evaluate.indexing, "index_document", index)
     cases["niche"] = niche
@@ -209,6 +253,23 @@ def test_main_rejects_missing_configuration_or_niche(
     assert message in capsys.readouterr().err
     assert owner_ids() == before
     index.assert_not_called()
+
+
+@pytest.mark.usefixtures("configured")
+def test_main_explains_how_to_recover_when_database_is_unavailable(
+    cases, write_cases, monkeypatch, capsys
+):
+    monkeypatch.setattr(
+        evaluate, "Session", Mock(side_effect=OperationalError(None, None, OSError()))
+    )
+
+    assert evaluate.main([str(write_cases(cases))]) == 1
+    output = capsys.readouterr()
+    assert not output.out
+    assert output.err == (
+        "Não foi possível conectar ao banco. Suba o banco e aplique as migrations "
+        "(veja examples/evals/README.md).\n"
+    )
 
 
 @pytest.mark.usefixtures("configured")
@@ -257,7 +318,12 @@ def test_main_measures_all_cases(cases, write_cases, monkeypatch, capsys):
         assert request.niche_prompt_hint
         generated = evaluate.load_cases(path).review[0].generated()
         return GenerationResult(
-            grounding.Decision.fail, 2, generated, result, report, "Reprovado."
+            grounding.Decision.fail,
+            2,
+            generated,
+            result,
+            report,
+            grounding.failure_message(report),
         )
 
     monkeypatch.setattr(
@@ -296,9 +362,9 @@ def test_main_measures_all_cases(cases, write_cases, monkeypatch, capsys):
     ]
 
 
-@pytest.mark.parametrize("index_error", [False, True])
+@pytest.mark.parametrize("failure", [None, "index", "cleanup"])
 @pytest.mark.usefixtures("configured")
-def test_main_cascades_cleanup(cases, write_cases, monkeypatch, capsys, index_error):
+def test_main_cascades_cleanup(cases, write_cases, monkeypatch, capsys, failure):
     cases["review"] = []
     cases["generation"] = []
     ids = {}
@@ -326,21 +392,40 @@ def test_main_cascades_cleanup(cases, write_cases, monkeypatch, capsys, index_er
         assert not session.exec(
             select(CourseContent).where(CourseContent.course_id == course.id)
         ).all()
-        if index_error:
+        if failure == "index":
             raise evaluate.indexing.IndexingError("Falha de indexação de teste.")
         return 1
 
     monkeypatch.setattr(evaluate.indexing, "index_document", index)
-    assert evaluate.main([str(write_cases(cases))]) == int(index_error)
-    captured = capsys.readouterr()
-    if index_error:
-        assert "Falha de indexação de teste" in captured.err
-    else:
-        assert "1 de 1 (100%)" in captured.out
-    assert len(ids) == 4
-    with Session(evaluate.engine) as session:
-        for model, row_id in ids.items():
-            assert session.get(model, row_id) is None
+    if failure == "cleanup":
+        work = Session(evaluate.engine, expire_on_commit=False)
+        cleanup = Session(evaluate.engine)
+        fail_delete = Mock(side_effect=SQLAlchemyError())
+        monkeypatch.setattr(cleanup, "exec", fail_delete)
+        monkeypatch.setattr(evaluate, "Session", Mock(side_effect=[work, cleanup]))
+    try:
+        assert evaluate.main([str(write_cases(cases))]) == int(failure is not None)
+        captured = capsys.readouterr()
+        assert len(ids) == 4
+        if failure == "cleanup":
+            fail_delete.assert_called_once()
+            assert (
+                f"Não foi possível apagar o usuário da avaliação {ids[User]}"
+                in captured.err
+            )
+            assert not captured.out
+            return
+        if failure == "index":
+            assert "Falha de indexação de teste" in captured.err
+        else:
+            assert "1 de 1 (100%)" in captured.out
+        with Session(evaluate.engine) as session:
+            for model, row_id in ids.items():
+                assert session.get(model, row_id) is None
+    finally:
+        if failure == "cleanup" and User in ids:
+            with Session(evaluate.engine) as session, session.begin():
+                session.exec(delete(User).where(col(User.id) == ids[User]))
 
 
 @pytest.mark.usefixtures("configured")
@@ -367,7 +452,7 @@ def test_model_and_clue_errors(cases, write_cases, monkeypatch, capsys):
         None,
         review,
         report,
-        "Não foi possível gerar o conteúdo. Modelo indisponível",
+        "Serviço de texto indisponível.",
     )
 
     monkeypatch.setattr(evaluate.course_generation, "retrieve_chunks", retrieve)

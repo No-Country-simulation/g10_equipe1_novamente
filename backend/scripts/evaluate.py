@@ -15,7 +15,8 @@ from textwrap import indent
 from typing import Any
 
 from pydantic import PrivateAttr, ValidationError
-from sqlalchemy.exc import SQLAlchemyError
+from pydantic_core import ErrorDetails
+from sqlalchemy.exc import OperationalError, SQLAlchemyError
 from sqlmodel import Session, col, delete, select
 
 from app.core.config import settings
@@ -73,20 +74,15 @@ class ReviewCase(GenerationCase):
     content: Any
 
     def generated(self) -> GeneratedBase:
-        try:
-            return GENERATED_MODELS[self.format].model_validate(
-                {
-                    "title": self.focus,
-                    "estimated_minutes": 5,
-                    "key_concepts": ["avaliação"],
-                    "prerequisites": [],
-                    "content": self.content,
-                }
-            )
-        except ValidationError as exc:
-            raise CaseError(
-                f"Revisor {self.id}: conteúdo inválido. {_validation_details(exc)}"
-            ) from exc
+        return GENERATED_MODELS[self.format].model_validate(
+            {
+                "title": self.focus,
+                "estimated_minutes": 5,
+                "key_concepts": ["avaliação"],
+                "prerequisites": [],
+                "content": self.content,
+            }
+        )
 
 
 class CaseFile(StrictModel):
@@ -98,9 +94,68 @@ class CaseFile(StrictModel):
     _source: tuple[ExtractedDocument, bytes] = PrivateAttr()
 
 
-def _validation_details(error: ValidationError) -> str:
-    return "; ".join(
-        f"{'.'.join(map(str, issue['loc']))} ({issue['type']})"
+def _issue_location(parts: tuple[str | int, ...], raw: Any) -> str:
+    locations = []
+    if isinstance(raw, dict) and len(parts) >= 2:
+        list_name, index = parts[:2]
+        items = raw.get(list_name)
+        name_field = {
+            "review": "id",
+            "retrieval": "question",
+            "generation": "focus",
+        }.get(list_name)
+        if (
+            name_field is not None
+            and isinstance(items, list)
+            and isinstance(index, int)
+            and index < len(items)
+        ):
+            item = items[index]
+            name = item.get(name_field) if isinstance(item, dict) else None
+            label = f"{list_name} {index + 1}"
+            if isinstance(name, str) and name.strip():
+                label += f" ({name.strip()!r})"
+            locations.append(label)
+            parts = parts[2:]
+    locations.extend(str(part + 1) if isinstance(part, int) else part for part in parts)
+    return " / ".join(locations) or "arquivo"
+
+
+def _issue_message(issue: ErrorDetails) -> str:
+    message = issue["msg"]
+    context = issue.get("ctx", {})
+    match issue["type"]:
+        case "enum":
+            return "use " + message.removeprefix("Input should be ").replace(
+                " or ", " ou "
+            )
+        case "missing":
+            return "preencha este campo"
+        case "extra_forbidden":
+            return "remova este campo"
+        case "string_type" | "string_too_short":
+            return "preencha com texto entre aspas"
+        case "string_too_long":
+            return f"use até {context['max_length']} caracteres"
+        case "list_type":
+            return "use uma lista entre colchetes"
+        case "too_short":
+            return f"inclua pelo menos {context['min_length']} itens"
+        case "too_long":
+            return f"mantenha no máximo {context['max_length']} itens"
+        case "model_type" | "model_attributes_type":
+            return "use um objeto entre chaves, como no guia"
+        case "int_type" | "int_parsing" | "int_from_float":
+            return "use um número inteiro"
+        case "greater_than_equal" | "less_than_equal":
+            return "use um número de 0 a 3 para indicar a opção correta"
+        case _:
+            return message.removeprefix("Value error, ")
+
+
+def _validation_details(error: ValidationError, raw: Any = None) -> str:
+    return "\n".join(
+        f"- {_issue_location(issue['loc'], raw)}: {_issue_message(issue)}"
         for issue in error.errors(include_input=False, include_url=False)
     )
 
@@ -122,12 +177,25 @@ def _text_fields(value: Any) -> Iterator[str]:
 
 def load_cases(path: Path) -> CaseFile:
     try:
-        cases = CaseFile.model_validate_json(path.read_bytes())
+        raw = json.loads(path.read_text(encoding="utf-8-sig"))
+    except json.JSONDecodeError as exc:
+        raise CaseError(
+            f"JSON inválido na linha {exc.lineno}, coluna {exc.colno}. "
+            "Confira as aspas, vírgulas e chaves nesse ponto."
+        ) from exc
+    except UnicodeDecodeError as exc:
+        raise CaseError(
+            f"Salve o arquivo de casos {path} com codificação UTF-8."
+        ) from exc
     except OSError as exc:
-        raise CaseError(f"Não foi possível ler o arquivo de casos {path}.") from exc
+        raise CaseError(
+            f"Não foi possível ler o arquivo de casos {path}. Confira o caminho e a permissão de leitura."
+        ) from exc
+    try:
+        cases = CaseFile.model_validate(raw)
     except ValidationError as exc:
         raise CaseError(
-            f"Arquivo de casos inválido. Campos: {_validation_details(exc)}."
+            f"Corrija os campos do arquivo de casos.\n{_validation_details(exc, raw)}"
         ) from exc
 
     if not (cases.retrieval or cases.review or cases.generation):
@@ -137,12 +205,17 @@ def load_cases(path: Path) -> CaseFile:
         data = source_path.read_bytes()
         document = read_document(source_path.name, data)
     except (OSError, ValueError) as exc:
-        detail = f" {exc.message}" if isinstance(exc, DocumentError) else ""
+        detail = (
+            exc.message
+            if isinstance(exc, DocumentError)
+            else "Confira o caminho em document e a permissão de leitura."
+        )
         raise CaseError(
-            f"Não foi possível ler o documento {cases.document}.{detail}"
+            f"Não foi possível ler o documento {cases.document}. {detail}"
         ) from exc
     cases._source = (document, data)
 
+    document_text = _normalized(document.text)
     chunks = [
         _normalized(chunk.text)
         for chunk in indexing.split_text(
@@ -150,23 +223,38 @@ def load_cases(path: Path) -> CaseFile:
         )
     ]
     for case in cases.retrieval:
-        if not any(_normalized(case.expected) in chunk for chunk in chunks):
+        expected = _normalized(case.expected)
+        if expected not in document_text:
             raise CaseError(
-                f"Busca {case.question!r}: expected precisa estar inteiro em um chunk."
+                f"Busca {case.question!r}: a frase de expected não está no documento. Copie a frase exata do arquivo."
+            )
+        if not any(expected in chunk for chunk in chunks):
+            raise CaseError(
+                f"Busca {case.question!r}: a frase de expected cruza o limite entre dois trechos. "
+                "Escolha uma frase mais curta de um único parágrafo."
             )
 
     seen: set[str] = set()
-    for case in cases.review:
+    for position, case in enumerate(cases.review, 1):
+        label = f"Revisor {position} ({case.id!r})"
         if case.id in seen:
-            raise CaseError(f"Revisor {case.id}: id repetido.")
+            raise CaseError(
+                f"{label}: id repetido. Use um id diferente para cada caso."
+            )
         seen.add(case.id)
-        content = case.generated().model_dump()["content"]
+        try:
+            content = case.generated().model_dump()["content"]
+        except ValidationError as exc:
+            raise CaseError(
+                f"{label}: conteúdo inválido para {case.format}. "
+                f"Confira o exemplo desse formato em examples/evals/README.md.\n{_validation_details(exc)}"
+            ) from exc
         if case.planted_error is not None and not any(
             _normalized(case.planted_error) in _normalized(value)
             for value in _text_fields(content)
         ):
             raise CaseError(
-                f"Revisor {case.id}: planted_error precisa aparecer em um campo de texto."
+                f"{label}: copie o texto exato do fato errado de content para planted_error."
             )
     return cases
 
@@ -212,9 +300,9 @@ def _clue(
     except Exception as exc:
         session.rollback()
         reason = str(exc) if isinstance(exc, LLMError) else type(exc).__name__
-        return f"Pista indisponível. A busca falhou: {reason}."
+        return f"Pista indisponível. A busca falhou: {reason.rstrip('.')}. Confira a conexão com o banco e o Gemini antes de tentar de novo."
     if not chunks:
-        return "Pista indisponível. A busca não devolveu chunks."
+        return "Pista indisponível. A busca não devolveu trechos. Confira se o documento tem texto sobre a afirmação."
     nearest = chunks[0]
     position = "Entre os 8" if nearest.chunk_id in used_ids else "Fora dos 8"
     return f"{position}. Chunk {nearest.chunk_index}, similaridade {nearest.similarity:.3f}. {nearest.text[:300]}"
@@ -224,7 +312,7 @@ def _model_failure(result: generation_graph.GenerationResult) -> bool:
     # Se a reescrita falha, o grafo mantém o relatório da primeira tentativa.
     return result.decision == grounding.Decision.fail and (
         result.report is None
-        or (result.error_message or "").startswith("Não foi possível gerar o conteúdo.")
+        or result.error_message != grounding.failure_message(result.report)
     )
 
 
@@ -251,7 +339,12 @@ def _measure(
                 )
                 continue
             if not chunks:
-                measured.errors.append((label, "A busca não devolveu chunks."))
+                measured.errors.append(
+                    (
+                        label,
+                        "A busca não devolveu trechos. Confira o documento e o modelo de embeddings.",
+                    )
+                )
                 continue
 
             used_ids = {chunk.chunk_id for chunk in chunks}
@@ -297,15 +390,17 @@ def _measure(
 
 def _run(cases: CaseFile) -> tuple[int, Measurements]:
     if not (settings.GEMINI_API_KEY or "").strip():
-        raise CaseError("Defina GEMINI_API_KEY no .env.")
+        raise CaseError("Defina GEMINI_API_KEY no .env da raiz do repositório.")
     if (cases.review or cases.generation) and not (
         settings.GEMINI_GENERATION_MODEL or ""
     ).strip():
         raise CaseError(
-            "Defina GEMINI_GENERATION_MODEL no .env para avaliar o revisor ou a geração."
+            "Defina GEMINI_GENERATION_MODEL no .env da raiz para avaliar o revisor ou a geração."
         )
     if not settings.GEMINI_EMBEDDING_MODEL.strip():
-        raise CaseError("Defina GEMINI_EMBEDDING_MODEL no .env.")
+        raise CaseError(
+            "Defina GEMINI_EMBEDDING_MODEL no .env da raiz ou remova a linha para usar o modelo padrão."
+        )
 
     extracted, data = cases._source
     storage = InMemoryStorage()
@@ -316,7 +411,9 @@ def _run(cases: CaseFile) -> tuple[int, Measurements]:
                 select(Niche).where(Niche.slug == cases.niche)
             ).one_or_none()
             if niche is None:
-                raise CaseError(f"Nicho {cases.niche!r} não encontrado.")
+                raise CaseError(
+                    f"Nicho {cases.niche!r} não encontrado. Em niche, use geral, fintech, saude ou e-commerce."
+                )
             assert niche.id is not None
             owner = User(
                 email=f"avaliacao-{uuid.uuid4()}@example.com",
@@ -358,7 +455,8 @@ def _run(cases: CaseFile) -> tuple[int, Measurements]:
                     cleanup.exec(delete(User).where(col(User.id) == owner_id))
             except SQLAlchemyError as exc:
                 raise CaseError(
-                    f"Não foi possível apagar o usuário da avaliação {owner_id} ({type(exc).__name__})."
+                    f"Não foi possível apagar o usuário da avaliação {owner_id} ({type(exc).__name__}). "
+                    "Peça à equipe para remover esse usuário do banco antes de repetir a avaliação."
                 ) from exc
 
 
@@ -540,7 +638,11 @@ def _markdown(path: Path, cases: CaseFile, count: int, measured: Measurements) -
     )
     if measured.errors:
         sections.extend(
-            ["### Erros de execução", _table(("Caso", "Erro"), measured.errors)]
+            [
+                "### Erros de execução",
+                "Para erros do modelo, confira a chave, os modelos e a cota do Gemini antes de tentar de novo.",
+                _table(("Caso", "Erro"), measured.errors),
+            ]
         )
     return "\n\n".join(sections)
 
@@ -562,12 +664,26 @@ def main(argv: list[str]) -> int:
         if not args.check:
             count, measured = _run(cases)
             print(_markdown(args.path, cases, count, measured))
-    except (CaseError, indexing.IndexingError) as exc:
+    except CaseError as exc:
         print(f"Erro na avaliação: {exc}", file=sys.stderr)
+        return 1
+    except OperationalError:
+        print(
+            "Não foi possível conectar ao banco. Suba o banco e aplique as migrations "
+            "(veja examples/evals/README.md).",
+            file=sys.stderr,
+        )
+        return 1
+    except indexing.IndexingError as exc:
+        print(
+            f"Erro na avaliação: {exc} Confira o documento e as configurações do Gemini antes de tentar de novo.",
+            file=sys.stderr,
+        )
         return 1
     except Exception as exc:
         print(
-            f"Não foi possível terminar a avaliação ({type(exc).__name__}).",
+            f"Não foi possível terminar a avaliação ({type(exc).__name__}). "
+            "Confira a configuração em examples/evals/README.md. Se o erro continuar, envie esta mensagem à equipe.",
             file=sys.stderr,
         )
         return 1
