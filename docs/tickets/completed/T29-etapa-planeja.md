@@ -180,16 +180,16 @@ Uma reprovação pela regra de fidelidade não é um defeito deste ticket. Regis
 
 ## Critérios de aceite
 
-- [ ] `plan_content` cumpre o contrato e devolve um plano com o número de itens do formato.
-- [ ] O plano só traz números de trecho válidos, sem repetição.
-- [ ] Toda geração começa por `planeja`, e as duas escritas recebem o mesmo plano.
-- [ ] Um erro do modelo em `planeja` termina a geração como `fail`, sem chamar `escreve`.
-- [ ] Nenhuma geração passa de um plano, duas escritas e duas revisões.
-- [ ] `PROMPT_VERSION` do grafo traz as versões de `planeja`, `escreve` e `revisa`.
-- [ ] `docs/ARCHITECTURE.md` descreve a etapa e a nova contagem de chamadas.
-- [ ] O PR traz o resultado da verificação manual ou diz que ela foi pulada.
-- [ ] Nenhum teste chama o Gemini.
-- [ ] Os hooks e os testes passam, com cobertura de 90% ou mais.
+- [x] `plan_content` cumpre o contrato e devolve um plano com o número de itens do formato.
+- [x] O plano só traz números de trecho válidos, sem repetição.
+- [x] Toda geração começa por `planeja`, e as duas escritas recebem o mesmo plano.
+- [x] Um erro do modelo em `planeja` termina a geração como `fail`, sem chamar `escreve`.
+- [x] Nenhuma geração passa de um plano, duas escritas e duas revisões.
+- [x] `PROMPT_VERSION` do grafo traz as versões de `planeja`, `escreve` e `revisa`.
+- [x] `docs/ARCHITECTURE.md` descreve a etapa e a nova contagem de chamadas.
+- [x] O PR traz o resultado da verificação manual ou diz que ela foi pulada.
+- [x] Nenhum teste chama o Gemini.
+- [x] Os hooks e os testes passam, com cobertura de 90% ou mais.
 
 ## Cenários de teste
 
@@ -216,3 +216,11 @@ Em `backend/tests/services/test_generation_graph.py`:
 13. `plan_content` levanta `LLMError("falha P")`: `fail`, `attempts == 0`, nenhuma escrita nem revisão, `error_message` igual a "Não foi possível gerar o conteúdo. falha P" e os três campos de resultado iguais a `None`.
 14. `PROMPT_VERSION` do grafo é `planeja-v1+escreve-v4+revisa-v2`.
 15. O cenário 11 de T24 passa com 5 chamadas a `generate_structured`, e o `prompt` das duas escritas traz o plano.
+
+## Verificação do aceite
+
+- PR revisado: [#43](https://github.com/No-Country-simulation/g10_equipe1_novamente/pull/43), integrado no commit `ad8bb7b`.
+- CI do PR: todos os checks obrigatórios passaram, com escopo dentro de `touches`.
+- Revisão automática sobre o commit `c1434c6`: dois achados em `docs/ARCHITECTURE.md`, corrigidos no commit `031640b`. A linha da decisão voltou a dar o motivo, e a frase sobre o limite diário dos embeddings voltou ao texto.
+- Testes: 371 testes passaram, com 99% de cobertura no backend.
+- Verificação com a API real: relatada no PR. Na segunda rodada, os três formatos receberam `publish` na primeira escrita, com o mesmo número de itens no plano e no conteúdo.

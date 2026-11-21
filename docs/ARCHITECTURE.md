@@ -67,7 +67,8 @@ flowchart TD
     C --> D[4. Tarefa de fundo lê cada documento do OCI]
     D --> E[5. Indexação grava chunks e embeddings]
     E --> F[6. Busca vetorial pelo focus do conteúdo]
-    F --> G[7. escreve gera o JSON]
+    F --> O[7. planeja propõe a estrutura e os trechos por item]
+    O --> G[escreve gera o JSON a partir do plano]
     G --> H[8. revisa confere o foco e as afirmações do material]
     H --> I{9. Foco coberto?}
     I -- não --> L[Conteúdo failed, sem nova publicação]
@@ -88,7 +89,7 @@ flowchart TD
 4. A tarefa marca cada documento como `processing` e lê o arquivo do OCI.
 5. A tarefa divide o texto em chunks de cerca de 1.000 caracteres e pede um embedding por chunk. Ela grava os chunks e o estado `indexed` na mesma transação, um documento por vez. Se um documento falha, a tarefa para e nenhum conteúdo é gerado.
 6. A tarefa pega os conteúdos na ordem de `position`, um por vez, e marca o conteúdo como `running`. Ela gera o embedding de `course_content.focus` e busca os 8 chunks mais próximos. A busca usa todos os documentos `indexed` do curso com o mesmo `embedding_model`.
-7. `escreve` recebe os chunks, o `audience_level`, o `prompt_hint` do nicho e o formato. Ele devolve um JSON validado por um model Pydantic.
+7. `planeja` propõe a estrutura do conteúdo e indica os trechos que sustentam cada item. `escreve` segue o plano usando os chunks, o `audience_level`, o `prompt_hint` do nicho e o formato. Ele devolve um JSON validado por um model Pydantic.
 8. `revisa` recebe o `content`, o foco, o nível de público e os mesmos chunks. Ele verifica se o material trata do foco com apoio nos chunks. Ele também lista as afirmações técnicas, indica o chunk que sustenta cada uma e avalia a clareza.
 9. O backend calcula `grounding_score` e decide. Se o foco não é coberto, o conteúdo fica `failed` de imediato. Com foco coberto, o backend aprova se a revisão lista pelo menos uma afirmação e todas têm apoio em chunks válidos. Se a primeira revisão não lista afirmações ou alguma fica sem apoio, `escreve` gera uma segunda versão com a lista de afirmações sem apoio. Se a segunda revisão ainda falha, o conteúdo fica `failed`.
 10. O backend grava o JSON aprovado no OCI, com uma chave nova.
@@ -121,10 +122,10 @@ As dez regras de ciclo de vida do curso ficam em [`generated/db-schema.md`](gene
 4. Uma afirmação marcada como sustentada sem chunk válido conta como não sustentada.
 5. Um erro ou uma resposta inválida de `revisa` nunca aprova o conteúdo.
 6. Analogias e exemplos do nicho não entram na nota, desde que não tragam fatos técnicos novos.
-7. A reescrita usa os mesmos chunks da primeira escrita. Não há nova busca.
-8. Cada conteúdo tem no máximo duas escritas e duas revisões por geração.
+7. A reescrita usa os mesmos chunks e o mesmo plano da primeira escrita.
+8. Cada conteúdo tem no máximo um plano, duas escritas e duas revisões por geração.
 9. As citações publicadas são só os chunks que sustentam afirmações aprovadas. A `similarity` é o valor da busca vetorial.
-10. Os prompts tratam o documento e o rascunho como dados. O revisor também trata o foco como dado. Os agentes ignoram instruções escritas nesses dados.
+10. Os prompts tratam o documento, o plano e o rascunho como dados. `planeja` e `revisa` também tratam o foco como dado. Os agentes ignoram instruções escritas nesses dados.
 11. Nenhum JSON reprovado vai para o OCI nem para `course_content.content`.
 
 ## Falhas e recuperação
@@ -177,7 +178,7 @@ O backend usa o OCI Python SDK (`oci`). Não há servidor local de armazenamento
 - **Chave**: `GEMINI_API_KEY` é opcional. Sem ela, a geração falha com uma mensagem clara, e os testes e o CI sobem o backend.
 - **Versões**: `course_content.llm_model` e `course_content.prompt_version` registram o modelo e a versão dos prompts de cada geração.
 
-Cada conteúdo usa até quatro chamadas de texto. Um curso com três saídas usa até doze, além dos embeddings dos chunks e do `focus`. Os limites gratuitos observados no Google AI Studio em novembro de 2026 foram:
+Cada conteúdo usa até cinco chamadas de texto. Um curso com três saídas usa até quinze, além dos embeddings dos chunks e do `focus`. Os limites gratuitos observados no Google AI Studio em novembro de 2026 foram:
 
 | Modelo | RPM | TPM | RPD |
 | --- | ---: | ---: | ---: |
@@ -188,6 +189,7 @@ Cada conteúdo usa até quatro chamadas de texto. Um curso com três saídas usa
 Para `gemini-3.5-flash-lite`, 500 requisições diárias divididas por até 12 chamadas de texto por curso dão `floor(500 / 12) = 41` cursos por dia. É um teto teórico que considera somente a quota diária de texto; não é throughput medido e não inclui falhas, concorrência, chamadas adicionais ou variação de uso. Um documento com cerca de 100 chunks pode exigir aproximadamente 5 chamadas de embeddings quando enviado em lotes de 20, além dos embeddings de consulta. O tamanho do lote reduz requisições, mas não elimina o consumo de quota.
 
 Em um conjunto sintético controlado de dez consultas, a recuperação simulada obteve HitRate@1 e HitRate@3 de 100% e MRR@3 de 1,00. Esses números não garantem precisão em produção. Quotas podem mudar; indisponibilidade e concorrência podem reduzir a capacidade; e o fluxo completo de geração, revisão e publicação ainda requer validação ponta a ponta. Veja as [medições e ressalvas do T12](tickets/evidences/t12/T12-evidencias.md).
+Os embeddings limitam a capacidade diária, não o texto. O texto comporta 41 cursos por dia (500 / 12). Os embeddings comportam cerca de 9 cursos com um documento de 100 mil caracteres, ou 2 cursos no tamanho máximo, com 3 documentos de 150 mil caracteres. Basta para a demonstração.
 
 `llm.py` controla o ritmo por minuto antes de cada pedido e espera a janela terminar em HTTP 429 (T39). Sem esse controle, a indexação de um documento com mais de cerca de 90 mil caracteres passa do limite por minuto e falha.
 
@@ -221,7 +223,7 @@ A equipe usa só recursos marcados como Always Free e não muda a conta para Pay
 - **Esquema**: `backend/tests/test_schema.py` compara o catálogo do PostgreSQL com o ERD.
 - **Modelo**: os testes trocam as funções de `llm.py` por funções determinísticas. Nenhum teste automático chama a API Gemini.
 - **Frontend**: Playwright contra o backend do Compose, sem chave Gemini.
-- **Revisor**: um conjunto de casos com erros plantados mede o revisor com o modelo real. Roda à mão, fora do CI. A construir.
+- **Avaliação**: [`backend/scripts/evaluate.py`](../backend/scripts/evaluate.py). O script mede a busca, o revisor e a geração com o modelo real, a partir dos [casos de avaliação](../examples/evals/README.md). Roda à mão, fora do CI.
 
 ## Decisões
 
@@ -241,10 +243,10 @@ A equipe usa só recursos marcados como Always Free e não muda a conta para Pay
 | Exclusão: banco primeiro, OCI depois | Uma falha deixa um arquivo sem uso, não um curso quebrado. | A construir |
 | Uma VM Always Free com Docker Compose | Atende ao deploy em nuvem com poucas peças. | A construir |
 | LangGraph para o laço de escrita e revisão | O briefing lista agentes com LangGraph como diferencial, e o grafo deixa o fluxo visível. | A construir |
-| Etapa `planeja` depois de `escreve` e `revisa` | O briefing trata a cadeia de planejar, redigir e revisar como adicional. `planeja` só propõe a estrutura do conteúdo e entra antes da demonstração. | A construir |
+| Etapa `planeja` antes de `escreve` | O briefing trata a cadeia de planejar, redigir e revisar como adicional. `planeja` só propõe a estrutura do conteúdo. | Existe |
 | Nomes em inglês no JSON e na API | O exemplo do briefing é só um exemplo. O produto usa os nomes do esquema. | A construir |
 | Vários documentos e várias saídas por curso | A pessoa escolhe os documentos e as saídas na criação. Todos os documentos valem para todas as saídas. | A construir |
-| Até 3 documentos e até 3 saídas, uma de cada formato | Todas as saídas têm o mesmo foco. Cada saída usa até quatro chamadas ao modelo. | A construir |
+| Até 3 documentos e até 3 saídas, uma de cada formato | Todas as saídas têm o mesmo foco. Cada saída usa até cinco chamadas de texto ao modelo. | A construir |
 | Até 5 MiB por arquivo e 150 mil caracteres de texto por documento | Mantém cada documento perto da escala prevista no esquema. | A construir |
 | Arquivo no OCI com conteúdo, metadados e avaliação | Um sistema externo entende o arquivo sem consultar o banco. | A construir |
 | Publicar só com foco coberto e pelo menos uma afirmação, todas com apoio | Em 19/11/2026, a regra anterior aprovou um tutorial com dois fatos falsos e outro que fugiu do foco. | Existe |

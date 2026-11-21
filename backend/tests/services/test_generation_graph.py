@@ -6,9 +6,9 @@ import pytest
 
 from app.core import llm
 from app.models import AudienceLevel, ClarityLevel, ContentFormat
-from app.services import reviewer, writer
+from app.services import planner, reviewer, writer
 from app.services.content_schemas import GeneratedTutorial
-from app.services.generation_graph import generate_content
+from app.services.generation_graph import PROMPT_VERSION, generate_content
 from app.services.grounding import (
     ClaimReview,
     Decision,
@@ -79,28 +79,35 @@ def reviews(request_data):
 
 @pytest.fixture
 def agents(monkeypatch, drafts):
-    write = Mock(side_effect=drafts)
-    review = Mock()
-    monkeypatch.setattr(writer, "write_content", write)
-    monkeypatch.setattr(reviewer, "review_content", review)
-    return write, review
+    agents = Mock()
+    agents.plan.return_value = planner.ContentPlan(
+        items=[planner.PlanItem(topic="Criação de um branch", chunk_numbers=[1])]
+    )
+    agents.write.side_effect = drafts
+    monkeypatch.setattr(planner, "plan_content", agents.plan)
+    monkeypatch.setattr(writer, "write_content", agents.write)
+    monkeypatch.setattr(reviewer, "review_content", agents.review)
+    return agents
 
 
 def test_publish_first_attempt(request_data, drafts, reviews, agents, caplog):
-    write, review = agents
     approved = reviews()
-    review.side_effect = [approved]
+    agents.review.side_effect = [approved]
 
     with caplog.at_level(logging.INFO, logger="app.services.generation_graph"):
         result = generate_content(request_data)
 
-    write.assert_called_once_with(request_data)
-    review.assert_called_once_with(
-        generated=drafts[0],
-        audience_level=request_data.audience_level,
-        focus=request_data.focus,
-        chunks=request_data.chunks,
-    )
+    assert agents.mock_calls == [
+        call.plan(request_data),
+        call.write(request_data, plan=agents.plan.return_value),
+        call.review(
+            generated=drafts[0],
+            audience_level=request_data.audience_level,
+            focus=request_data.focus,
+            chunks=request_data.chunks,
+        ),
+    ]
+    assert agents.plan.call_args.args[0] is request_data
     assert result.decision is Decision.publish
     assert result.attempts == 1
     assert result.generated is drafts[0]
@@ -110,20 +117,23 @@ def test_publish_first_attempt(request_data, drafts, reviews, agents, caplog):
     assert caplog.messages == ["decisão=publish tentativas=1 sustentadas=1 sem_apoio=0"]
 
 
-def test_rewrite_passes_unsupported_claims_and_reuses_chunks(
+def test_rewrite_passes_unsupported_claims_and_reuses_plan_and_chunks(
     request_data, drafts, reviews, agents
 ):
-    write, review = agents
+    write, review = agents.write, agents.review
     unsupported = ["Git exige acesso à internet.", "Git exige acesso de root."]
     approved = reviews()
     review.side_effect = [reviews(*unsupported), approved]
 
     result = generate_content(request_data)
 
+    agents.plan.assert_called_once_with(request_data)
+    plan = agents.plan.return_value
     assert write.call_args_list == [
-        call(request_data),
-        call(request_data, rewrite=Rewrite(drafts[0], unsupported)),
+        call(request_data, plan=plan),
+        call(request_data, plan=plan, rewrite=Rewrite(drafts[0], unsupported)),
     ]
+    assert all(write_call.kwargs["plan"] is plan for write_call in write.call_args_list)
     assert write.call_args.args[0] is request_data
     assert write.call_args.kwargs["rewrite"].previous is drafts[0]
     assert review.call_count == 2
@@ -141,7 +151,7 @@ def test_rewrite_passes_unsupported_claims_and_reuses_chunks(
 
 
 def test_fail_if_rewritten_claim_is_unsupported(request_data, drafts, reviews, agents):
-    write, review = agents
+    write, review = agents.write, agents.review
     last_review = reviews("Git exige acesso de root.")
     review.side_effect = [reviews("Git exige acesso à internet."), last_review]
 
@@ -157,7 +167,7 @@ def test_fail_if_rewritten_claim_is_unsupported(request_data, drafts, reviews, a
 
 
 def test_fail_immediately_if_focus_is_not_covered(request_data, reviews, agents):
-    write, review = agents
+    write, review = agents.write, agents.review
     review.side_effect = [reviews(focus_covered=False)]
 
     result = generate_content(request_data)
@@ -165,6 +175,22 @@ def test_fail_immediately_if_focus_is_not_covered(request_data, reviews, agents)
     assert result.decision is Decision.fail
     assert result.attempts == write.call_count == review.call_count == 1
     assert result.error_message == "O documento não trata do assunto pedido."
+
+
+def test_plan_error_stops_before_first_write(request_data, agents):
+    agents.plan.side_effect = llm.LLMError("falha P")
+
+    result = generate_content(request_data)
+
+    assert agents.mock_calls == [call.plan(request_data)]
+    assert result.decision is Decision.fail
+    assert result.attempts == 0
+    assert result.error_message == "Não foi possível gerar o conteúdo. falha P"
+    assert result.generated is result.review is result.report is None
+
+
+def test_prompt_version_includes_all_agents():
+    assert PROMPT_VERSION == "planeja-v1+escreve-v4+revisa-v2"
 
 
 @pytest.mark.parametrize(
@@ -188,7 +214,7 @@ def test_model_error_keeps_data_for_last_written_version(
     version,
     error_type,
 ):
-    write, review = agents
+    write, review = agents.write, agents.review
     first_review = reviews("Git exige acesso à internet.")
     error = error_type("falha X")
     if stage == "write":
@@ -220,7 +246,7 @@ def test_model_error_keeps_data_for_last_written_version(
 
 
 def test_caller_error_propagates(request_data, agents):
-    write, review = agents
+    write, review = agents.write, agents.review
     error = ValueError("Pedido inválido.")
     write.side_effect = error
 
@@ -228,7 +254,7 @@ def test_caller_error_propagates(request_data, agents):
         generate_content(request_data)
 
     assert raised.value is error
-    write.assert_called_once_with(request_data)
+    write.assert_called_once_with(request_data, plan=agents.plan.return_value)
     review.assert_not_called()
 
 
@@ -250,9 +276,14 @@ def test_rewrite_reaches_writer_prompt(monkeypatch, request_data, drafts):
     )
     versions = iter(drafts)
     calls = []
+    topic = "Criação de um branch"
 
     def generate_structured(*, response_model, prompt, **_kwargs):
         calls.append((response_model, prompt))
+        if issubclass(response_model, planner.ContentPlan):
+            return response_model.model_validate(
+                {"items": [{"topic": topic, "chunk_numbers": [1]}]}
+            )
         if response_model is GeneratedTutorial:
             return next(versions)
         assert response_model is _ReviewOut
@@ -265,10 +296,13 @@ def test_rewrite_reaches_writer_prompt(monkeypatch, request_data, drafts):
     assert result.decision is Decision.publish
     assert result.attempts == 2
     assert result.generated is drafts[1]
-    assert [model for model, _ in calls] == [
+    assert issubclass(calls[0][0], planner.ContentPlan)
+    assert [model for model, _ in calls[1:]] == [
         GeneratedTutorial,
         _ReviewOut,
         GeneratedTutorial,
         _ReviewOut,
     ]
-    assert unsupported in calls[2][1]
+    for _, prompt in (calls[1], calls[3]):
+        assert f"Plano:\n1. {topic} (trechos 1)" in prompt
+    assert unsupported in calls[3][1]

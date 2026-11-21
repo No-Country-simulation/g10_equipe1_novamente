@@ -63,7 +63,7 @@ Tickets escritos (onda 1):
 | [`T05`](docs/tickets/completed/T05-modelos-do-json-de-conteudo.md) | Modelos do JSON de tutorial, flashcards e quiz |
 | [`T06`](docs/tickets/completed/T06-navegacao-no-topo.md) | Navegação no topo, fontes, cores e base da tela "Novo curso" |
 | [`T12`](docs/tickets/T12-medir-gemini-e-conferir-oci.md) | Medir o plano gratuito do Gemini e conferir o bucket da OCI |
-| [`T13`](docs/tickets/T13-documentos-da-demonstracao.md) | Escolher os três documentos da demonstração |
+| [`T13`](docs/tickets/completed/T13-documentos-da-demonstracao.md) | Escolher os três documentos da demonstração |
 | [`T14`](docs/tickets/completed/T14-armazenamento-na-oci.md) | Módulo de armazenamento na OCI |
 | [`T15`](docs/tickets/completed/T15-acesso-ao-gemini.md) | Módulo de acesso ao Gemini |
 | [`T16`](docs/tickets/completed/T16-leitura-de-documentos-md.md) | Leitura e validação de documentos `.md` |
@@ -98,16 +98,20 @@ Tickets escritos da onda 3:
 
 O [T26](docs/tickets/completed/T26-agente-escreve-quiz.md), agente `escreve` para quiz, está completo.
 
-Tickets escritos das ondas 5 a 7:
+Tickets escritos das ondas 5 a 8:
 
 | Ticket | Entrega |
 | --- | --- |
 | [`T28`](docs/tickets/completed/T28-tarefa-de-fundo.md) | Tarefa de fundo para gerar os três formatos |
-| [`T29`](docs/tickets/T29-etapa-planeja.md) | Etapa `planeja` |
-| [`T30`](docs/tickets/T30-avaliacao-da-busca-e-do-revisor.md) | Avaliação da busca e do revisor, com medição de falsas reprovações |
+| [`T29`](docs/tickets/completed/T29-etapa-planeja.md) | Etapa `planeja` |
+| [`T30`](docs/tickets/completed/T30-avaliacao-da-busca-e-do-revisor.md) | Avaliação da busca e do revisor, com medição de falsas reprovações |
+| [`T32`](docs/tickets/T32-nova-tentativa-e-regra-dos-10-minutos.md) | Nova tentativa e regra dos 10 minutos |
+| [`T33`](docs/tickets/T33-exclusao-de-curso.md) | Exclusão de curso e de conta com limpeza na OCI |
+| [`T31`](docs/tickets/T31-teste-no-navegador.md) | Teste no navegador da criação à leitura do conteúdo gerado |
 | [`T41`](docs/tickets/T41-casos-de-avaliacao-e-primeira-medicao.md) | Casos de avaliação sobre os documentos da demonstração e primeira medição |
+| [`T35`](docs/tickets/T35-readme-diagrama-e-guia-de-instalacao.md) | README, diagrama e guia de instalação |
 
-Os demais tickets das ondas 6 e 7 ainda não foram escritos e estão na [tabela de ondas](docs/tickets/README.md#ondas).
+T34 e T36 ainda não foram escritos e estão na [tabela de ondas](docs/tickets/README.md#ondas).
 
 ## Fora de `docs/`
 

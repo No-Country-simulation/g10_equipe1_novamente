@@ -2,7 +2,7 @@
 
 A demonstração usa três documentos públicos. Um deles gera quatro conteúdos: dois formatos para dois níveis de público.
 
-Estado: a construir. Nenhum documento foi processado ainda.
+Estado: os três documentos estão prontos para envio. A geração dos conteúdos está pendente.
 
 ## O que o briefing exige
 
@@ -14,18 +14,18 @@ Estado: a construir. Nenhum documento foi processado ainda.
 
 O briefing pode ser lido como uma exigência ou duas. A equipe atende às duas.
 
-## Roteiro proposto
+## Roteiro da demonstração
 
 O documento principal vira dois cursos, porque cada curso tem um nível de público.
 
 | Documento | Curso | Nível | Setor | Conteúdos |
 | --- | --- | --- | --- | --- |
-| Redes VCN na OCI | A | Não técnico | Geral | Flashcards e tutorial |
-| Redes VCN na OCI | B | Técnico avançado | Fintech | Flashcards e tutorial |
-| Conceitos do Kubernetes | C | Técnico básico | E-commerce | Tutorial |
-| OpenTelemetry Collector | D | Técnico avançado | Geral | Quiz |
+| Open Finance | A. Compartilhar dados e revogar o consentimento | Não técnico | `fintech` | Flashcards e tutorial |
+| Open Finance | B. Implementar a jornada de compartilhamento | Técnico avançado | `fintech` | Flashcards e tutorial |
+| Regulamento do Pix, redação de 2020 | C. Entender a iniciação e a liquidação de um Pix | Técnico básico | `fintech` | Tutorial |
+| Lei de Acesso à Informação | D. Receber pedidos de informação e encaminhar recursos | Técnico básico | `geral` | Quiz |
 
-Os três temas vêm de `docs/needs-validation/RELATORIO_TECNICO_PROJETO.md`. A equipe ainda não escolheu os arquivos.
+Os arquivos, as fontes e as condições de reprodução estão na [lista de documentos da demonstração](../../examples/README.md).
 
 ## O que a banca precisa ver
 

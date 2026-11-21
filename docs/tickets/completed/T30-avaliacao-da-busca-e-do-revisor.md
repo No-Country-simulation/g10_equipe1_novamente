@@ -241,17 +241,17 @@ Sem acesso ao Gemini, registre no PR que pulou a verificação.
 
 ## Critérios de aceite
 
-- [ ] O script cumpre o contrato e imprime o relatório na ordem descrita.
-- [ ] Um arquivo de casos inválido para o script antes de qualquer chamada ao Gemini, com uma mensagem que diz o problema e o caso. `--check` valida o arquivo sem banco e sem Gemini.
-- [ ] A busca, o revisor e a geração usam `retrieve_chunks`, o mesmo caminho da tarefa de fundo.
-- [ ] Cada afirmação sem apoio de um caso fiel reprovado ou de uma geração que falhou traz a pista do trecho mais próximo ou explica por que ela ficou indisponível.
-- [ ] O script apaga o usuário da avaliação no fim, mesmo depois de um erro.
-- [ ] O CI valida todo arquivo de `examples/evals/*.json`.
-- [ ] `examples/evals/README.md` explica como escrever e validar os casos.
-- [ ] Os documentos de `docs/` estão atualizados como descrito.
-- [ ] O PR traz o relatório da verificação manual ou diz que ela foi pulada.
-- [ ] Nenhum teste chama o Gemini.
-- [ ] Os hooks e os testes passam, com cobertura de 90% ou mais.
+- [x] O script cumpre o contrato e imprime o relatório na ordem descrita.
+- [x] Um arquivo de casos inválido para o script antes de qualquer chamada ao Gemini, com uma mensagem que diz o problema e o caso. `--check` valida o arquivo sem banco e sem Gemini.
+- [x] A busca, o revisor e a geração usam `retrieve_chunks`, o mesmo caminho da tarefa de fundo.
+- [x] Cada afirmação sem apoio de um caso fiel reprovado ou de uma geração que falhou traz a pista do trecho mais próximo ou explica por que ela ficou indisponível.
+- [x] O script apaga o usuário da avaliação no fim, mesmo depois de um erro.
+- [x] O CI valida todo arquivo de `examples/evals/*.json`.
+- [x] `examples/evals/README.md` explica como escrever e validar os casos.
+- [x] Os documentos de `docs/` estão atualizados como descrito.
+- [x] O PR traz o relatório da verificação manual ou diz que ela foi pulada.
+- [x] Nenhum teste chama o Gemini.
+- [x] Os hooks e os testes passam, com cobertura de 90% ou mais.
 
 ## Cenários de teste
 
@@ -269,3 +269,11 @@ Em `backend/tests/scripts/test_evaluate.py`. Os cenários 1 a 6 usam um document
 10. Sem a configuração do Gemini exigida pelo caso, ou com um nicho que não existe, `main` devolve 1 com uma mensagem e não cria linhas.
 11. Depois de `main`, confira por `id` que o usuário e as linhas filhas da avaliação foram apagados. Repita com erro de indexação depois de criar as linhas.
 12. Uma lista vazia ou composta apenas de erros do Gemini mostra "Sem casos medidos". Um erro na busca de uma pista é registrado e mantém o resultado do caso.
+
+## Verificação do aceite
+
+- PR revisado: [#44](https://github.com/No-Country-simulation/g10_equipe1_novamente/pull/44), integrado no commit `c2e1122`.
+- CI do PR: todos os checks obrigatórios passaram depois do rebase sobre T29, com escopo dentro de `touches`.
+- Revisão automática sobre o commit `abf589a`: nove achados, corrigidos no commit `79e0d61` (`ee26034` após o rebase). O guia traz exemplos válidos dos três formatos e os comandos de preparo. As mensagens de erro dizem a linha do JSON, o caso e o que corrigir. O script usa `grounding.failure_message` para separar falhas do modelo de reprovações. Os testes cobrem a falha ao apagar o usuário temporário e o modelo de embeddings vazio.
+- Testes: 389 testes passaram, com 99% de cobertura no backend.
+- Verificação com a API real: relatada no PR, sobre o commit `abf589a`, antes de T29. A versão medida foi `escreve-v3+revisa-v2`. A busca achou o trecho esperado em 3 de 3 perguntas, e o usuário temporário foi apagado.
