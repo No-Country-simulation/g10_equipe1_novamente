@@ -57,11 +57,20 @@ Rode os comandos de avaliação em `backend/`. Use o banco de desenvolvimento co
 
 ## Critérios de aceite
 
-- [ ] `examples/evals/` tem um arquivo JSON por documento copiado em `examples/sources/`, e o CI valida todos.
-- [ ] Os casos somam 20 perguntas, 10 conteúdos do revisor e 6 gerações.
-- [ ] Nenhum conteúdo fiel traz um fato fora do documento.
-- [ ] O PR traz os relatórios, a conferência dos erros plantados e a leitura de cada pista.
-- [ ] `fidelidade-e-qualidade.md` registra a primeira medição na seção "Medições".
-- [ ] As notas de clareza vêm de uma pessoa, dadas no PR antes de ela ver as notas do revisor. Se a equipe não tem quem julgue o assunto, a seção "Medições" registra a clareza como não medida, com o motivo, e a conferência passa para o teste de adaptação com uma pessoa de fora (T34).
-- [ ] Os hooks passam.
+- [x] `examples/evals/` tem um arquivo JSON por documento copiado em `examples/sources/`, e o CI valida todos.
+- [x] Os casos somam 20 perguntas, 10 conteúdos do revisor e 6 gerações.
+- [x] Nenhum conteúdo fiel traz um fato fora do documento.
+- [x] O PR traz os relatórios, a conferência dos erros plantados e a leitura de cada pista.
+- [x] `fidelidade-e-qualidade.md` registra a primeira medição na seção "Medições".
+- [x] As notas de clareza vêm de uma pessoa, dadas no PR antes de ela ver as notas do revisor. Se a equipe não tem quem julgue o assunto, a seção "Medições" registra a clareza como não medida, com o motivo, e a conferência passa para o teste de adaptação com uma pessoa de fora (T34).
+- [x] Os hooks passam.
 - [ ] Uma pessoa da equipe conferiu os casos e a leitura das pistas antes do merge.
+
+## Verificação do aceite
+
+- PR revisado: [#49](https://github.com/No-Country-simulation/g10_equipe1_novamente/pull/49), integrado no commit `c04d23d`.
+- CI do PR: todos os checks obrigatórios passaram, com escopo dentro de `touches`.
+- Revisão automática sobre o commit `8ba19d0`: um achado. No quiz `lai-pedido-erro`, a resposta marcada e a justificativa traziam fatos diferentes. O commit `09e0a82` alinhou a resposta ao erro plantado, e a avaliação da LAI rodou de novo (`f3cf54a`).
+- Medição: busca com 20 de 20 trechos esperados entre os 8, revisor com 4 de 5 erros plantados e 0 alarmes falsos em 5 casos fiéis, geração com 4 de 4 conteúdos aprovados e 2 de 6 gerações perdidas por HTTP 503 do Gemini. A clareza ficou não medida, porque a equipe não tem quem julgue o assunto.
+- No quiz da LAI com erro plantado, o revisor marcou como sem apoio uma alternativa incorreta sustentada pelo art. 11, § 1º, e não marcou o erro plantado. O quiz foi reprovado pelo motivo errado.
+- A pessoa que fez o merge seguiu a revisão automática na conferência dos casos e das pistas, sem conferência própria. Por isso o último critério fica sem marca.

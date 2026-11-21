@@ -108,7 +108,7 @@ Tickets escritos das ondas 5 a 8:
 | [`T32`](docs/tickets/completed/T32-nova-tentativa-e-regra-dos-10-minutos.md) | Nova tentativa e regra dos 10 minutos |
 | [`T33`](docs/tickets/completed/T33-exclusao-de-curso.md) | Exclusão de curso e de conta com limpeza na OCI |
 | [`T31`](docs/tickets/completed/T31-teste-no-navegador.md) | Teste no navegador da criação à leitura do conteúdo gerado |
-| [`T41`](docs/tickets/T41-casos-de-avaliacao-e-primeira-medicao.md) | Casos de avaliação sobre os documentos da demonstração e primeira medição |
+| [`T41`](docs/tickets/completed/T41-casos-de-avaliacao-e-primeira-medicao.md) | Casos de avaliação sobre os documentos da demonstração e primeira medição |
 | [`T35`](docs/tickets/T35-readme-diagrama-e-guia-de-instalacao.md) | README, diagrama e guia de instalação |
 
 T34 e T36 ainda não foram escritos e estão na [tabela de ondas](docs/tickets/README.md#ondas).
