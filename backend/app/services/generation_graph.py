@@ -1,11 +1,11 @@
 import logging
 from dataclasses import dataclass
-from typing import TypedDict
+from typing import NotRequired, TypedDict
 
 from langgraph.graph import END, START, StateGraph
 
 from app.core.llm import LLMError
-from app.services import reviewer, writer
+from app.services import planner, reviewer, writer
 from app.services.content_schemas import GeneratedBase
 from app.services.grounding import (
     Decision,
@@ -17,7 +17,9 @@ from app.services.grounding import (
 )
 from app.services.writer import Rewrite, WriteRequest
 
-PROMPT_VERSION = f"{writer.PROMPT_VERSION}+{reviewer.PROMPT_VERSION}"
+PROMPT_VERSION = (
+    f"{planner.PROMPT_VERSION}+{writer.PROMPT_VERSION}+{reviewer.PROMPT_VERSION}"
+)
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +27,7 @@ logger = logging.getLogger(__name__)
 @dataclass(frozen=True, slots=True)
 class GenerationResult:
     decision: Decision
-    attempts: int
+    attempts: int  # escritas começadas: de 0 a 2
     generated: GeneratedBase | None
     review: ReviewResult | None
     report: GroundingReport | None
@@ -34,6 +36,7 @@ class GenerationResult:
 
 class _GenerationState(TypedDict):
     request: WriteRequest
+    plan: NotRequired[planner.ContentPlan]
     attempt: int
     generated: GeneratedBase | None
     review: ReviewResult | None
@@ -42,17 +45,30 @@ class _GenerationState(TypedDict):
     error_message: str | None
 
 
+def _planeja(state: _GenerationState) -> _GenerationState:
+    try:
+        plan = planner.plan_content(state["request"])
+    except LLMError as error:
+        return {
+            **state,
+            "decision": Decision.fail,
+            "error_message": f"Não foi possível gerar o conteúdo. {error}",
+        }
+    return {**state, "plan": plan}
+
+
 def _escreve(state: _GenerationState) -> _GenerationState:
-    request = state["request"]
+    request, plan = state["request"], state["plan"]
     attempt = state["attempt"] + 1
     try:
         if attempt == 1:
-            generated = writer.write_content(request)
+            generated = writer.write_content(request, plan=plan)
         else:
             previous, report = state["generated"], state["report"]
             assert previous is not None and report is not None
             generated = writer.write_content(
                 request,
+                plan=plan,
                 rewrite=Rewrite(
                     previous, [claim.claim for claim in report.unsupported]
                 ),
@@ -106,9 +122,15 @@ def _revisa(state: _GenerationState) -> _GenerationState:
 _graph = (
     # O ty não reconhece TypedDict no limite genérico de StateGraph.
     StateGraph(_GenerationState)  # ty: ignore[invalid-argument-type]
+    .add_node("planeja", _planeja)
     .add_node("escreve", _escreve)
     .add_node("revisa", _revisa)
-    .add_edge(START, "escreve")
+    .add_edge(START, "planeja")
+    .add_conditional_edges(
+        "planeja",
+        lambda state: END if state["decision"] is Decision.fail else "escreve",
+        [END, "escreve"],
+    )
     .add_conditional_edges(
         "escreve",
         lambda state: END if state["decision"] is Decision.fail else "revisa",
