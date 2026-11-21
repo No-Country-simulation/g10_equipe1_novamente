@@ -62,6 +62,6 @@ Rode os comandos de avaliação em `backend/`. Use o banco de desenvolvimento co
 - [ ] Nenhum conteúdo fiel traz um fato fora do documento.
 - [ ] O PR traz os relatórios, a conferência dos erros plantados e a leitura de cada pista.
 - [ ] `fidelidade-e-qualidade.md` registra a primeira medição na seção "Medições".
-- [ ] As notas de clareza vêm de uma pessoa, dadas no PR antes de ela ver as notas do revisor.
+- [ ] As notas de clareza vêm de uma pessoa, dadas no PR antes de ela ver as notas do revisor. Se a equipe não tem quem julgue o assunto, a seção "Medições" registra a clareza como não medida, com o motivo, e a conferência passa para o teste de adaptação com uma pessoa de fora (T34).
 - [ ] Os hooks passam.
 - [ ] Uma pessoa da equipe conferiu os casos e a leitura das pistas antes do merge.
