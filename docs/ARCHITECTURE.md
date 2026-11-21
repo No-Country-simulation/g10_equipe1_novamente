@@ -185,7 +185,7 @@ Limites do plano gratuito, lidos no Google AI Studio em 19/11/2026:
 
 A cota de embeddings conta cada texto como um pedido, mesmo dentro de um lote: uma chamada com 1 texto e outra com 20 apareceram como 21 pedidos. Com chunks de 1.000 caracteres, um documento de 100 mil caracteres gasta cerca de 101 pedidos de embeddings.
 
-Sem contar novas tentativas de transporte do cliente, a cota de texto comporta 33 cursos por dia (500 / 15). Os embeddings comportam cerca de 9 cursos com um documento de 100 mil caracteres, ou 2 cursos no tamanho máximo, com 3 documentos de 150 mil caracteres. Basta para a demonstração.
+Os embeddings limitam a capacidade diária, não o texto. Sem contar novas tentativas de transporte do cliente, a cota de texto comporta 33 cursos por dia (500 / 15). Os embeddings comportam cerca de 9 cursos com um documento de 100 mil caracteres, ou 2 cursos no tamanho máximo, com 3 documentos de 150 mil caracteres. Basta para a demonstração.
 
 `llm.py` controla o ritmo por minuto antes de cada pedido e espera a janela terminar em HTTP 429 (T39). Sem esse controle, a indexação de um documento com mais de cerca de 90 mil caracteres passa do limite por minuto e falha.
 
@@ -239,7 +239,7 @@ A equipe usa só recursos marcados como Always Free e não muda a conta para Pay
 | Exclusão: banco primeiro, OCI depois | Uma falha deixa um arquivo sem uso, não um curso quebrado. | A construir |
 | Uma VM Always Free com Docker Compose | Atende ao deploy em nuvem com poucas peças. | A construir |
 | LangGraph para o laço de escrita e revisão | O briefing lista agentes com LangGraph como diferencial, e o grafo deixa o fluxo visível. | A construir |
-| Etapa `planeja` antes de `escreve` | `planeja` propõe a estrutura do conteúdo e indica os trechos que sustentam cada item. | Existe |
+| Etapa `planeja` antes de `escreve` | O briefing trata a cadeia de planejar, redigir e revisar como adicional. `planeja` só propõe a estrutura do conteúdo. | Existe |
 | Nomes em inglês no JSON e na API | O exemplo do briefing é só um exemplo. O produto usa os nomes do esquema. | A construir |
 | Vários documentos e várias saídas por curso | A pessoa escolhe os documentos e as saídas na criação. Todos os documentos valem para todas as saídas. | A construir |
 | Até 3 documentos e até 3 saídas, uma de cada formato | Todas as saídas têm o mesmo foco. Cada saída usa até cinco chamadas de texto ao modelo. | A construir |
