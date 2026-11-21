@@ -25,7 +25,7 @@ size: 5
 
 # T32 - Permita tentar de novo um conteúdo que falhou e encerre gerações paradas
 
-Desde [T28](completed/T28-tarefa-de-fundo.md), a tarefa de fundo gera as saídas em ordem. Uma queda pode deixar o curso com conteúdo na fila ou em geração sem ninguém para concluir. A [especificação](../product-specs/criar-curso.md) pede que a pessoa possa tentar de novo depois de uma falha.
+Desde [T28](T28-tarefa-de-fundo.md), a tarefa de fundo gera as saídas em ordem. Uma queda pode deixar o curso com conteúdo na fila ou em geração sem ninguém para concluir. A [especificação](../../product-specs/criar-curso.md) pede que a pessoa possa tentar de novo depois de uma falha.
 
 ## Nova tentativa
 
@@ -62,7 +62,7 @@ Para cada curso com conteúdo ativo, pegue o lock da linha de `Course`, pule lin
 
 ## Documentação
 
-Em [`docs/ARCHITECTURE.md`](../ARCHITECTURE.md), ajuste a linha `course` em "Os estados tornam a tarefa de fundo observável", as linhas "Processo cai durante a geração" e "Nova tentativa" e os parágrafos sobre a regra dos 10 minutos. Explique a identificação da tarefa, a recuperação periódica e a transição de `failed` para `initializing`. Em [`criar-curso.md`](../product-specs/criar-curso.md), atualize "Nova tentativa" com o botão por conteúdo e o reaproveitamento dos documentos indexados.
+Em [`docs/ARCHITECTURE.md`](../../ARCHITECTURE.md), ajuste a linha `course` em "Os estados tornam a tarefa de fundo observável", as linhas "Processo cai durante a geração" e "Nova tentativa" e os parágrafos sobre a regra dos 10 minutos. Explique a identificação da tarefa, a recuperação periódica e a transição de `failed` para `initializing`. Em [`criar-curso.md`](../../product-specs/criar-curso.md), atualize "Nova tentativa" com o botão por conteúdo e o reaproveitamento dos documentos indexados.
 
 ## Cenários de teste e aceite
 
@@ -72,3 +72,11 @@ Em [`docs/ARCHITECTURE.md`](../ARCHITECTURE.md), ajuste a linha `course` em "Os 
 - [ ] Confira que a recuperação roda pelo `lifespan` e que as duas rotas GET não alteram estados. Depois de uma falha de indexação, a nova tentativa reindexa o documento que falhou e reaproveita os `indexed`.
 - [ ] Em `content-retry.spec.ts` novo, use os seeds de `course.spec.ts`. Confira o botão no alerta de uma saída e só no cartão que falhou quando há várias. Com `page.route`, mantenha o POST em andamento para conferir um único envio, simule HTTP 202 e o GET seguinte com o conteúdo `pending` e confira o estado em fila. Simule um HTTP 409 e confira o toast.
 - [ ] Os testes automatizados dispensam Gemini e OCI. Passe os hooks, o backend com a cobertura exigida e o lint e build do frontend. Mire menos de 400 linhas escritas à mão. No PR, se houver credenciais de desenvolvimento, registre também a recuperação de um curso durante uma reinicialização e a nova tentativa pela tela.
+
+## Verificação do aceite
+
+- PR revisado: [#48](https://github.com/No-Country-simulation/g10_equipe1_novamente/pull/48), integrado no commit `eacd930`.
+- CI do PR: todos os checks obrigatórios passaram depois do rebase sobre T31 e T33, com escopo dentro de `touches`.
+- Primeira revisão automática, sobre o commit `280598e`: três achados, corrigidos no commit `c115b8e` (`26acde3` após o rebase). O prazo de 10 minutos é renovado sob o lock do curso a cada documento indexado. As ressalvas de `ARCHITECTURE.md` e a frase sobre o segundo clique voltaram.
+- Segunda revisão automática, sobre o commit `45d5626`, após o rebase: sem achados. A migration `13cda7f04a52` é o único head e segue a de T33. A exclusão e a nova tentativa travam a mesma linha do curso, e os dois laços periódicos travam linhas diferentes.
+- Testes: 439 testes do backend passaram, com 98% de cobertura, e 132 testes do Playwright.

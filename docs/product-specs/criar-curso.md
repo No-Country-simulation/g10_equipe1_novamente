@@ -81,13 +81,13 @@ Se um documento falha na indexação, o produto não gera nenhuma saída. Uma sa
 
 ## Nova tentativa
 
-Depois de uma falha, a pessoa clica em "Tentar novamente" no conteúdo que falhou. O conteúdo volta para a fila e usa os mesmos documentos. Um segundo clique durante a geração não inicia outra.
+Depois de uma falha, a pessoa clica em "Tentar novamente" no alerta ou no cartão do conteúdo que falhou. Essa saída volta para a fila. Um segundo clique durante a geração não inicia outra. A tarefa reaproveita os documentos já indexados e indexa os demais. Se o curso já tem uma publicação, ela continua disponível.
 
 ## Excluir um curso
 
-A pessoa exclui um curso que não está em geração. O produto apaga o curso, os documentos e os conteúdos, no banco e no OCI. Um curso em geração não pode ser excluído.
+No resumo do curso, clique em "Excluir curso" e confirme. Se algum conteúdo estiver na fila ou em geração, o botão fica desabilitado.
 
-Excluir a conta apaga todos os cursos da pessoa da mesma forma. A rota de exclusão de conta já existe e ainda não limpa o OCI, porque o produto ainda não grava arquivos lá.
+Para excluir a conta, todos os cursos precisam estar fora da fila e da geração. Em ambos os casos, o produto apaga os dados no banco e remove os documentos e os JSON da OCI em segundo plano.
 
 ## O que fica fora
 

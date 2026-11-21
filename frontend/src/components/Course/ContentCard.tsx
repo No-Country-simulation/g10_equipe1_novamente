@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card"
 import { CONTENT_STATUS_LABELS, FORMAT_LABELS } from "@/lib/courses"
 import { cn } from "@/lib/utils"
 import { formatIcons } from "./formatIcons"
+import { RetryButton } from "./RetryButton"
 
 interface ContentCardProps {
   courseId: string
@@ -92,6 +93,13 @@ export function ContentCard({ courseId, content, number }: ContentCardProps) {
           >
             Abrir
           </Button>
+        )}
+        {failed && (
+          <RetryButton
+            courseId={courseId}
+            contentId={content.id}
+            className={actionClass}
+          />
         )}
       </div>
     </Card>

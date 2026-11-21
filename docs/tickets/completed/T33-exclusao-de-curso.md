@@ -25,7 +25,7 @@ size: 5
 
 # T33 - Exclua cursos e contas e conclua a limpeza dos arquivos na OCI
 
-`DELETE /api/v1/users/me` já apaga a conta e seus cursos no banco. Os documentos originais e os JSON publicados ficam na OCI, com as chaves descritas na [especificação de armazenamento](../product-specs/pacote-json-e-armazenamento.md). A [especificação de criação](../product-specs/criar-curso.md) permite excluir um curso quando ele sai de geração e aplica a mesma regra aos cursos da conta. A [arquitetura](../ARCHITECTURE.md) define a ordem, banco primeiro e OCI depois. Guarde a pendência no banco antes de responder, para que a limpeza possa terminar mesmo se a OCI falhar ou o backend cair.
+`DELETE /api/v1/users/me` já apaga a conta e seus cursos no banco. Os documentos originais e os JSON publicados ficam na OCI, com as chaves descritas na [especificação de armazenamento](../../product-specs/pacote-json-e-armazenamento.md). A [especificação de criação](../../product-specs/criar-curso.md) permite excluir um curso quando ele sai de geração e aplica a mesma regra aos cursos da conta. A [arquitetura](../../ARCHITECTURE.md) define a ordem, banco primeiro e OCI depois. Guarde a pendência no banco antes de responder, para que a limpeza possa terminar mesmo se a OCI falhar ou o backend cair.
 
 ## API e transações
 
@@ -63,7 +63,7 @@ Crie `DeleteCourse.tsx` e monte o componente no `CourseSummary`, que aparece em 
 
 ## Documentação
 
-Em [`docs/ARCHITECTURE.md`](../ARCHITECTURE.md), ajuste as três linhas de exclusão em "Falhas e recuperação" para explicar a regra de geração ativa, o registro da pendência e a nova tentativa da limpeza. Em [`criar-curso.md`](../product-specs/criar-curso.md), atualize "Excluir um curso" com a ação na tela, a mesma regra para a conta e a limpeza em segundo plano. Em [`telas.md`](../product-specs/telas.md), acrescente a exclusão à linha "Curso".
+Em [`docs/ARCHITECTURE.md`](../../ARCHITECTURE.md), ajuste as três linhas de exclusão em "Falhas e recuperação" para explicar a regra de geração ativa, o registro da pendência e a nova tentativa da limpeza. Em [`criar-curso.md`](../../product-specs/criar-curso.md), atualize "Excluir um curso" com a ação na tela, a mesma regra para a conta e a limpeza em segundo plano. Em [`telas.md`](../../product-specs/telas.md), acrescente a exclusão à linha "Curso".
 
 ## Cenários de teste e aceite
 
@@ -73,3 +73,11 @@ Em [`docs/ARCHITECTURE.md`](../ARCHITECTURE.md), ajuste as três linhas de exclu
 - [ ] Em `conftest.py`, isole a resolução de armazenamento do limpador nos testes backend para que as credenciais do `.env` não sejam usadas. Mantenha a resolução e as fixtures das rotas de criação. Use um armazenamento controlado nos testes do `lifespan`.
 - [ ] Em `course-delete.spec.ts` novo, use os seeds de `course.spec.ts`. Confira o botão no resumo com uma e várias saídas, o cancelamento e a exclusão pela rota real com retorno à lista. Confira o botão desabilitado em geração e simule HTTP 409 depois de abrir o diálogo para conferir o toast.
 - [ ] Passe os hooks, os testes do backend com a cobertura exigida e o lint e build do frontend. Mire menos de 400 linhas escritas à mão. Se houver acesso ao bucket de desenvolvimento, crie um curso descartável, liste seu prefixo antes e depois de excluí-lo pela tela e registre o resultado no PR.
+
+## Verificação do aceite
+
+- PR revisado: [#47](https://github.com/No-Country-simulation/g10_equipe1_novamente/pull/47), integrado no commit `5054fb0`.
+- CI do PR: todos os checks obrigatórios passaram, com escopo dentro de `touches`.
+- Revisão automática sobre o commit `351f061`: quatro achados, corrigidos no commit `7b49a5f`. Os testes resolvem o armazenamento do limpador em memória, o tratamento morto de `ObjectNotFoundError` saiu, um teste cobre a exclusão da conta que confirma antes da criação do curso e a tela recarrega o curso após HTTP 409.
+- Testes: 413 testes do backend passaram, com 99% de cobertura, e 128 testes do Playwright. O Alembic mostrou um único head.
+- Verificação com a OCI de desenvolvimento: a exclusão pela tela retornou HTTP 204 e a listagem do prefixo do curso ficou vazia.

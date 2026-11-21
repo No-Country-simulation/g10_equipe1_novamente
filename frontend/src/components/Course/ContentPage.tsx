@@ -72,7 +72,7 @@ export function ContentScreen({
         </div>
       </header>
       <FailedDocumentsAlert documents={course.documents} />
-      <ContentView content={content} />
+      <ContentView courseId={course.id} content={content} />
     </div>
   )
 }

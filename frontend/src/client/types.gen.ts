@@ -800,6 +800,36 @@ export type coursesCreateCourseResponses = {
 
 export type coursesCreateCourseResponse = coursesCreateCourseResponses[keyof coursesCreateCourseResponses];
 
+export type coursesDeleteCourseData = {
+    body?: never;
+    path: {
+        /**
+         * Course Id
+         */
+        course_id: string;
+    };
+    query?: never;
+    url: '/api/v1/courses/{course_id}';
+};
+
+export type coursesDeleteCourseErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type coursesDeleteCourseError = coursesDeleteCourseErrors[keyof coursesDeleteCourseErrors];
+
+export type coursesDeleteCourseResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type coursesDeleteCourseResponse = coursesDeleteCourseResponses[keyof coursesDeleteCourseResponses];
+
 export type coursesReadCourseData = {
     body?: never;
     path: {
@@ -829,6 +859,40 @@ export type coursesReadCourseResponses = {
 };
 
 export type coursesReadCourseResponse = coursesReadCourseResponses[keyof coursesReadCourseResponses];
+
+export type coursesRetryContentData = {
+    body?: never;
+    path: {
+        /**
+         * Course Id
+         */
+        course_id: string;
+        /**
+         * Content Id
+         */
+        content_id: string;
+    };
+    query?: never;
+    url: '/api/v1/courses/{course_id}/contents/{content_id}/retry';
+};
+
+export type coursesRetryContentErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type coursesRetryContentError = coursesRetryContentErrors[keyof coursesRetryContentErrors];
+
+export type coursesRetryContentResponses = {
+    /**
+     * Successful Response
+     */
+    202: CourseDetail;
+};
+
+export type coursesRetryContentResponse = coursesRetryContentResponses[keyof coursesRetryContentResponses];
 
 export type privateCreateUserData = {
     body: PrivateUserCreate;

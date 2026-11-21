@@ -18,7 +18,7 @@ size: 3
 
 `new-course.spec.ts` intercepta o POST de criação para testar o sucesso do formulário. `course.spec.ts` usa cursos criados pela API privada. Os testes de T28 exercitam a tarefa de fundo sem navegador. Falta percorrer o caminho que liga essas partes.
 
-Leia [T28](completed/T28-tarefa-de-fundo.md), [T29](completed/T29-etapa-planeja.md) e as seções "A criação de um curso segue doze passos" e "Testes" da [arquitetura](../ARCHITECTURE.md).
+Leia [T28](T28-tarefa-de-fundo.md), [T29](T29-etapa-planeja.md) e as seções "A criação de um curso segue doze passos" e "Testes" da [arquitetura](../../ARCHITECTURE.md).
 
 ## Backend do Playwright
 
@@ -30,7 +30,7 @@ Crie `backend/tests/playwright_app.py` como ponto de entrada do servidor de test
 
 Use um plano válido por formato, com os itens exigidos pelo modelo e `chunk_numbers=[1]`. Na resposta controlada de escrita, confira que o prompt recebeu um tópico do plano de teste. Use um tutorial com uma seção e um item em "Para levar", oito flashcards e cinco perguntas de quiz com quatro opções distintas cada. A revisão aprovada usa `focus_covered=True`, uma afirmação sustentada com `chunk_number=1`, clareza alta e observação fixa. No curso de falha, use um título que começa com `[falha]` e devolva `focus_covered=False` ao revisar esse foco. A tarefa, o grafo com `planeja`, `escreve` e `revisa`, a busca no pgvector, o cálculo da nota e a publicação continuam executando o código do produto.
 
-Crie `compose.playwright.yml` como sobreposição explícita de `compose.yml` e `compose.override.yml`. Altere só o serviço `backend`: monte `playwright_app.py` como leitura e execute o módulo com Uvicorn, por exemplo `uvicorn --app-dir /app/backend/tests playwright_app:app --host 0.0.0.0 --port 8000`. Use um processo para manter o mesmo armazenamento em memória. O [Dockerfile do backend](../../backend/Dockerfile) copia `backend/app` e `backend/scripts`. O módulo montado fica em `backend/tests`, fora da imagem. A aplicação de desenvolvimento e a de produção mantêm seus pontos de entrada.
+Crie `compose.playwright.yml` como sobreposição explícita de `compose.yml` e `compose.override.yml`. Altere só o serviço `backend`: monte `playwright_app.py` como leitura e execute o módulo com Uvicorn, por exemplo `uvicorn --app-dir /app/backend/tests playwright_app:app --host 0.0.0.0 --port 8000`. Use um processo para manter o mesmo armazenamento em memória. O [Dockerfile do backend](../../../backend/Dockerfile) copia `backend/app` e `backend/scripts`. O módulo montado fica em `backend/tests`, fora da imagem. A aplicação de desenvolvimento e a de produção mantêm seus pontos de entrada.
 
 No passo "Run Playwright tests" de `.github/workflows/playwright.yml`, use os três arquivos Compose, nessa ordem. Depois das migrations, espere o healthcheck do backend com `docker compose up -d --wait backend` antes de rodar o Playwright. Preserve a divisão em shards, os relatórios e `--fail-on-flaky-tests`. O filtro `compose*.yml` já inclui a sobreposição. Mantenha os testes existentes e as interceptações de falhas de rede e de armazenamento.
 
@@ -54,11 +54,18 @@ docker compose up -d --wait backend
 docker compose run --rm playwright bunx playwright test tests/generation.spec.ts
 ```
 
-Registre o resultado do teste e a execução completa do Playwright no CI. Atualize o item "Frontend" da seção "Testes" de [`docs/ARCHITECTURE.md`](../ARCHITECTURE.md) com a sobreposição, os comandos e as fronteiras substituídas. Mire menos de 400 linhas no PR, incluindo os dois cenários.
+Registre o resultado do teste e a execução completa do Playwright no CI. Atualize o item "Frontend" da seção "Testes" de [`docs/ARCHITECTURE.md`](../../ARCHITECTURE.md) com a sobreposição, os comandos e as fronteiras substituídas. Mire menos de 400 linhas no PR, incluindo os dois cenários.
 
 ## Critérios de aceite
 
-- [ ] Os dois cenários passam com Chromium, PostgreSQL e a API do produto. Nenhum deles intercepta as rotas de curso, cria o curso pela API de seed ou precisa de credenciais externas.
-- [ ] A saída aprovada passa pelo grafo e a saída reprovada resulta da decisão do grafo. O leitor mostra a citação do Markdown enviado.
-- [ ] O Compose de teste monta o ponto de entrada só quando a sobreposição é carregada. Nenhum arquivo de `backend/app`, variável de produto ou imagem de produção contém o modo de teste.
-- [ ] O Playwright do CI mantém os testes existentes e executa os dois cenários novos. Os hooks, o lint e o build do frontend passam.
+- [x] Os dois cenários passam com Chromium, PostgreSQL e a API do produto. Nenhum deles intercepta as rotas de curso, cria o curso pela API de seed ou precisa de credenciais externas.
+- [x] A saída aprovada passa pelo grafo e a saída reprovada resulta da decisão do grafo. O leitor mostra a citação do Markdown enviado.
+- [x] O Compose de teste monta o ponto de entrada só quando a sobreposição é carregada. Nenhum arquivo de `backend/app`, variável de produto ou imagem de produção contém o modo de teste.
+- [x] O Playwright do CI mantém os testes existentes e executa os dois cenários novos. Os hooks, o lint e o build do frontend passam.
+
+## Verificação do aceite
+
+- PR revisado: [#46](https://github.com/No-Country-simulation/g10_equipe1_novamente/pull/46), integrado no commit `8d436c4`.
+- CI do PR: todos os checks obrigatórios passaram, com escopo dentro de `touches`.
+- Revisão automática sobre o commit `c76b643`: um achado de formato em `docs/ARCHITECTURE.md`, corrigido no commit `4099cd8`.
+- Testes: os dois cenários novos e a suíte completa do Playwright passaram, com 127 testes. O backend passou com 399 testes e 99% de cobertura. O teste usa o grafo real, com respostas controladas só para o Gemini e a OCI, e o ponto de entrada de teste fica fora da imagem.

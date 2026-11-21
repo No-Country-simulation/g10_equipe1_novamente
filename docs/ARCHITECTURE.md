@@ -106,7 +106,7 @@ A rota de criação agenda a tarefa de fundo após confirmar a transação.
 
 | Tabela | Coluna | Caminho comum | Caminho de falha |
 | --- | --- | --- | --- |
-| `course` | `status` | `initializing` → `ready`, no primeiro conteúdo publicado | `initializing` → `failed`, se nenhum conteúdo inicial é publicado |
+| `course` | `status` | `initializing` → `ready`, no primeiro conteúdo publicado | `initializing` → `failed` quando a fila acaba sem publicação. Uma nova tentativa muda `failed` → `initializing`. |
 | `source_document` | `status` | `uploaded` → `processing` → `indexed` | `processing` → `failed` |
 | `course_content` | `status` | `pending` → `running` → `succeeded` | `pending` ou `running` → `failed` |
 
@@ -139,21 +139,23 @@ As dez regras de ciclo de vida do curso ficam em [`generated/db-schema.md`](gene
 | Material sem cobertura do foco na revisão | O conteúdo fica `failed` de imediato, com “O documento não trata do assunto pedido.” |
 | Segunda revisão sem afirmações | O conteúdo fica `failed`, com “O documento não trata do assunto pedido.” |
 | Segunda revisão com foco coberto e afirmações sem apoio | O conteúdo fica `failed`. `error_message` começa com “Afirmações sem apoio no documento:” e lista cada afirmação sem apoio em uma linha. |
-| Processo cai durante a geração | A geração conta como interrompida quando nenhum conteúdo do curso muda de estado por 10 minutos e algum está `pending` ou `running`. O backend marca esses conteúdos como `failed` na próxima consulta ao curso. |
-| Nova tentativa | A pessoa pede a nova tentativa de um conteúdo. O backend muda o conteúdo de `failed` para `pending` em uma única operação. Um segundo pedido recebe HTTP 409. A tarefa só indexa de novo o documento que não está `indexed`. |
-| Exclusão de curso | O backend recusa com HTTP 409 se há geração ativa. Depois apaga as linhas e, em tarefa de fundo, os objetos sob `courses/{course_id}/`. |
-| Exclusão de conta | `DELETE /api/v1/users/me` já existe e apaga os cursos em cascata. O backend precisa coletar os `course_id` antes e fazer a mesma limpeza. |
-| Limpeza no OCI falha | O backend registra o `course_id` e o erro no log. O objeto fica sem uso. |
+| Processo cai durante a geração | Após 10 minutos sem progresso, o backend marca os conteúdos `pending` ou `running` e os documentos `processing` como `failed`. |
+| Nova tentativa | A API muda o conteúdo de `failed` para `pending` sob o lock do curso. O conteúdo entra na fila ativa ou a API agenda uma tarefa após o `commit`. Um segundo pedido recebe HTTP 409. |
+| Exclusão de curso | A API responde HTTP 409 se há conteúdo na fila ou em geração. Caso contrário, apaga o curso em cascata e registra a limpeza de `courses/{course_id}/` na mesma transação. |
+| Exclusão de conta | A API responde HTTP 409 se algum curso tem conteúdo na fila ou em geração. Caso contrário, apaga a conta em cascata e registra uma pendência por curso na mesma transação. |
+| Limpeza no OCI falha | A tarefa de fundo busca pendências ao iniciar e a cada 30 segundos. Se a OCI falhar, registra os metadados do erro e tenta de novo após pelo menos um minuto. |
 
-A API trata as falhas na criação e a tarefa de fundo trata as falhas na geração. A exclusão de conta já apaga as linhas no banco. A regra dos 10 minutos, a nova tentativa e a limpeza de objetos ao excluir um curso ou uma conta estão a construir.
+A API trata as falhas na criação e as tarefas de fundo tratam as falhas na geração e na limpeza de objetos.
+
+O UUID interno `course.generation_id` identifica a tarefa que pode gravar resultados. A tarefa valida o UUID e o prazo sob o lock do curso antes de gravar. Quando encerra, limpa o UUID na mesma transação.
+
+O backend recupera gerações paradas na inicialização e a cada 30 segundos. A recuperação fecha a fila e limpa o UUID na mesma transação. Linhas antigas sem UUID seguem o mesmo prazo. A pessoa inicia a nova tentativa pela tela do curso.
+
+O prazo usa o `updated_at` mais recente entre os conteúdos do curso. Sob o lock do curso, a tarefa atualiza o `updated_at` das saídas na fila na mesma transação que grava os chunks e marca cada documento como `indexed`. Cada documento concluído renova o prazo. Se a indexação ficar 10 minutos sem registrar progresso, a recuperação encerra a geração. A recuperação preserva publicações anteriores.
 
 O tempo de 10 minutos é uma estimativa. A equipe ajusta depois de medir o pior caso de uma geração.
 
-A tarefa de fundo não sobrevive a uma queda do processo e não tenta de novo sozinha. A equipe aceita esse limite para 10 usuários.
-
-A regra dos 10 minutos olha o `updated_at` mais recente entre os conteúdos do curso. Um conteúdo que espera a vez não conta sozinho como interrompido.
-
-`source_document` não tem `updated_at`. A regra cobre a indexação feita na criação do curso. Um documento adicionado depois a um curso pronto vai precisar de outra regra.
+`source_document` não tem `updated_at`. A regra cobre a indexação na criação do curso e na nova tentativa. Um documento adicionado depois a um curso pronto vai precisar de outra regra.
 
 ## Armazenamento de objetos
 
@@ -222,7 +224,21 @@ A equipe usa só recursos marcados como Always Free e não muda a conta para Pay
 - **Backend**: `pytest` contra o PostgreSQL do Compose. O CI exige 90% de cobertura de `backend/app`.
 - **Esquema**: `backend/tests/test_schema.py` compara o catálogo do PostgreSQL com o ERD.
 - **Modelo**: os testes trocam as funções de `llm.py` por funções determinísticas. Nenhum teste automático chama a API Gemini.
-- **Frontend**: Playwright contra o backend do Compose, sem chave Gemini.
+- **Frontend**: O Playwright usa Chromium, a API do produto e PostgreSQL com pgvector. `compose.playwright.yml` monta um ponto de entrada de teste que substitui o OCI por armazenamento em memória e as chamadas ao Gemini por respostas determinísticas. A tarefa de fundo, a busca, o grafo, o cálculo da nota e a publicação usam o código do produto. O CI roda a suíte completa com a sobreposição.
+
+  Para rodar os dois cenários de geração, use um clone de teste com as portas do Compose livres. Na raiz do clone, rode:
+
+  ```bash
+  cp .env.example .env
+  cp frontend/.env.example frontend/.env
+  export COMPOSE_FILE=compose.yml:compose.override.yml:compose.playwright.yml
+  export COMPOSE_PROJECT_NAME=novamente-e2e
+  docker compose build backend playwright
+  docker compose run --rm backend bash scripts/prestart.sh
+  docker compose up -d --wait backend
+  docker compose run --rm playwright bunx playwright test tests/generation.spec.ts
+  ```
+
 - **Avaliação**: [`backend/scripts/evaluate.py`](../backend/scripts/evaluate.py). O script mede a busca, o revisor e a geração com o modelo real, a partir dos [casos de avaliação](../examples/evals/README.md). Roda à mão, fora do CI.
 
 ## Decisões

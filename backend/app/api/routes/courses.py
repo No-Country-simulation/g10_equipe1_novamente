@@ -1,7 +1,12 @@
 import logging
 import uuid
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
+from datetime import UTC, datetime
 from typing import Annotated
 
+import sqlalchemy as sa
+from anyio import create_task_group, sleep, to_thread
 from fastapi import (
     APIRouter,
     BackgroundTasks,
@@ -11,7 +16,7 @@ from fastapi import (
     Request,
     UploadFile,
 )
-from sqlmodel import Session, col, select
+from sqlmodel import Session, col, delete, select
 
 from app.api.deps import CurrentUser, SessionDep
 from app.core.storage import document_key, get_storage
@@ -26,17 +31,46 @@ from app.models import (
     CourseContent,
     CourseDetail,
     CoursesPublic,
+    CourseStatus,
     CourseSummary,
     DocumentChunk,
     DocumentPublic,
+    GenerationStatus,
     Niche,
     NichePublic,
     SourceDocument,
+    User,
 )
-from app.services import course_generation
+from app.services import course_deletion, course_generation
 from app.services.documents import MAX_FILE_BYTES, DocumentError, read_documents
 
-router = APIRouter(prefix="/courses", tags=["courses"])
+RECOVERY_INTERVAL_SECONDS = 30
+
+
+async def _recover_stalled_courses() -> None:
+    try:
+        await to_thread.run_sync(course_generation.expire_stalled_courses)
+    except Exception:
+        logging.exception("Falha ao recuperar gerações interrompidas")
+
+
+@asynccontextmanager
+async def lifespan(_app: object) -> AsyncIterator[None]:
+    async def recover_periodically() -> None:
+        while True:
+            await sleep(RECOVERY_INTERVAL_SECONDS)
+            await _recover_stalled_courses()
+
+    await _recover_stalled_courses()
+    async with create_task_group() as tasks:
+        tasks.start_soon(recover_periodically)
+        try:
+            yield
+        finally:
+            tasks.cancel_scope.cancel()
+
+
+router = APIRouter(prefix="/courses", tags=["courses"], lifespan=lifespan)
 
 
 def _content_summary(content: CourseContent) -> ContentSummary:
@@ -212,6 +246,25 @@ def read_course(
     )
 
 
+@router.delete("/{course_id}", status_code=204)
+def delete_course(
+    *, session: SessionDep, current_user: CurrentUser, course_id: uuid.UUID
+) -> None:
+    course = session.exec(
+        select(Course.id)
+        .where(col(Course.id) == course_id, col(Course.owner_id) == current_user.id)
+        .with_for_update()
+    ).first()
+    if course is None:
+        raise HTTPException(404, "Curso não encontrado.")
+    if course_deletion.has_active_content(session, [course_id]):
+        raise HTTPException(409, "Espere a geração terminar para excluir o curso.")
+
+    course_deletion.enqueue_cleanup(session, [course_id])
+    session.exec(delete(Course).where(col(Course.id) == course_id))
+    session.commit()
+
+
 @router.post("/", status_code=201, response_model=CourseDetail)
 def create_course(
     *,
@@ -246,12 +299,19 @@ def create_course(
         raise HTTPException(422, detail) from exc
     if session.get(Niche, niche_id) is None:
         raise HTTPException(404, "Setor não encontrado.")
+    owner_id = session.exec(
+        select(User.id).where(col(User.id) == current_user.id).with_for_update()
+    ).first()
+    if owner_id is None:
+        raise HTTPException(404, "User not found")
     storage = request.app.dependency_overrides.get(get_storage, get_storage)()
+    generation_id = uuid.uuid4()
     course = Course(
         owner_id=current_user.id,
         niche_id=niche_id,
         title=title,
         audience_level=audience_level,
+        generation_id=generation_id,
     )
     keys: list[str] = []
     try:
@@ -291,6 +351,73 @@ def create_course(
                 logging.exception("Falha ao limpar objetos do curso %s", course.id)
         raise
     background_tasks.add_task(
-        course_generation.run_course_generation, storage=storage, course_id=course.id
+        course_generation.run_course_generation,
+        storage=storage,
+        course_id=course.id,
+        generation_id=generation_id,
     )
     return read_course(session=session, current_user=current_user, course_id=course.id)
+
+
+@router.post(
+    "/{course_id}/contents/{content_id}/retry",
+    status_code=202,
+    response_model=CourseDetail,
+)
+def retry_content(
+    *,
+    session: SessionDep,
+    current_user: CurrentUser,
+    request: Request,
+    background_tasks: BackgroundTasks,
+    course_id: uuid.UUID,
+    content_id: uuid.UUID,
+) -> CourseDetail:
+    course = session.exec(
+        select(Course)
+        .where(col(Course.id) == course_id, col(Course.owner_id) == current_user.id)
+        .with_for_update()
+    ).first()
+    if course is None:
+        raise HTTPException(404, "Curso não encontrado.")
+    content = session.get(CourseContent, content_id)
+    if content is None or content.course_id != course_id:
+        raise HTTPException(404, "Conteúdo não encontrado.")
+    if content.status != GenerationStatus.failed:
+        raise HTTPException(409, "Só um conteúdo que falhou pode ser gerado de novo.")
+
+    active, stalled = course_generation.generation_activity(session, course_id)
+    if active and (stalled or course.generation_id is None):
+        raise HTTPException(409, course_generation.GENERATION_INTERRUPTED)
+    storage = request.app.dependency_overrides.get(get_storage, get_storage)()
+    now = datetime.now(UTC)
+    updated = session.exec(
+        sa.update(CourseContent)
+        .where(
+            col(CourseContent.id) == content_id,
+            col(CourseContent.status) == GenerationStatus.failed,
+        )
+        .values(status=GenerationStatus.pending, error_message=None, updated_at=now)
+        .returning(col(CourseContent.id))
+    ).first()
+    if updated is None:
+        raise HTTPException(409, "Só um conteúdo que falhou pode ser gerado de novo.")
+    if course.status == CourseStatus.failed:
+        course.status = CourseStatus.initializing
+        course.updated_at = now
+
+    generation_id = None
+    if course.generation_id is None or stalled:
+        generation_id = course.generation_id = uuid.uuid4()
+    detail = read_course(
+        session=session, current_user=current_user, course_id=course_id
+    )
+    session.commit()
+    if generation_id is not None:
+        background_tasks.add_task(
+            course_generation.run_course_generation,
+            storage=storage,
+            course_id=course_id,
+            generation_id=generation_id,
+        )
+    return detail

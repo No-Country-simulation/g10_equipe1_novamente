@@ -124,7 +124,7 @@ No segundo PR, teste a concorrência entre DELETE e retry do mesmo curso. Se o r
 
 ## Ondas
 
-Os tickets das ondas 1 a 5 estão escritos, além de T29, T30, T31, T32, T33, T35 e T41. Faltam T34 e T36. Escreva cada um quando os contratos de que ele depende estiverem definidos.
+Os tickets das ondas 1 a 5 estão escritos, além de T29, T30, T31, T32, T33, T35, T41 e T42. Falta T36. Escreva-o quando os contratos de que ele depende estiverem definidos. A equipe descartou T34 e T43: quem apresenta gera os cursos da demonstração na própria máquina.
 
 | Onda | Ticket | Entrega | Bloqueado por |
 | --- | --- | --- | --- |
@@ -164,9 +164,9 @@ Os tickets das ondas 1 a 5 estão escritos, além de T29, T30, T31, T32, T33, T3
 | 6 | T33 | Exclusão de curso e de conta com limpeza na OCI | T28 |
 | 6 | T36 | Deploy na VM da OCI (opcional) | T28 |
 | 7 | T31 | Teste no navegador da criação à leitura do conteúdo gerado | T08, T09, T10, T17, T27, T28, T29, T38 |
-| 7 | T34 | Rodar os cenários da demonstração e guardar os JSON | T13, T25, T26, T28, T29, T37 |
 | 7 | T41 | Casos de avaliação sobre os documentos da demonstração e primeira medição | T13, T30 |
-| 8 | T35 | README, diagrama e guia de instalação | T29, T31, T32, T33, T34 |
+| 8 | T42 | Revisor sem as alternativas erradas do quiz | T41 |
+| 9 | T35 | README, diagrama e guia de instalação | T29, T31, T32, T33, T42 |
 
 T39 saiu das medições de T12: a cota de embeddings conta cada texto como um pedido, e a indexação de um documento grande passava do limite por minuto. T28 passou a listar T39.
 
@@ -190,10 +190,12 @@ Na onda 6, T29 e T30 editam `docs/ARCHITECTURE.md`. T29 edita o fluxo, as regras
 
 T30 entrega o script de avaliação e o formato dos casos. T41 executa o trabalho de avaliação que T13 cita: uma pessoa escreve os casos sobre os documentos escolhidos e registra a primeira medição com a versão de geração que ela usou.
 
-T34 e T35 dependem de T29. A demonstração já usa a etapa `planeja`, e o diagrama de T35 precisa mostrá-la.
+O diagrama de T35 precisa mostrar a etapa `planeja`.
 
-T35 fica na onda 8. O guia usa o teste sem chaves de T31, o README usa o JSON de T34 e a documentação descreve o ciclo de vida entregue por T32 e T33.
+T35 fica na onda 9. O guia usa o teste sem chaves de T31 e a documentação descreve o ciclo de vida entregue por T32 e T33 e o revisor de T42.
 
 T32 recoloca o conteúdo na fila da tarefa ativa. T32 e T33 usam o lock da linha de `Course` para coordenar nova tentativa, expiração e exclusão.
 
 T28 libera T29, T30, T32, T33 e T36. T29 também é bloqueio de T31.
+
+T42 saiu da primeira medição de T41. No quiz da LAI, o revisor marcou o prazo de 20 dias como sem apoio e deixou passar o erro de 30 dias. T42 envia a resposta marcada por extenso no material e limita as afirmações aos fatos do material. A versão passa a `revisa-v3`.

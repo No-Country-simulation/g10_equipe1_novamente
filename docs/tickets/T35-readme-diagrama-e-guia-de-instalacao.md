@@ -1,7 +1,7 @@
 ---
 id: T35
 title: Reescreva o README, atualize o diagrama e escreva o guia de instalação
-blocked_by: [T29, T31, T32, T33, T34]
+blocked_by: [T29, T31, T32, T33, T42]
 touches:
   - README.md
   - development.md
@@ -24,7 +24,7 @@ size: 3
 
 # T35 - Reescreva o README, atualize o diagrama e escreva o guia de instalação
 
-O README e o guia da raiz descrevem o template ou uma proposta anterior. O checklist em [`visao-e-publico.md`](../product-specs/visao-e-publico.md) pede documentação com diagrama. T29 entrega `planeja`, T31 entrega o teste sem credenciais, T32 e T33 fecham o ciclo de vida dos cursos e T34 entrega os JSON da demonstração em `examples/`.
+O README e o guia da raiz descrevem o template ou uma proposta anterior. O checklist em [`visao-e-publico.md`](../product-specs/visao-e-publico.md) pede documentação com diagrama. T29 entrega `planeja`, T31 entrega o teste sem credenciais, T32 e T33 fecham o ciclo de vida dos cursos e T42 corrige o revisor do quiz.
 
 Siga o [guia de escrita](../WRITING.md). Use o código e os [documentos do produto](../product-specs/index.md) que estiverem no `master` quando executar o ticket. O escopo é documentação. Se o guia revelar um defeito no produto, registre-o no PR.
 
@@ -34,7 +34,7 @@ Escreva para quem vai avaliar ou rodar o NovaMente pela primeira vez. Inclua:
 
 1. O problema e o que a pessoa escolhe ao criar um curso. Cite os três formatos e a regra de publicação com apoio nos documentos.
 2. O PNG e um resumo das cinco partes de [`ARCHITECTURE.md`](../ARCHITECTURE.md). Linke os doze passos da geração. Distinga o que já roda do deploy planejado.
-3. Os cenários da demonstração e um trecho identificado de um JSON produzido por T34. Linke o JSON completo, o arquivo de fontes entregue por T13 e a [especificação do pacote](../product-specs/pacote-json-e-armazenamento.md). Confira os campos no arquivo publicado na OCI, que tem estrutura diferente da resposta HTTP do curso.
+3. Os cenários da demonstração e um trecho identificado do pacote JSON descrito na [especificação do pacote](../product-specs/pacote-json-e-armazenamento.md). Linke a especificação e o arquivo de fontes entregue por T13. O pacote publicado na OCI tem estrutura diferente da resposta HTTP do curso.
 4. O caminho para rodar localmente e um link para `development.md`. Cite as tecnologias a partir de `backend/pyproject.toml`, `frontend/package.json` e `compose.yml`. Se incluir versões, indique se vêm do lockfile, de uma faixa de dependência ou de uma tag de imagem.
 5. Links para a arquitetura, as especificações, os tickets e `AGENTS.md`. Preserve a atribuição da equipe e linke `LICENSE`.
 
@@ -57,7 +57,7 @@ Atualize [`arquitetura.excalidraw`](../system-diagram/arquitetura.excalidraw) e 
 
 Em `docs/ARCHITECTURE.md`, confira as tabelas "O sistema tem cinco partes", "Mapa do código" e "Decisões". Atualize o parágrafo de "Falhas e recuperação" após T32 e T33. Mantenha a seção "Testes" coerente com T31. Em `docs/generated/db-schema.md`, registre `course.generation_id` e `course_object_cleanup` conforme os modelos e migrations. Identifique o SVG como o ERD v5 de base e mantenha o texto alinhado com o esquema atual.
 
-Nos arquivos de produto listados em `touches`, atualize estados e referências obsoletas ao README. Confira cada "Existe" contra o código e cada link com o arquivo ou âncora de destino. Use as fontes e o roteiro de `demonstracao.md` entregues por T13 e T34. Em `AGENTS.md`, atualize a descrição do esquema e indique que `README.md` e `development.md` valem. Os guias de contribuição e deploy ficam fora deste ticket.
+Nos arquivos de produto listados em `touches`, atualize estados e referências obsoletas ao README. Confira cada "Existe" contra o código e cada link com o arquivo ou âncora de destino. Use as fontes e o roteiro de `demonstracao.md` entregues por T13. Em `AGENTS.md`, atualize a descrição do esquema e indique que `README.md` e `development.md` valem. Os guias de contribuição e deploy ficam fora deste ticket.
 
 ## Critérios de aceite
 
