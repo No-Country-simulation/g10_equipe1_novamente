@@ -1,6 +1,6 @@
 # Mapa da base de conhecimento
 
-Este arquivo indica onde achar cada informação do NovaMente. Leia só o documento que a tarefa pede. Arquivos fora de `docs/` não valem (veja o fim deste arquivo).
+Este arquivo indica onde achar cada informação do NovaMente. Leia só os documentos que a tarefa pede.
 
 O NovaMente transforma um documento técnico em conteúdos de estudo fiéis a ele. A base de conhecimento fica em `docs/`.
 
@@ -51,7 +51,7 @@ O índice [`docs/product-specs/index.md`](docs/product-specs/index.md) lista os 
 
 ## Tickets
 
-Cada ticket `TNN-*.md` é uma unidade de trabalho que um agente executa do branch ao PR. [`docs/tickets/README.md`](docs/tickets/README.md) traz o fluxo, as verificações, as regras de conflito e a tabela de ondas com as dependências.
+Cada ticket `TNN-*.md` é uma unidade de trabalho que uma pessoa ou um agente executa do branch ao PR. [`docs/tickets/README.md`](docs/tickets/README.md) traz o fluxo, as verificações, as regras de conflito e a tabela de ondas com as dependências.
 
 Tickets escritos (onda 1):
 
@@ -96,8 +96,19 @@ Tickets escritos da onda 3:
 | [`T27`](docs/tickets/completed/T27-novo-curso-passos-2-e-3.md) | Novo curso, passos 2 e 3, e envio |
 | [`T38`](docs/tickets/completed/T38-tela-curso-avaliacao.md) | Tela "Curso": fidelidade, clareza, observações e trechos citados |
 
-O [T26](docs/tickets/completed/T26-agente-escreve-quiz.md), agente `escreve` para quiz, está completo. Os demais tickets das ondas 4 a 6 ainda não foram escritos e estão na [tabela de ondas](docs/tickets/README.md#ondas).
+O [T26](docs/tickets/completed/T26-agente-escreve-quiz.md), agente `escreve` para quiz, está completo.
+
+Tickets escritos das ondas 5 a 7:
+
+| Ticket | Entrega |
+| --- | --- |
+| [`T28`](docs/tickets/T28-tarefa-de-fundo.md) | Tarefa de fundo para gerar os três formatos |
+| [`T29`](docs/tickets/T29-etapa-planeja.md) | Etapa `planeja` |
+| [`T30`](docs/tickets/T30-avaliacao-da-busca-e-do-revisor.md) | Avaliação da busca e do revisor, com medição de falsas reprovações |
+| [`T41`](docs/tickets/T41-casos-de-avaliacao-e-primeira-medicao.md) | Casos de avaliação sobre os documentos da demonstração e primeira medição |
+
+Os demais tickets das ondas 6 e 7 ainda não foram escritos e estão na [tabela de ondas](docs/tickets/README.md#ondas).
 
 ## Fora de `docs/`
 
-Ignore os arquivos fora de `docs/`, como `README.md`, `CONTRIBUTING.md`, `development.md` e `deployment.md`. Eles vêm do template ou estão velhos e não descrevem o projeto. Só o código em `backend/` e `frontend/` e os documentos de `docs/` valem.
+Use o código em `backend/` e `frontend/` e os documentos de `docs/` como fontes do projeto. Use também os arquivos em `examples/` quando o ticket os citar. Os arquivos `README.md`, `CONTRIBUTING.md`, `development.md` e `deployment.md` da raiz vêm do template ou estão velhos.

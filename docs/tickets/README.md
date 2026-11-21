@@ -1,6 +1,6 @@
 # Tickets
 
-Cada arquivo `TNN-*.md` desta pasta é uma unidade de trabalho que um agente executa sozinho, do branch ao PR. O ticket é o prompt: ele traz o contexto, o contrato, os arquivos e os critérios de aceite.
+Cada arquivo `TNN-*.md` desta pasta é uma unidade de trabalho que uma pessoa ou um agente executa do branch ao PR. O ticket traz o contexto, o contrato, os arquivos e os critérios de aceite.
 
 Uma pessoa revisa e faz o merge de cada PR. Nenhum agente faz merge.
 
@@ -109,7 +109,7 @@ T17 criou `frontend/src/lib/courses.ts` e `frontend/tests/utils/course.ts`, que 
 
 ## Ondas
 
-Os tickets das ondas 1 a 3 e T26, da onda 4, estão escritos. Escreva os demais quando os contratos de que dependem estiverem definidos.
+Os tickets das ondas 1 a 5 estão escritos, além de T29, T30 e T41. Escreva os demais quando os contratos de que dependem estiverem definidos.
 
 | Onda | Ticket | Entrega | Bloqueado por |
 | --- | --- | --- | --- |
@@ -142,15 +142,16 @@ Os tickets das ondas 1 a 3 e T26, da onda 4, estão escritos. Escreva os demais 
 | 3 | T27 | Novo curso, passos 2 e 3, e envio | T07, T18, T23, T37 |
 | 3 | T38 | Tela "Curso": fidelidade, clareza, observações e trechos citados | T18 |
 | 4 | T26 | Agente `escreve`: quiz | T25 |
-| 4 | T29 | Etapa `planeja` | T24 |
-| 4 | T30 | Avaliação da busca e do revisor, com medição de falsas reprovações | T03, T24 |
 | 5 | T28 | Tarefa de fundo para gerar os três formatos | T03, T19, T22, T23, T24, T26, T39 |
+| 6 | T29 | Etapa `planeja` | T24, T28 |
+| 6 | T30 | Avaliação da busca e do revisor, com medição de falsas reprovações | T03, T24, T28, T37 |
 | 6 | T31 | Teste no navegador da criação à leitura do conteúdo gerado | T08, T09, T10, T17, T27, T28, T38 |
 | 6 | T32 | Nova tentativa e regra dos 10 minutos | T28 |
 | 6 | T33 | Exclusão de curso com limpeza na OCI | T28 |
-| 6 | T34 | Rodar os cenários da demonstração e guardar os JSON | T13, T25, T26, T28, T37 |
-| 6 | T35 | README, diagrama e guia de instalação | T28 |
 | 6 | T36 | Deploy na VM da OCI (opcional) | T28 |
+| 7 | T34 | Rodar os cenários da demonstração e guardar os JSON | T13, T25, T26, T28, T29, T37 |
+| 7 | T35 | README, diagrama e guia de instalação | T28, T29 |
+| 7 | T41 | Casos de avaliação sobre os documentos da demonstração e primeira medição | T13, T30 |
 
 T39 saiu das medições de T12: a cota de embeddings conta cada texto como um pedido, e a indexação de um documento grande passava do limite por minuto. T28 passou a listar T39.
 
@@ -168,4 +169,12 @@ Em `docs/product-specs/criar-curso.md`, T27 atualiza "O que a pessoa vê" e T40 
 
 T28 espera T26 para gerar todos os formatos que a API aceita. T31 cria um curso no navegador, espera a tarefa de fundo publicar um conteúdo e abre o leitor. O teste automatizado usa respostas controladas para o Gemini e a OCI.
 
-Entre os tickets já escritos, T40 libera T24 e T25. T24 libera T29 e T30. T28 espera T24 e T26, entre outros. Priorize a revisão de T40 e a de T24 quando seus PRs estiverem prontos.
+T28 cria `PROMPT_VERSION` em `generation_graph.py`, e T29 acrescenta a versão de `planeja` à constante. T30 usa a mesma versão e a função `retrieve_chunks` de T28, além da leitura de PDF de T37.
+
+Na onda 6, T29 e T30 editam `docs/ARCHITECTURE.md`. T29 edita o fluxo, as regras, os modelos de IA e a tabela de decisões. T30 edita a seção "Testes".
+
+T30 entrega o script de avaliação e o formato dos casos. T41 executa o trabalho de avaliação que T13 cita: uma pessoa escreve os casos sobre os documentos escolhidos e registra a primeira medição com a versão de geração que ela usou.
+
+T34 e T35 passaram a esperar T29. `ARCHITECTURE.md` diz que `planeja` entra antes da demonstração, e o diagrama de T35 precisa mostrar a etapa.
+
+T28 libera T29, T30, T31, T32, T33 e T36. Priorize a revisão de T28 quando o PR estiver pronto.
