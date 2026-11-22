@@ -28,7 +28,7 @@ size: 3
 
 O README e o guia da raiz descrevem o template ou uma proposta anterior. O checklist em [`visao-e-publico.md`](../../product-specs/visao-e-publico.md) pede documentação com diagrama. T29 entrega `planeja`, T31 entrega o teste sem credenciais, T32 e T33 fecham o ciclo de vida dos cursos e T42 corrige o revisor do quiz.
 
-Siga o [guia de escrita](../WRITING.md). Use o código e os [documentos do produto](../../product-specs/index.md) que estiverem no `master` quando executar o ticket. O escopo é documentação. Se o guia revelar um defeito no produto, registre-o no PR.
+Siga o [guia de escrita](../../WRITING.md). Use o código e os [documentos do produto](../../product-specs/index.md) que estiverem no `master` quando executar o ticket. O escopo é documentação. Se o guia revelar um defeito no produto, registre-o no PR.
 
 ## README
 
@@ -48,14 +48,14 @@ Em `development.md`, escreva passos que funcionem em um clone novo:
 2. Copie `.env.example` e `frontend/.env.example` para os respectivos `.env`. Explique os segredos e as variáveis que o produto usa. Para o Gemini, linke "Modelos de IA" da arquitetura e use só documentos públicos ou fictícios. Para OCI, use bucket privado, a API signing key fora do repositório e `uv run python scripts/verify_storage.py` em `backend/`.
 3. Suba o banco com `docker compose up -d --wait db` na raiz. Rode `uv run bash scripts/prestart.sh` e `uv run fastapi dev` em `backend/`. Rode `bun run dev` na raiz. Indique as URLs do frontend, da API e do Swagger. Se a porta 5432 já estiver em uso, mostre como apontar `DATABASE_URL` para um banco de desenvolvimento separado.
 4. Crie uma conta e o primeiro curso pela interface. Use um documento de exemplo, acompanhe até "Pronto", abra o leitor e exclua o curso de teste. Explique como confirmar a limpeza do prefixo depois que o processamento em segundo plano terminar.
-5. Documente os comandos de teste de [`docs/tickets/README.md`](README.md) e o caminho controlado de T31 com `compose.playwright.yml`. Use o comando verificado no ticket, inclua as migrations e deixe claro que o conteúdo controlado só é gerado pelo servidor de teste. Sem chaves, o servidor padrão sobe e a geração real depende de configurar Gemini e OCI.
+5. Documente os comandos de teste de [`docs/tickets/README.md`](../README.md) e o caminho controlado de T31 com `compose.playwright.yml`. Use o comando verificado no ticket, inclua as migrations e deixe claro que o conteúdo controlado só é gerado pelo servidor de teste. Sem chaves, o servidor padrão sobe e a geração real depende de configurar Gemini e OCI.
 6. Registre os problemas de instalação reproduzidos. Para cada um, dê a mensagem observada e a ação que resolveu.
 
 O caminho com chaves usa o backend local. Antes de descrever geração com o backend do Compose comum, confira quais variáveis as composições realmente passam ao contêiner.
 
 ## Diagrama e documentos
 
-Atualize [`arquitetura.excalidraw`](../system-diagram/arquitetura.excalidraw) e exporte [`arquitetura.png`](../system-diagram/arquitetura.png) da mesma fonte. Mostre `planeja` entre busca e `escreve`, com plano e chunks. Confira as setas e os números com os doze passos da arquitetura. A decisão após `revisa` exige foco coberto e todas as afirmações sustentadas. Remova a referência à v0 de um documento e uma saída. Mostre a recuperação periódica e a limpeza persistente da OCI. Confira os rótulos do contêiner e da VM com `backend/Dockerfile` e os arquivos de implantação. Identifique componentes planejados, como o deploy se T36 ainda não estiver no `master`.
+Atualize [`arquitetura.excalidraw`](../../system-diagram/arquitetura.excalidraw) e exporte [`arquitetura.png`](../../system-diagram/arquitetura.png) da mesma fonte. Mostre `planeja` entre busca e `escreve`, com plano e chunks. Confira as setas e os números com os doze passos da arquitetura. A decisão após `revisa` exige foco coberto e todas as afirmações sustentadas. Remova a referência à v0 de um documento e uma saída. Mostre a recuperação periódica e a limpeza persistente da OCI. Confira os rótulos do contêiner e da VM com `backend/Dockerfile` e os arquivos de implantação. Identifique componentes planejados, como o deploy se T36 ainda não estiver no `master`.
 
 Em `docs/ARCHITECTURE.md`, confira as tabelas "O sistema tem cinco partes", "Mapa do código" e "Decisões". Atualize o parágrafo de "Falhas e recuperação" após T32 e T33. Mantenha a seção "Testes" coerente com T31. Em `docs/generated/db-schema.md`, registre `course.generation_id` e `course_object_cleanup` conforme os modelos e migrations. Identifique o SVG como o ERD v5 de base e mantenha o texto alinhado com o esquema atual.
 
