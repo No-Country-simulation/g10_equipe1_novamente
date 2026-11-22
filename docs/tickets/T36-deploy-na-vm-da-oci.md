@@ -16,6 +16,7 @@ touches:
   - README.md
   - AGENTS.md
   - docs/ARCHITECTURE.md
+  - docs/tickets/README.md
   - docs/tickets/T36-deploy-na-vm-da-oci.md
 executor: [agente, pessoa]
 size: 3
@@ -77,12 +78,13 @@ Em [`deployment.md`](../../deployment.md), linke o guia e preserve a seção de 
 5. **Configuração e deploy.** Crie o `.env` com permissão `600`. Rode `bash scripts/deploy.sh` e `docker compose -f compose.yml -f compose.deploy.yml exec -T backend python scripts/verify_storage.py`. Confira o envio, a leitura, a listagem e a exclusão.
 6. **Demonstração.** Crie uma conta exclusiva pela tela "Criar conta". Acesse pelo IPv4 público, rode o quiz da LAI e verifique a leitura e a exclusão do curso.
 7. **Atualização.** Escolha uma janela sem geração ativa. Rode `bash scripts/deploy.sh` e confira a rota pública de saúde. A migração altera o banco antes de subir o backend novo. Preserve o volume `app-db-data`.
-8. **Conclusão.** Execute a verificação manual, registre o aceite e abra o PR de conclusão com os estados comprovados em [Implantação](../ARCHITECTURE.md#implantação). Corrija o guia se algum passo mudou.
+8. **Conclusão.** Execute a verificação manual e registre o aceite. No PR de conclusão, troque `A construir` por `Existe` na linha "Deploy em VM `VM.Standard.A2.Flex` (ARM) com Docker Compose" de [Decisões](../ARCHITECTURE.md#decisões). Em [Implantação](../ARCHITECTURE.md#implantação), atualize o parágrafo "A Parte 2 do T36 prevê" com o que você fez e verificou na VM. Corrija o guia se algum passo mudou.
 
 ### Campos do .env da VM
 
 | Variável | Valor |
 | --- | --- |
+| `COMPOSE_FILE` | `compose.yml:compose.deploy.yml` |
 | `PROJECT_NAME` | `NovaMente` |
 | `SECRET_KEY` | Valor gerado com `openssl rand -hex 32` |
 | `POSTGRES_PASSWORD` | Outro valor gerado com `openssl rand -hex 32` para volume novo. Preserve a senha de um volume existente. |

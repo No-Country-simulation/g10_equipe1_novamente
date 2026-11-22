@@ -41,6 +41,7 @@ Use um diretório dedicado e mantenha seu caminho nas atualizações para preser
 Se o `.env` ainda não existir, crie com `install -m 600 /dev/null .env`. Troque os valores entre `< >` pelos valores da equipe. Rode `openssl rand -hex 32` uma vez por segredo novo. Preserve a senha do PostgreSQL se o volume já existir. O Compose monta `DATABASE_URL` com essa senha e o host `db`.
 
 ```dotenv
+COMPOSE_FILE=compose.yml:compose.deploy.yml
 PROJECT_NAME=NovaMente
 SECRET_KEY=<segredo-gerado>
 POSTGRES_PASSWORD=<senha-do-postgres>
@@ -50,6 +51,8 @@ OCI_AUTH=instance_principal
 OCI_BUCKET=<bucket-privado>
 OCI_NAMESPACE=<namespace>
 ```
+
+Na VM, `COMPOSE_FILE` faz os comandos `docker compose` sem `-f` usarem só os arquivos de deploy.
 
 Use um projeto Gemini exclusivo da demonstração, no plano gratuito e sem faturamento ativado. Com uma conta com acesso ao Docker, rode os comandos abaixo na ordem. Se um comando falhar, pare e corrija a causa.
 
@@ -80,7 +83,7 @@ Escolha uma janela sem geração ativa. Rode `bash scripts/deploy.sh` e confira 
 
 Em uma janela combinada com a equipe, reinicie a VM. Confirme de fora que a rota de saúde responde novamente. Na VM, confira que `stat -c %a .env` retorna `600`.
 
-Registre os resultados e a estimativa de custo no [aceite do T36](docs/tickets/T36-deploy-na-vm-da-oci.md#verificação-do-aceite). Abra o PR de conclusão com os estados comprovados em [Implantação](docs/ARCHITECTURE.md#implantação).
+Registre os resultados e a estimativa de custo no [aceite do T36](docs/tickets/T36-deploy-na-vm-da-oci.md#verificação-do-aceite). No PR de conclusão, troque `A construir` por `Existe` na linha "Deploy em VM `VM.Standard.A2.Flex` (ARM) com Docker Compose" de [Decisões](docs/ARCHITECTURE.md#decisões). Em [Implantação](docs/ARCHITECTURE.md#implantação), atualize o parágrafo "A Parte 2 do T36 prevê" com o que você fez e verificou na VM.
 
 ## Diagnostique uma falha
 
