@@ -308,6 +308,7 @@ def test_two_temporary_errors_then_success(
     [
         (429, "37s", 37.0),
         (429, "37.5s", 37.5),
+        (429, "60s", 60.0),
         (429, None, 60.0),
         (429, "invalido", 60.0),
         (503, None, 1.0),
@@ -328,6 +329,50 @@ def test_temporary_error_then_success(
 
     assert models.call_times == [0.0, wait]
     assert configured == [wait]
+
+
+def test_generation_retries_after_short_rate_limit_delay(
+    monkeypatch: pytest.MonkeyPatch, configured: list[float]
+) -> None:
+    models = use(
+        monkeypatch,
+        api_error(429, retry_delay="37s"),
+        text_response('{"title": "T", "items": ["a"]}'),
+    )
+
+    answer = llm.generate_structured(
+        system_instruction="s", prompt="p", response_model=Answer
+    )
+
+    assert answer == Answer(title="T", items=["a"])
+    assert models.call_times == [0.0, 37.0]
+    assert configured == [37.0]
+
+
+@pytest.mark.parametrize("kind", ["embeddings", "text"])
+@pytest.mark.parametrize("retry_delay", ["60.001s", "17321s"])
+def test_long_rate_limit_delay_raises_without_waiting(
+    monkeypatch: pytest.MonkeyPatch,
+    configured: list[float],
+    kind: str,
+    retry_delay: str,
+) -> None:
+    models = use(monkeypatch, api_error(429, retry_delay=retry_delay))
+
+    with pytest.raises(llm.LLMRateLimitError) as raised:
+        if kind == "embeddings":
+            llm.embed_texts([SECRET_TEXT], task="document")
+        else:
+            llm.generate_structured(
+                system_instruction="s", prompt=SECRET_TEXT, response_model=Answer
+            )
+
+    assert str(raised.value) == (
+        "A API Gemini recusou o pedido por limite de uso (429). "
+        "Tente de novo mais tarde."
+    )
+    assert len(models.calls) == 1
+    assert configured == []
 
 
 def test_three_rate_limit_errors_raise_llm_error(

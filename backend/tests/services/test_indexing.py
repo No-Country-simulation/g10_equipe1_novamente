@@ -147,6 +147,12 @@ def test_index_and_retry(
             "llm",
             "Não foi possível indexar o documento guia.md: o modelo de embeddings falhou.",
         ),
+        (
+            "rate_limit",
+            "Não foi possível indexar o documento guia.md. "
+            "A API Gemini recusou o pedido por limite de uso (429). "
+            "Tente de novo mais tarde.",
+        ),
         ("other", "Não foi possível indexar o documento guia.md."),
         ("empty", "guia.md: O arquivo não tem texto."),
     ],
@@ -182,13 +188,17 @@ def test_failures(
         )
     else:
         exc = {
-            "key": llm.LLMNotConfiguredError,
-            "llm": llm.LLMError,
-            "other": RuntimeError,
+            "key": llm.LLMNotConfiguredError("segredo"),
+            "llm": llm.LLMError("segredo"),
+            "rate_limit": llm.LLMRateLimitError(
+                "A API Gemini recusou o pedido por limite de uso (429). "
+                "Tente de novo mais tarde."
+            ),
+            "other": RuntimeError("segredo"),
         }[failure]
 
         def fail(*_args, **_kwargs):
-            raise exc("segredo")
+            raise exc
 
         monkeypatch.setattr(llm, "embed_texts", fail)
     with pytest.raises(IndexingError) as raised:

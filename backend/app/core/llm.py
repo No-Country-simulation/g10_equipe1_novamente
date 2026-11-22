@@ -72,6 +72,9 @@ class LLMError(Exception): ...
 class LLMNotConfiguredError(LLMError): ...
 
 
+class LLMRateLimitError(LLMError): ...
+
+
 class LLMInvalidResponseError(LLMError): ...
 
 
@@ -128,16 +131,21 @@ def _call_api[R](
         try:
             return call()
         except errors.APIError as error:
-            failure = f"A API Gemini respondeu {error.code} {error.status}."
+            failure: LLMError = LLMError(
+                f"A API Gemini respondeu {error.code} {error.status}."
+            )
             if error.code == 429:
-                failure = (
-                    "A API Gemini recusou o pedido por limite de uso (429). "
-                    "Tente de novo mais tarde."
-                )
-                if rate_limit_retries == _MAX_RATE_LIMIT_RETRIES:
+                delay = _rate_limit_delay(error)
+                if (
+                    delay > _WINDOW_SECONDS
+                    or rate_limit_retries == _MAX_RATE_LIMIT_RETRIES
+                ):
+                    failure = LLMRateLimitError(
+                        "A API Gemini recusou o pedido por limite de uso (429). "
+                        "Tente de novo mais tarde."
+                    )
                     break
                 rate_limit_retries += 1
-                delay = _rate_limit_delay(error)
             elif error.code == 503:
                 next_delay = next(unavailable_delays, None)
                 if next_delay is None:
@@ -147,10 +155,12 @@ def _call_api[R](
                 break
             reason = f"HTTP {error.code}"
         except Exception as error:
-            failure = f"A chamada à API Gemini falhou: {type(error).__name__}."
+            failure = LLMError(
+                f"A chamada à API Gemini falhou: {type(error).__name__}."
+            )
             break
         _wait(limiter.kind, reason, delay)
-    raise LLMError(failure) from None
+    raise failure from None
 
 
 def _embedding_request(

@@ -141,6 +141,8 @@ def index_document(
             message = f"{name}: {exc.message}"
         elif isinstance(exc, llm.LLMNotConfiguredError):
             message = f"Não foi possível indexar o documento {name}: a chave do Gemini não está configurada."
+        elif isinstance(exc, llm.LLMRateLimitError):
+            message = f"Não foi possível indexar o documento {name}. {exc}"
         elif isinstance(exc, llm.LLMError):
             message = f"Não foi possível indexar o documento {name}: o modelo de embeddings falhou."
         else:
