@@ -1,4 +1,4 @@
-FROM oven/bun:1 AS frontend-build
+FROM --platform=$BUILDPLATFORM oven/bun:1 AS frontend-build
 
 WORKDIR /app
 
