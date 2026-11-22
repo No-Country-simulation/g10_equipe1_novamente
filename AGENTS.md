@@ -110,7 +110,7 @@ Tickets escritos das ondas 5 a 10:
 | [`T31`](docs/tickets/completed/T31-teste-no-navegador.md) | Teste no navegador da criação à leitura do conteúdo gerado |
 | [`T41`](docs/tickets/completed/T41-casos-de-avaliacao-e-primeira-medicao.md) | Casos de avaliação sobre os documentos da demonstração e primeira medição |
 | [`T42`](docs/tickets/completed/T42-revisor-sem-alternativas-erradas.md) | Revisor sem as alternativas erradas do quiz |
-| [`T35`](docs/tickets/T35-readme-diagrama-e-guia-de-instalacao.md) | README, diagrama e guia de instalação |
+| [`T35`](docs/tickets/completed/T35-readme-diagrama-e-guia-de-instalacao.md) | README, diagrama e guia de instalação |
 
 T36 ainda não foi escrito e está na [tabela de ondas](docs/tickets/README.md#ondas).
 

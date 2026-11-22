@@ -26,17 +26,17 @@ size: 3
 
 # T35 - Reescreva o README, atualize o diagrama e escreva o guia de instalação
 
-O README e o guia da raiz descrevem o template ou uma proposta anterior. O checklist em [`visao-e-publico.md`](../product-specs/visao-e-publico.md) pede documentação com diagrama. T29 entrega `planeja`, T31 entrega o teste sem credenciais, T32 e T33 fecham o ciclo de vida dos cursos e T42 corrige o revisor do quiz.
+O README e o guia da raiz descrevem o template ou uma proposta anterior. O checklist em [`visao-e-publico.md`](../../product-specs/visao-e-publico.md) pede documentação com diagrama. T29 entrega `planeja`, T31 entrega o teste sem credenciais, T32 e T33 fecham o ciclo de vida dos cursos e T42 corrige o revisor do quiz.
 
-Siga o [guia de escrita](../WRITING.md). Use o código e os [documentos do produto](../product-specs/index.md) que estiverem no `master` quando executar o ticket. O escopo é documentação. Se o guia revelar um defeito no produto, registre-o no PR.
+Siga o [guia de escrita](../WRITING.md). Use o código e os [documentos do produto](../../product-specs/index.md) que estiverem no `master` quando executar o ticket. O escopo é documentação. Se o guia revelar um defeito no produto, registre-o no PR.
 
 ## README
 
 Escreva para quem vai avaliar ou rodar o NovaMente pela primeira vez. Inclua:
 
 1. O problema e o que a pessoa escolhe ao criar um curso. Cite os três formatos e a regra de publicação com apoio nos documentos.
-2. O PNG e um resumo das cinco partes de [`ARCHITECTURE.md`](../ARCHITECTURE.md). Linke os doze passos da geração. Distinga o que já roda do deploy planejado.
-3. Os cenários da demonstração e um trecho identificado do pacote JSON descrito na [especificação do pacote](../product-specs/pacote-json-e-armazenamento.md). Linke a especificação e o arquivo de fontes entregue por T13. O pacote publicado na OCI tem estrutura diferente da resposta HTTP do curso.
+2. O PNG e um resumo das cinco partes de [`ARCHITECTURE.md`](../../ARCHITECTURE.md). Linke os doze passos da geração. Distinga o que já roda do deploy planejado.
+3. Os cenários da demonstração e um trecho identificado do pacote JSON descrito na [especificação do pacote](../../product-specs/pacote-json-e-armazenamento.md). Linke a especificação e o arquivo de fontes entregue por T13. O pacote publicado na OCI tem estrutura diferente da resposta HTTP do curso.
 4. O caminho para rodar localmente e um link para `development.md`. Cite as tecnologias a partir de `backend/pyproject.toml`, `frontend/package.json` e `compose.yml`. Se incluir versões, indique se vêm do lockfile, de uma faixa de dependência ou de uma tag de imagem.
 5. Links para a arquitetura, as especificações, os tickets e `AGENTS.md`. Preserve a atribuição da equipe e linke `LICENSE`.
 
@@ -63,8 +63,15 @@ Nos arquivos de produto listados em `touches`, atualize estados e referências o
 
 ## Critérios de aceite
 
-- [ ] O README descreve o produto do `master`, mostra o PNG e aponta para o JSON real da demonstração.
-- [ ] Os dois arquivos do diagrama correspondem. O PNG está legível no README renderizado.
-- [ ] Os estados e os links novos batem com o código e os arquivos no branch do PR.
-- [ ] Em um clone do branch do PR, siga só o guia. Sem credenciais, o cenário de T31 chega ao leitor pelo Compose de teste. Com credenciais de desenvolvimento, crie, leia e exclua um curso pela aplicação comum e confirme a limpeza da OCI. Se faltar acesso externo, registre a etapa pendente para a revisão.
-- [ ] O PR relata o clone usado, o resultado de cada caminho e as correções feitas no guia. Os hooks passam. Mire menos de 400 linhas escritas à mão. O diff serializado do Excalidraw é revisto pelo PNG.
+- [x] O README descreve o produto do `master`, mostra o PNG e aponta para o JSON real da demonstração.
+- [x] Os dois arquivos do diagrama correspondem. O PNG está legível no README renderizado.
+- [x] Os estados e os links novos batem com o código e os arquivos no branch do PR.
+- [x] Em um clone do branch do PR, siga só o guia. Sem credenciais, o cenário de T31 chega ao leitor pelo Compose de teste. Com credenciais de desenvolvimento, crie, leia e exclua um curso pela aplicação comum e confirme a limpeza da OCI. Se faltar acesso externo, registre a etapa pendente para a revisão.
+- [x] O PR relata o clone usado, o resultado de cada caminho e as correções feitas no guia. Os hooks passam. Mire menos de 400 linhas escritas à mão. O diff serializado do Excalidraw é revisto pelo PNG.
+
+## Verificação do aceite
+
+- PR revisado: [#51](https://github.com/No-Country-simulation/g10_equipe1_novamente/pull/51), integrado no commit `e1e6657`.
+- CI do PR: todos os checks obrigatórios passaram.
+- Revisão automática sobre o commit `113c3d4`: sete achados, corrigidos no commit `e14ad86` após o rebase sobre `d2e588c`. O guia local descreve o Compose atual. O exemplo de pacote sem origem registrada saiu. `escopo-do-mvp.md` voltou aos valores "Nenhum" e aos estados "Existe" e "A construir". A tabela de decisões de deploy voltou com estado "A construir". Os comandos do guia ficaram um por bloco.
+- Divergência registrada para o T36: a VM escolhida, `VM.Standard.A2.Flex`, fica fora do Always Free.
