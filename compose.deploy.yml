@@ -3,6 +3,9 @@ services:
     restart: always
 
   backend:
+    image: gru.ocir.io/grb8lprt42cf/novamente/backend:${BACKEND_IMAGE_TAG:?Versao nao definida}
+    build: !reset null
+    command: ["fastapi", "run", "--workers", "1"]
     restart: always
     ports:
-      - "80:8000"
+      - "127.0.0.1:80:8000"
