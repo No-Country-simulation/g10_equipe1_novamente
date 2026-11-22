@@ -1,8 +1,6 @@
 # Fidelidade e qualidade
 
-O produto só publica um conteúdo depois de conferir cada afirmação técnica contra o documento. Um conteúdo reprovado não aparece para a pessoa.
-
-Estado: a construir.
+O produto só publica um conteúdo depois de conferir cada afirmação técnica contra o documento. Se a geração reprova, a pessoa vê o motivo da falha.
 
 ## O que a pessoa vê em um conteúdo publicado
 

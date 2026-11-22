@@ -1,137 +1,158 @@
-# FastAPI Project - Development
+# Rode o NovaMente localmente
 
-## Local Development
+## 1. Instale as dependências
 
-For local development, run PostgreSQL with Docker Compose, and run the FastAPI and Vite development servers locally.
+Você precisa de Python 3.14, conforme [`.python-version`](.python-version), Bun 1.3.12, conforme o [workflow Playwright](.github/workflows/playwright.yml), `uv` e Docker com o plugin Compose. Confira com `python3 --version`, `bun --version`, `uv --version` e `docker compose version`. O `uv` pode instalar o Python 3.14 automaticamente.
 
-Create the local env files from the examples:
+```bash
+git clone https://github.com/No-Country-simulation/g10_equipe1_novamente.git
+```
+
+```bash
+cd g10_equipe1_novamente
+```
+
+```bash
+(cd backend && uv sync --locked)
+```
+
+```bash
+bun ci
+```
+
+## 2. Configure o ambiente
+
+Na raiz do clone, crie os arquivos usados pelo backend e pelo frontend.
 
 ```bash
 cp .env.example .env
+```
+
+```bash
 cp frontend/.env.example frontend/.env
 ```
 
-Start the supporting services:
+| Variáveis | Configure assim |
+| --- | --- |
+| `FASTAPI_ENV`, `PROJECT_NAME` | Mantenha `development`. Use `NovaMente` como nome da API. |
+| `SECRET_KEY`, `POSTGRES_PASSWORD`, `DATABASE_URL` | Gere uma chave local para assinar os tokens com `openssl rand -hex 32`. Escolha a senha do banco antes do primeiro start do Compose. A URL de exemplo usa essa senha. Guarde esses valores no `.env` local. |
+| `VITE_API_URL`, `FRONTEND_HOST` | O frontend aponta para `http://localhost:8000`. Se mudar a origem padrão do frontend, `http://localhost:5173`, ajuste `FRONTEND_HOST` no `.env` da raiz. |
+| `GEMINI_API_KEY`, `GEMINI_GENERATION_MODEL` | Para a geração real, informe a chave e retire o comentário da linha do modelo de texto. O modelo de embeddings já tem valor padrão. Ajuste as três variáveis de limite se a cota da sua conta exigir. [Modelos de IA](docs/ARCHITECTURE.md#modelos-de-ia). |
+| `OCI_BUCKET`, `OCI_NAMESPACE`, `OCI_AUTH`, `OCI_CONFIG_FILE`, `OCI_CONFIG_PROFILE` | Para a geração real, informe o nome do bucket privado de desenvolvimento e o namespace. Use `api_key` e aponte para o arquivo de configuração e o perfil da OCI. O padrão é `~/.oci/config`, perfil `DEFAULT`. Guarde a API signing key fora do repositório. |
+
+Use apenas documentos públicos ou fictícios com o Gemini. Sem as credenciais, o backend padrão sobe e você pode criar uma conta. A geração real precisa do Gemini e do OCI.
+
+O [Compose](compose.yml) repassa as variáveis `GEMINI_*` e `OCI_*` ao backend. No desenvolvimento, o [`compose.override.yml`](compose.override.yml) monta `~/.oci` do host em `/root/.oci` no contêiner, em modo somente leitura. Com `OCI_AUTH=api_key`, guarde a chave em `~/.oci/` e use `key_file=~/.oci/minha-chave.pem` em `~/.oci/config`. Um caminho específico do host, como `/Users/...`, fica fora dessa montagem. O passo 3 usa o backend local.
+
+Para conferir o acesso ao bucket, execute em `backend/`. As operações `put`, `get`, `list` e `delete` devem retornar `ok`.
 
 ```bash
-docker compose up -d db
+uv run python scripts/verify_storage.py
 ```
 
-Then, from the `backend` directory, install the dependencies and prepare the database:
+## 3. Suba o banco, a API e o frontend
+
+Da raiz, suba o PostgreSQL com pgvector e espere o healthcheck.
 
 ```bash
-uv sync
+docker compose up -d --wait db
+```
+
+Se a porta 5432 já atende um PostgreSQL de desenvolvimento com pgvector, crie um banco separado nesse servidor. Se o servidor é o Compose de outro checkout do NovaMente, rode no checkout que subiu o serviço:
+
+```bash
+docker compose exec db createdb -U postgres novamente_dev
+```
+
+Aponte `DATABASE_URL` no clone novo para `postgresql://postgres:SENHA_DO_SERVIDOR@localhost:5432/novamente_dev`. Adapte usuário, host e porta ao servidor escolhido. Rode as migrations e inicie a API em `backend/`.
+
+```bash
 uv run bash scripts/prestart.sh
 ```
-
-Start the FastAPI development server:
 
 ```bash
 uv run fastapi dev
 ```
 
-In another terminal, from the project root, install the frontend dependencies and start the Vite development server:
+Em outro terminal, inicie o frontend na raiz.
 
 ```bash
-bun install
 bun run dev
 ```
 
-Now you can open these URLs:
+Abra o [frontend](http://localhost:5173), a [API em `/api/v1`](http://localhost:8000/api/v1/utils/health-check/) ou o [Swagger](http://localhost:8000/docs).
 
-Frontend development server: <http://localhost:5173>
+## 4. Crie, leia e exclua um curso
 
-Backend API: <http://localhost:8000>
+1. Abra o frontend, clique em "Criar conta" e entre com a conta nova.
+2. Em "Novo curso", anexe [`lei-de-acesso-a-informacao.md`](examples/sources/lei-de-acesso-a-informacao.md). Escolha o título "Receber pedidos de informação e encaminhar recursos", o setor "Geral", o nível "Técnico básico" e o formato "Quiz". Clique em "Criar curso".
+3. Na lista "Cursos", acompanhe o estado até "Pronto" e abra o curso. Com uma única saída, o leitor aparece na página do curso. Responda a uma pergunta para ver a justificativa e copie o UUID da URL.
+4. Em "Resumo do curso", clique em "Excluir curso" e confirme. O curso sai da lista. No console do Object Storage, abra o bucket de desenvolvimento e busque pelo prefixo `courses/{course_id}/`, com o UUID que você copiou. A limpeza roda em segundo plano a cada 30 segundos. Atualize a lista até o prefixo ficar vazio.
 
-Automatic interactive API documentation with Swagger UI: <http://localhost:8000/docs>
+## 5. Rode os testes
 
-The frontend development server uses the backend at `http://localhost:8000`, as configured in `frontend/.env` (copied from `frontend/.env.example`).
-
-### Frontend Served by FastAPI
-
-Build the frontend from the `frontend` directory:
+Da raiz, rode os hooks para os commits do branch. Em um ticket de backend, teste contra o banco de desenvolvimento. Em um ticket de frontend, rode lint e build. Veja o [fluxo de tickets](docs/tickets/README.md#verificações-antes-do-pr).
 
 ```bash
-bun run build
+uv run prek run --from-ref origin/master --to-ref HEAD
 ```
 
-The build is written to `backend/app/frontend` and served by FastAPI at <http://localhost:8000>. Rebuild the frontend after making frontend changes.
+```bash
+(cd backend && uv run bash scripts/tests-start.sh && uv run coverage report --fail-under=90)
+```
 
-## Full Stack with Docker Compose
+```bash
+(cd frontend && bun run lint && bun run build)
+```
 
-To run the backend and built frontend in Docker Compose, first create `.env` with `cp .env.example .env` if you have not already. Then run:
+Para validar a geração sem credenciais, use um clone de teste com os dois `.env` copiados dos exemplos. Reserve as portas do Compose. O ponto de entrada montado por `compose.playwright.yml` fornece as respostas controladas do Gemini e o armazenamento em memória. O restante usa o código do produto. Rode os comandos no mesmo shell, da raiz do clone.
+
+```bash
+export COMPOSE_FILE=compose.yml:compose.override.yml:compose.playwright.yml
+```
+
+```bash
+export COMPOSE_PROJECT_NAME=novamente-e2e
+```
+
+```bash
+docker compose build backend playwright
+```
 
 ```bash
 docker compose run --rm backend bash scripts/prestart.sh
-docker compose watch
 ```
 
-Now you can open these URLs:
-
-Application, with the frontend and API served by FastAPI: <http://localhost:8000>
-
-Automatic interactive API documentation with Swagger UI: <http://localhost:8000/docs>
-
-Adminer, database web administration: <http://localhost:8080>
-
-Traefik UI, to see how the routes are being handled by the proxy: <http://localhost:8090>
-
-Stop a locally running FastAPI server before starting the Compose backend because both use port `8000`.
-
-**Note**: The first time you start the stack, it might take a minute for all the services to be ready. To monitor it, use `docker compose logs`, or `docker compose logs backend` for the backend service.
-
-## Docker Compose Files and Environment Variables
-
-The main `compose.yml` file contains the configuration shared by the whole stack. Docker Compose loads it automatically.
-
-The `compose.override.yml` file adds local development settings, such as mounting the source code as a volume. Docker Compose also loads it automatically and applies it on top of `compose.yml`.
-
-The `compose.deploy.yml` file contains the deployment-specific settings, including HTTPS and automatic certificate handling. It is explicitly combined with `compose.yml` when deploying the application.
-
-The backend reads local settings from the `.env` file. Docker Compose also uses it for variable interpolation and passes the settings each container needs.
-
-After changing variables, make sure you restart the stack:
-
 ```bash
-docker compose watch
+docker compose up -d --wait backend
 ```
 
-## The `.env` File
-
-The tracked `.env.example` file contains local development defaults and placeholder passwords. Copy it to `.env`, which Git ignores, and change the values there. Never commit `.env`. Its hostnames use `localhost` for processes running on your machine. Docker Compose overrides hostnames such as the database with its Compose service name.
-
-Do not store deployment secrets in `.env`. Configure them as described in the [Docker Compose deployment guide](./deployment-docker-compose.md).
-
-## Pre-commit Hooks and Code Linting
-
-The project uses [prek](https://prek.j178.dev/), a modern alternative to [pre-commit](https://pre-commit.com/), for code linting and formatting.
-
-You can find a file `.pre-commit-config.yaml` with configurations at the root of the project.
-
-### Install `prek` to Run Automatically
-
-`prek` is already part of the dependencies of the project.
-
-From the project root, install the Git hook so that `prek` runs automatically before each commit:
-
 ```bash
-uv run prek install -f
+docker compose run --rm playwright bunx playwright test tests/generation.spec.ts
 ```
 
-The `-f` flag forces the installation, in case there was already a `pre-commit` hook previously installed.
+O teste abre os três leitores de um curso aprovado e confere a mensagem de um curso reprovado. Ao terminar, remova os contêineres desse projeto com `docker compose down`.
 
-Now whenever you try to commit, for example with:
+## Se a instalação parar
 
-```bash
-git commit
+| Mensagem observada | Como prosseguir |
+| --- | --- |
+| `Bind for 0.0.0.0:5432 failed: port is already allocated` | Para a aplicação local, use o banco separado do passo 3. No Playwright, os contêineres se comunicam pela rede do Compose. Use a sobreposição abaixo se a porta 5432 ou 8000 estiver ocupada. |
+| `E-mail ou senha incorretos` | Se houver dois backends na porta 8000, o navegador pode chamar o do Compose em vez do local. Aponte `VITE_API_URL` em `frontend/.env` para `http://127.0.0.1:8000` e reinicie o Vite. |
+| `Frontend directory '.../backend/app/frontend' does not exist` | No clone novo, o FastAPI avisa que ainda não há um build estático. Abra o frontend pelo Vite em `http://localhost:5173`. |
+
+Para deixar as portas 5432 e 8000 livres no host durante o Playwright, salve este arquivo como `/tmp/novamente-e2e-ports.yml` com o Docker Compose que suporta [`!reset`](https://docs.docker.com/reference/compose-file/merge/#reset-value).
+
+```yaml
+services:
+  db:
+    ports: !reset []
+  backend:
+    ports: !reset []
 ```
 
-`prek` will check and format the code you are about to commit. If it modifies any files, add those files to Git again before committing.
-
-### Run `prek` Manually
-
-You can also run `prek` manually on all files from the project root:
+Depois de definir `COMPOSE_FILE` no passo 5, acrescente o arquivo antes de rodar os comandos de Docker.
 
 ```bash
-uv run prek run --all-files
+export COMPOSE_FILE="$COMPOSE_FILE:/tmp/novamente-e2e-ports.yml"
 ```
