@@ -21,7 +21,7 @@ No MVP, a mesma pessoa envia o documento e estuda o conteúdo. O produto não se
 2. **Adaptação**: o mesmo documento vira conteúdos diferentes para públicos diferentes e setores diferentes.
 3. **Vários formatos**: tutorial, flashcards e quiz.
 4. **Rapidez**: do envio ao conteúdo pronto em minutos, com poucos cliques.
-5. **Custo zero**: só recursos gratuitos da OCI e do modelo.
+5. **Custo zero no briefing**: recursos gratuitos da OCI e do modelo. A equipe registrou [a exceção para o deploy opcional](escopo-do-mvp.md#restrições).
 
 ## O que a pessoa escolhe
 

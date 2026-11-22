@@ -27,7 +27,7 @@ Estes itens são diferenciais opcionais do briefing ou melhorias. A equipe só c
 
 | Item | Observação |
 | --- | --- |
-| Deploy em uma VM `VM.Standard.A2.Flex` (ARM) da OCI | Planejado no T36. Veja [Implantação](../ARCHITECTURE.md#implantação). |
+| Deploy na VM `VM.Standard.A2.Flex` (arm64) que a equipe já tem na OCI | Planejado no T36. Veja [Implantação](../ARCHITECTURE.md#implantação). |
 | Baixar o conteúdo em Markdown ou CSV para Anki | Diferencial do briefing. Gera o arquivo a partir do JSON publicado. |
 | Regenerar um conteúdo publicado | O esquema já define a ordem de publicação. |
 
@@ -64,16 +64,18 @@ Alguns documentos de design no Drive mostram várias dessas telas. A equipe usa 
 | Tamanho do arquivo | 5 MiB | `criar-curso.md` |
 | Tamanho do texto de um documento | 150 mil caracteres | `criar-curso.md` |
 | Tempo de geração | Minutos. A equipe mede e registra o valor real. | Briefing |
-| Custo | Zero | Briefing |
+| Custo | Zero no briefing, com exceção para o deploy opcional | Briefing e decisão abaixo |
 
 Os totais de usuários, cursos por usuário e chunks são estimativas de escala. A API limita os documentos, as saídas, o tamanho dos arquivos e o tamanho do texto.
 
 ## Restrições
 
-- Só recursos Always Free da OCI. O briefing exige.
+- O briefing exige recursos Always Free da OCI. A equipe registrou abaixo a exceção para o deploy opcional.
 - Plano gratuito para o modelo e para os embeddings.
 - No máximo duas escritas e duas revisões por geração.
 - Só documentos públicos ou fictícios, porque o plano gratuito do modelo pode usar os dados enviados.
 - Chaves e senhas fora do repositório.
 
-A equipe escolheu a VM existente `VM.Standard.A2.Flex`, que fica fora do Always Free. O T36 vai resolver a divergência com a regra do briefing. [Recursos Always Free da OCI](https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm#compute).
+No T36, a equipe usa a `VM.Standard.A2.Flex` (arm64) que já está em execução. Esse shape fica fora do Always Free. A Oracle cobra por OCPU-hora e GB-hora de memória. A pessoa que publicar registra a estimativa mensal com base na configuração e no preço aplicável no console. [Preços da OCI](https://www.oracle.com/cloud/price-list/).
+
+A `VM.Standard.A1.Flex` é a alternativa documentada para um futuro deploy dentro do Always Free, conforme a cota e a capacidade na região inicial da conta. [Recursos Always Free da OCI](https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm#compute).

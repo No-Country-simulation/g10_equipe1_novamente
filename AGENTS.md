@@ -112,7 +112,7 @@ Tickets escritos das ondas 5 a 10:
 | [`T42`](docs/tickets/completed/T42-revisor-sem-alternativas-erradas.md) | Revisor sem as alternativas erradas do quiz |
 | [`T35`](docs/tickets/completed/T35-readme-diagrama-e-guia-de-instalacao.md) | README, diagrama e guia de instalação |
 
-T36 ainda não foi escrito e está na [tabela de ondas](docs/tickets/README.md#ondas).
+O [T36](docs/tickets/T36-deploy-na-vm-da-oci.md) planeja o deploy na VM A2.Flex existente, com HTTPS e backup diário. O ticket termina com a verificação por uma pessoa na VM.
 
 ## Fora de `docs/`
 
