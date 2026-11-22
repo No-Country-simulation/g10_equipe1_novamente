@@ -1,11 +1,25 @@
+# Git
 .git
-**/.env*
+
+# Python
 **/__pycache__
 **/.venv
 backend/htmlcov
+
+# Frontend
 frontend/blob-report
 frontend/dist
 frontend/node_modules
 frontend/playwright-report
 frontend/test-results
 node_modules
+
+# Environment files
+**/.env
+**/.env.*
+
+# Credentials and private keys
+**/.oci
+**/.ssh
+**/*.pem
+**/*.key
