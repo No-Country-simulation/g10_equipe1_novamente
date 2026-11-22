@@ -76,6 +76,7 @@ def _extract_pdf_page(page: PageObject) -> str:
     lines: list[str] = []
     line: list[str] = []
     previous: _PdfTextRun | None = None
+    pending_line_break = False
     widths_by_font: dict[int, tuple[dict[str, float], float, float]] = {}
 
     def word_gap(run: _PdfTextRun, next_x: float) -> bool:
@@ -106,8 +107,9 @@ def _extract_pdf_page(page: PageObject) -> str:
         font: DictionaryObject | None,
         font_size: float,
     ) -> None:
-        nonlocal previous
-        # O pypdf pode sinalizar uma quebra entre blocos de texto na mesma linha.
+        nonlocal pending_line_break, previous
+        pending_line_break |= text.startswith(("\r", "\n"))
+        ends_line = text.endswith(("\r", "\n"))
         text = text.strip("\r\n")
         if not text:
             return
@@ -123,12 +125,14 @@ def _extract_pdf_page(page: PageObject) -> str:
         if previous is not None:
             height_reference = max(previous.height, height)
             gap = abs(y - previous.y)
-            same_line = (
-                direction == previous.direction and gap <= 0.25 * height_reference
-            )
+            # A geometria só intervém nas quebras emitidas pelo pypdf. A soma das
+            # larguras dos glifos ignora os ajustes de TJ dentro de uma palavra.
+            same_baseline = direction == previous.direction and gap <= 0.01
+            same_line = not pending_line_break or same_baseline
             if not text.strip(" \t"):
                 if same_line and not line[-1].endswith((" ", "\t")):
                     line.append(" ")
+                pending_line_break |= ends_line
                 return
             if not same_line:
                 lines.append("".join(line).strip(" \t"))
@@ -136,7 +140,8 @@ def _extract_pdf_page(page: PageObject) -> str:
                 if gap > 1.5 * height_reference:
                     lines.append("")
             elif (
-                not line[-1].endswith((" ", "\t"))
+                pending_line_break
+                and not line[-1].endswith((" ", "\t"))
                 and not text.startswith((" ", "\t"))
                 and word_gap(previous, x)
             ):
@@ -144,6 +149,7 @@ def _extract_pdf_page(page: PageObject) -> str:
         elif not text.strip(" \t"):
             return
         line.append(text)
+        pending_line_break = ends_line
         previous = _PdfTextRun(
             text, x, y, direction, height, abs(font_size) * hypot(a, b) / 1000, font
         )
