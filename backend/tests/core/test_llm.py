@@ -375,7 +375,7 @@ def test_long_rate_limit_delay_raises_without_waiting(
     assert configured == []
 
 
-def test_three_rate_limit_errors_raise_llm_error(
+def test_three_rate_limit_errors_raise_llm_rate_limit_error(
     monkeypatch: pytest.MonkeyPatch,
     configured: list[float],
     caplog: pytest.LogCaptureFixture,
@@ -383,7 +383,7 @@ def test_three_rate_limit_errors_raise_llm_error(
     caplog.set_level(logging.INFO, logger="app.core.llm")
     models = use(monkeypatch, api_error(429, retry_delay="37s"))
 
-    with pytest.raises(llm.LLMError) as raised:
+    with pytest.raises(llm.LLMRateLimitError) as raised:
         llm.embed_texts([SECRET_TEXT], task="query")
 
     assert str(raised.value) == (
