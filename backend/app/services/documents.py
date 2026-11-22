@@ -68,7 +68,12 @@ def _read_pdf(filename: str, data: bytes) -> str:
         reader = PdfReader(BytesIO(data))
         if reader.is_encrypted:
             raise ValueError("PDF protegido")
-        pages = [page.extract_text().replace(PAGE_BREAK, "\n") for page in reader.pages]
+        pages = [
+            page.extract_text(
+                extraction_mode="layout", layout_mode_strip_rotated=False
+            ).replace(PAGE_BREAK, "\n")
+            for page in reader.pages
+        ]
     except Exception:
         raise DocumentError(
             DocumentErrorCode.unreadable,

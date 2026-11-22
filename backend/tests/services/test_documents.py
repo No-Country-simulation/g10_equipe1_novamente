@@ -1,4 +1,5 @@
 import hashlib
+from pathlib import Path
 
 import pytest
 
@@ -201,10 +202,6 @@ def pdf_bytes(*texts: str, password: bool = False) -> bytes:
 
 
 def test_pdf_pages_and_metadata():
-    import hashlib
-
-    from app.services.documents import PAGE_BREAK, read_document, read_documents
-
     data = pdf_bytes("A", "", "C")
     doc = read_document("GUIA.PDF", data)
     assert doc.extension == "pdf"
@@ -212,11 +209,20 @@ def test_pdf_pages_and_metadata():
     assert doc.size_bytes == len(data)
     assert doc.sha256 == hashlib.sha256(data).hexdigest()
     assert doc.text == "A\f\fC"
-    assert PAGE_BREAK not in read_document("a.pdf", pdf_bytes("A")).text
+    sentence = "Uma linha de texto."
+    assert read_document("a.pdf", pdf_bytes(sentence)).text == sentence
     assert len(read_documents([("a.md", b"texto"), ("a.pdf", data)])) == 2
     with pytest.raises(DocumentError) as exc:
         read_documents([("a.pdf", data), ("b.pdf", data)])
     assert exc.value.code == DocumentErrorCode.duplicate
+
+
+def test_pdf_word_runs_follow_visual_lines() -> None:
+    path = Path(__file__).resolve().parents[1] / "fixtures" / "word-runs.pdf"
+
+    document = read_document(path.name, path.read_bytes())
+
+    assert document.text == "The cat sleeps.\n\nThe dog is awake."
 
 
 @pytest.mark.parametrize(
