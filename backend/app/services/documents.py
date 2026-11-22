@@ -4,9 +4,12 @@ from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from enum import StrEnum
 from io import BytesIO
+from math import hypot
 from pathlib import PurePosixPath
 
-from pypdf import PdfReader
+from pypdf import PageObject, PdfReader, mult
+from pypdf.generic import DictionaryObject
+from pypdf.generic._font import Font
 
 PAGE_BREAK = "\f"
 
@@ -58,6 +61,99 @@ def _read_markdown(filename: str, data: bytes) -> str:
         ) from None
 
 
+@dataclass(frozen=True, slots=True)
+class _PdfTextRun:
+    text: str
+    x: float
+    y: float
+    direction: tuple[bool, bool]
+    height: float
+    width_scale: float
+    font: DictionaryObject | None
+
+
+def _extract_pdf_page(page: PageObject) -> str:
+    lines: list[str] = []
+    line: list[str] = []
+    previous: _PdfTextRun | None = None
+    widths_by_font: dict[int, tuple[dict[str, float], float, float]] = {}
+
+    def word_gap(run: _PdfTextRun, next_x: float) -> bool:
+        font_key = id(run.font)
+        if font_key not in widths_by_font:
+            font = Font.from_font_resource(run.font or DictionaryObject())
+            # O visitante entrega Unicode. As larguras da fonte usam códigos de glifos.
+            widths = {}
+            for code, width in font.character_widths.items():
+                if len(code) == 1:
+                    char = code
+                    if isinstance(font.encoding, dict):
+                        char = font.encoding.get(ord(code), code)
+                    widths[font.character_map.get(char, char)] = width
+            widths_by_font[font_key] = (
+                widths,
+                font.character_widths["default"],
+                font.space_width,
+            )
+        widths, default_width, space_width = widths_by_font[font_key]
+        text_width = sum(widths.get(char, default_width) for char in run.text)
+        return next_x - run.x >= (text_width + space_width) * run.width_scale
+
+    def visit(
+        text: str,
+        cm: list[float],
+        tm: list[float],
+        font: DictionaryObject | None,
+        font_size: float,
+    ) -> None:
+        nonlocal previous
+        # O pypdf pode sinalizar uma quebra entre blocos de texto na mesma linha.
+        text = text.strip("\r\n")
+        if not text:
+            return
+        a, b, c, d, x, y = mult(tm, cm)
+        vertical = abs(b) > abs(a)
+        if vertical:
+            x, y = y, x
+        backwards = (b if vertical else a) < 0
+        if backwards:
+            x = -x
+        height = abs(font_size) * hypot(c, d)
+        direction = (vertical, backwards)
+        if previous is not None:
+            height_reference = max(previous.height, height)
+            gap = abs(y - previous.y)
+            same_line = (
+                direction == previous.direction and gap <= 0.25 * height_reference
+            )
+            if not text.strip(" \t"):
+                if same_line and not line[-1].endswith((" ", "\t")):
+                    line.append(" ")
+                return
+            if not same_line:
+                lines.append("".join(line).strip(" \t"))
+                line.clear()
+                if gap > 1.5 * height_reference:
+                    lines.append("")
+            elif (
+                not line[-1].endswith((" ", "\t"))
+                and not text.startswith((" ", "\t"))
+                and word_gap(previous, x)
+            ):
+                line.append(" ")
+        elif not text.strip(" \t"):
+            return
+        line.append(text)
+        previous = _PdfTextRun(
+            text, x, y, direction, height, abs(font_size) * hypot(a, b) / 1000, font
+        )
+
+    page.extract_text(visitor_text=visit)
+    if line:
+        lines.append("".join(line).strip(" \t"))
+    return "\n".join(lines)
+
+
 def _read_pdf(filename: str, data: bytes) -> str:
     # Diagnósticos do pypdf podem conter bytes do documento.
     logger = logging.getLogger("pypdf")
@@ -68,7 +164,9 @@ def _read_pdf(filename: str, data: bytes) -> str:
         reader = PdfReader(BytesIO(data))
         if reader.is_encrypted:
             raise ValueError("PDF protegido")
-        pages = [page.extract_text().replace(PAGE_BREAK, "\n") for page in reader.pages]
+        pages = [
+            _extract_pdf_page(page).replace(PAGE_BREAK, "\n") for page in reader.pages
+        ]
     except Exception:
         raise DocumentError(
             DocumentErrorCode.unreadable,
