@@ -16,9 +16,9 @@ size: 2
 
 ## Contexto
 
-A primeira medição de T41 achou um defeito em `revisa`. No caso `lai-pedido-erro` de [`examples/evals/lei-de-acesso-a-informacao.json`](../../examples/evals/lei-de-acesso-a-informacao.json), a quarta pergunta marca "30 dias" como resposta, e a justificativa repete esse prazo. O art. 11, § 1º, da LAI fixa o prazo inicial em até 20 dias quando o acesso imediato não é possível.
+A primeira medição de T41 achou um defeito em `revisa`. No caso `lai-pedido-erro` de [`examples/evals/lei-de-acesso-a-informacao.json`](../../../examples/evals/lei-de-acesso-a-informacao.json), a quarta pergunta marca "30 dias" como resposta, e a justificativa repete esse prazo. O art. 11, § 1º, da LAI fixa o prazo inicial em até 20 dias quando o acesso imediato não é possível.
 
-O revisor reprovou o quiz por marcar os 20 dias como sem apoio, embora o trecho 14 sustente esse prazo. Deixou passar os 30 dias da resposta marcada e da justificativa. Veja o [relatório da LAI no PR de T41](https://github.com/No-Country-simulation/g10_equipe1_novamente/pull/49) e a seção "Medições" de [`fidelidade-e-qualidade.md`](../product-specs/fidelidade-e-qualidade.md).
+O revisor reprovou o quiz por marcar os 20 dias como sem apoio, embora o trecho 14 sustente esse prazo. Deixou passar os 30 dias da resposta marcada e da justificativa. Veja o [relatório da LAI no PR de T41](https://github.com/No-Country-simulation/g10_equipe1_novamente/pull/49) e a seção "Medições" de [`fidelidade-e-qualidade.md`](../../product-specs/fidelidade-e-qualidade.md).
 
 ### O que o revisor recebe hoje
 
@@ -26,7 +26,7 @@ T40 manda excluir alternativas erradas da lista de afirmações. A instrução e
 
 No caso da LAI, o modelo vê os 20 dias na alternativa de índice 3 e também no trecho de índice 14 do documento. O relatório não permite saber qual foi a origem da afirmação. O prompt já pede as afirmações do material. T42 torna explícito que os trechos servem de evidência e retira as opções não marcadas do material.
 
-Leia antes: [T40](completed/T40-regras-de-fidelidade.md), seção "O que o prompt de `revisa` diz", [T21](completed/T21-agente-revisa.md), seção "O que o prompt diz", e [`examples/evals/README.md`](../../examples/evals/README.md).
+Leia antes: [T40](T40-regras-de-fidelidade.md), seção "O que o prompt de `revisa` diz", [T21](T21-agente-revisa.md), seção "O que o prompt diz", e [`examples/evals/README.md`](../../../examples/evals/README.md).
 
 ## Escopo
 
@@ -100,7 +100,7 @@ Não edite os tickets em `docs/tickets/completed/`.
 
 ## Verificação com a API real
 
-1. Na raiz, prepare o banco com `bash scripts/worktree-setup.sh T42`. Configure as variáveis `GEMINI_*` no `.env` deste worktree conforme o [guia da avaliação](../../examples/evals/README.md), com os mesmos modelos de T41. Mantenha as chaves fora do PR.
+1. Na raiz, prepare o banco com `bash scripts/worktree-setup.sh T42`. Configure as variáveis `GEMINI_*` no `.env` deste worktree conforme o [guia da avaliação](../../../examples/evals/README.md), com os mesmos modelos de T41. Mantenha as chaves fora do PR.
 2. Em `backend/`, depois dos testes verdes, rode a LAI primeiro.
 
     ```bash
@@ -126,14 +126,14 @@ Uma rodada usa 219 embeddings de indexação, 36 de busca e até 40 chamadas de 
 
 ## Critérios de aceite
 
-- [ ] O JSON após `Material:\n` usa a projeção do contrato, com os cinco itens em ordem. O teste confirma que os trechos continuam disponíveis, inclusive se contêm o texto de uma alternativa errada.
-- [ ] O tutorial e os flashcards chegam ao revisor como antes.
-- [ ] `PROMPT_VERSION` vale `revisa-v3`, e `generation_graph.PROMPT_VERSION` vale `planeja-v1+escreve-v4+revisa-v3`.
-- [ ] Na rodada real, `lai-pedido-erro` tem o prazo inicial de 30 dias entre as afirmações sem apoio. Em ambos os casos da LAI, essa coluna não lista fatos que aparecem só nas alternativas erradas ou nos trechos.
-- [ ] Os cinco casos fiéis seguem sem alarme falso e os outros quatro erros plantados seguem marcados. Se houver regressão, registre o caso e a evidência no PR e em "Medições" para decisão da equipe.
-- [ ] "Medições" registra a nova rodada com `planeja-v1+escreve-v4+revisa-v3`, a data, os modelos e os erros de execução.
-- [ ] Nenhum teste chama o Gemini.
-- [ ] Os hooks e os testes passam, com cobertura de 90% ou mais.
+- [x] O JSON após `Material:\n` usa a projeção do contrato, com os cinco itens em ordem. O teste confirma que os trechos continuam disponíveis, inclusive se contêm o texto de uma alternativa errada.
+- [x] O tutorial e os flashcards chegam ao revisor como antes.
+- [x] `PROMPT_VERSION` vale `revisa-v3`, e `generation_graph.PROMPT_VERSION` vale `planeja-v1+escreve-v4+revisa-v3`.
+- [x] Na rodada real, `lai-pedido-erro` tem o prazo inicial de 30 dias entre as afirmações sem apoio. Em ambos os casos da LAI, essa coluna não lista fatos que aparecem só nas alternativas erradas ou nos trechos.
+- [x] Os cinco casos fiéis seguem sem alarme falso e os outros quatro erros plantados seguem marcados. Se houver regressão, registre o caso e a evidência no PR e em "Medições" para decisão da equipe.
+- [x] "Medições" registra a nova rodada com `planeja-v1+escreve-v4+revisa-v3`, a data, os modelos e os erros de execução.
+- [x] Nenhum teste chama o Gemini.
+- [x] Os hooks e os testes passam, com cobertura de 90% ou mais.
 
 ## Cenários de teste
 
@@ -146,3 +146,10 @@ Use `generate_structured` trocada em `backend/tests/services/test_reviewer.py`.
 5. Preserve os testes de T21 e T40 para a resolução de `chunk_number`, os IDs inválidos, as precondições e a decisão de publicar.
 
 Em `backend/tests/services/test_generation_graph.py`, confira a versão composta.
+
+## Verificação do aceite
+
+- PR revisado: [#50](https://github.com/No-Country-simulation/g10_equipe1_novamente/pull/50), integrado no commit `8e78d9b`.
+- CI do PR: todos os checks obrigatórios passaram, com escopo dentro de `touches`.
+- Revisão automática sobre o commit `c4f5a3d`: dois achados em `fidelidade-e-qualidade.md`, corrigidos no commit `1908b7d`. A rodada cita o commit `8c6f019`, que está no `master`, e a linha "Geração" registra a segunda tentativa dos flashcards do Pix Agendado.
+- Medição com `revisa-v3`: busca com 20 de 20 trechos esperados, revisor com 5 de 5 erros plantados e 0 alarmes falsos em 5 casos fiéis, geração com 6 de 6 conteúdos aprovados e sem erros de execução. No quiz da LAI, o revisor marcou o prazo de 30 dias e não marcou mais a alternativa de 20 dias.
