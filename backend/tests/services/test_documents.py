@@ -1,5 +1,4 @@
 import hashlib
-from pathlib import Path
 
 import pytest
 
@@ -172,7 +171,7 @@ def test_read_documents_reports_invalid_file() -> None:
     assert raised.value.filename == "b.txt"
 
 
-def pdf_bytes(*texts: str, password: bool = False) -> bytes:
+def pdf_bytes(*texts: str, password: bool = False, raw_streams: bool = False) -> bytes:
     from io import BytesIO
 
     from pypdf import PdfWriter
@@ -192,7 +191,8 @@ def pdf_bytes(*texts: str, password: bool = False) -> bytes:
             {NameObject("/Font"): DictionaryObject({NameObject("/F1"): font})}
         )
         stream = DecodedStreamObject()
-        stream.set_data(f"BT /F1 12 Tf 20 100 Td ({text}) Tj ET".encode())
+        commands = text if raw_streams else f"BT /F1 12 Tf 20 100 Td ({text}) Tj ET"
+        stream.set_data(commands.encode())
         page[NameObject("/Contents")] = writer._add_object(stream)
     if password:
         writer.encrypt("senha")
@@ -217,12 +217,60 @@ def test_pdf_pages_and_metadata():
     assert exc.value.code == DocumentErrorCode.duplicate
 
 
-def test_pdf_word_runs_follow_visual_lines() -> None:
-    path = Path(__file__).resolve().parents[1] / "fixtures" / "word-runs.pdf"
+@pytest.mark.parametrize("explicit_spaces", [True, False])
+def test_pdf_word_runs_follow_visual_lines(explicit_spaces: bool) -> None:
+    # Cada palavra e cada espaço do PDF original têm seu próprio bloco de texto.
+    commands = "1 0 0 -1 0 200 cm\n"
+    space = " " if explicit_spaces else ""
+    for x, text in [
+        (20, "Th"),
+        (34, "e"),
+        (41, space),
+        (44.5, "cat"),
+        (61, space),
+        (64.5, "sleeps."),
+    ]:
+        if text:
+            commands += f"BT /F1 12 Tf 1 0 0 -1 0 0 Tm {x} -40 Td ({text}) Tj ET\n"
+    commands += "BT /F1 12 Tf 1 0 0 -1 0 0 Tm 20 -70 Td (The dog is awake.) Tj ET"
 
-    document = read_document(path.name, path.read_bytes())
+    document = read_document("guia.pdf", pdf_bytes(commands, raw_streams=True))
 
     assert document.text == "The cat sleeps.\n\nThe dog is awake."
+
+
+def test_pdf_two_columns_follow_content_stream_order() -> None:
+    commands = """\
+BT /F1 12 Tf 20 170 Td (Left first.) Tj 0 -14 Td (Left second.) Tj ET
+BT /F1 12 Tf 110 170 Td (Right first.) Tj 0 -14 Td (Right second.) Tj ET
+"""
+
+    document = read_document("guia.pdf", pdf_bytes(commands, raw_streams=True))
+
+    assert document.text == "Left first.\nLeft second.\nRight first.\nRight second."
+
+
+def test_pdf_single_column_preserves_paragraphs_without_padding() -> None:
+    commands = """\
+BT /F1 12 Tf 35 170 Td (First paragraph starts here.) Tj
+-15 -14 Td (It continues here.) Tj
+0 -28 Td (Second paragraph.) Tj ET
+"""
+
+    document = read_document("guia.pdf", pdf_bytes(commands, raw_streams=True))
+
+    assert document.text == (
+        "First paragraph starts here.\nIt continues here.\n\nSecond paragraph."
+    )
+
+
+def test_pdf_form_feed_inside_page_does_not_split_page() -> None:
+    first = r"BT /F1 12 Tf 20 100 Td (A\fB) Tj ET"
+    second = "BT /F1 12 Tf 20 100 Td (C) Tj ET"
+
+    document = read_document("guia.pdf", pdf_bytes(first, second, raw_streams=True))
+
+    assert document.text == "A\nB\fC"
 
 
 @pytest.mark.parametrize(
