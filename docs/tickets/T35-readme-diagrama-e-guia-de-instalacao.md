@@ -18,6 +18,8 @@ touches:
   - docs/product-specs/pacote-json-e-armazenamento.md
   - docs/product-specs/telas.md
   - AGENTS.md
+  - examples/README.md
+  - examples/lei-de-acesso-a-informacao.quiz.json
 executor: agente
 size: 3
 ---
