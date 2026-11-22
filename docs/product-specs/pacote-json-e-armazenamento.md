@@ -1,8 +1,6 @@
 # JSON de saída e armazenamento
 
-Cada conteúdo publicado tem um JSON com nomes de campo em inglês, entregue pela API e gravado no OCI Object Storage ao lado dos documentos originais.
-
-Estado: a construir.
+Cada conteúdo publicado tem um pacote JSON no OCI Object Storage. A API devolve o conteúdo e seus metadados dentro da resposta do curso.
 
 ## O produto usa nomes próprios, em inglês
 
@@ -29,7 +27,7 @@ A API é uma API REST com login. Um sistema externo que tenha um token usa as me
 | `citations` | Trechos citados, cada um com o texto e a similaridade |
 | `error_message` | Motivo da falha, quando o estado é `failed` |
 
-O curso traz `audience_level`, o setor e a lista de documentos. Os nomes finais de cada campo seguem os schemas da API, gerados no OpenAPI do backend.
+Em `GET /api/v1/courses/{course_id}`, cada conteúdo fica em `contents`. A resposta do curso traz `audience_level`, `niche` como objeto e a lista `documents`. No pacote do OCI, `niche` é o slug e os dados se referem a um conteúdo.
 
 ## Como o exemplo do briefing se liga à resposta
 

@@ -2,8 +2,6 @@
 
 Uma pessoa autenticada preenche um formulário, anexa os documentos, escolhe as saídas e recebe um curso com um conteúdo por saída.
 
-Estado: a construir.
-
 ## O que a pessoa informa
 
 | Campo | Regra |
@@ -72,8 +70,6 @@ A tela não mostra um curso "Gerando" ou "Falhou" como produto pronto.
 | Geração parada por 10 minutos | Conteúdo "Falhou" | A geração foi interrompida. Tente novamente. |
 
 Quando o erro é de um documento, a mensagem vem depois do nome do arquivo: `guia.txt: Envie um arquivo .md ou PDF, ou digite o texto.`
-
-Os textos das mensagens são um ponto de partida. A equipe fecha a redação final.
 
 A validação acontece antes de gravar qualquer arquivo ou linha.
 

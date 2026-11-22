@@ -25,8 +25,8 @@ O NovaMente transforma um documento técnico em conteúdos de estudo fiéis a el
 
 ## Esquema do banco (gerado)
 
-- [`docs/generated/db-schema.md`](docs/generated/db-schema.md): as sete tabelas, o que cada uma guarda e as regras de integridade.
-- [`docs/generated/erd.svg`](docs/generated/erd.svg): diagrama entidade-relacionamento.
+- [`docs/generated/db-schema.md`](docs/generated/db-schema.md): as oito tabelas atuais, o que cada uma guarda e as regras de integridade.
+- [`docs/generated/erd.svg`](docs/generated/erd.svg): ERD v5 de base.
 
 Não edite estes arquivos para mudar o esquema. O código em `backend/app/models.py` define as tabelas.
 
@@ -116,4 +116,4 @@ T36 ainda não foi escrito e está na [tabela de ondas](docs/tickets/README.md#o
 
 ## Fora de `docs/`
 
-Use o código em `backend/` e `frontend/` e os documentos de `docs/` como fontes do projeto. Use também os arquivos em `examples/` quando o ticket os citar. Os arquivos `README.md`, `CONTRIBUTING.md`, `development.md` e `deployment.md` da raiz vêm do template ou estão velhos.
+Use o código em `backend/` e `frontend/` e os documentos de `docs/` como fontes do projeto. Use também os arquivos em `examples/` quando o ticket os citar. O [README](README.md) apresenta o produto e o [guia de instalação](development.md) mostra como rodar e testar em um clone novo. `CONTRIBUTING.md` e `deployment.md` ainda vêm do template ou estão desatualizados.

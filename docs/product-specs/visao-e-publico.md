@@ -15,8 +15,6 @@ Empresas e escolas de tecnologia produzem documentação técnica densa. Um mesm
 
 No MVP, a mesma pessoa envia o documento e estuda o conteúdo. O produto não separa os dois papéis.
 
-O README atual descreve outro público: pessoas neurodivergentes e em transição de carreira. A equipe decidiu reescrever o README a partir deste documento.
-
 ## O que o produto promete
 
 1. **Fidelidade**: o conteúdo reflete o documento enviado. O produto não publica um conteúdo que reprovou na revisão.

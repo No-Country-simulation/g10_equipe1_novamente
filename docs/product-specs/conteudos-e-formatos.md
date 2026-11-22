@@ -2,8 +2,6 @@
 
 Um curso tem um ou mais conteúdos. Cada conteúdo tem um formato, um foco e um resultado gerado a partir dos documentos do curso.
 
-Estado: a construir.
-
 ## Um curso é uma lista ordenada de conteúdos
 
 | Conceito | Significado | No esquema |
@@ -58,7 +56,7 @@ Perguntas de múltipla escolha com justificativa.
 
 Cada quiz tem 5 perguntas, com 4 opções cada. A justificativa explica a resposta com base no documento.
 
-Responder ao quiz na tela, com correção imediata, é um diferencial opcional do briefing. O produto não guarda as respostas.
+A pessoa responde ao quiz na tela e vê a correção e a justificativa na hora. O produto não guarda as respostas.
 
 ## O nível de público muda a linguagem e a profundidade
 

@@ -2,11 +2,11 @@
 
 O NovaMente guarda usuários, cursos, metadados de documentos, chunks com embeddings de 768 dimensões e citações em PostgreSQL 18 com pgvector. Os arquivos originais e o JSON gerado de cada conteúdo ficam no OCI Object Storage. O banco guarda a chave de cada objeto. O JSON publicado de cada conteúdo fica também em `course_content.content`, e a API lê o conteúdo dessa coluna.
 
-Este documento descreve a versão 5 do ERD. `backend/app/models.py` define as sete tabelas, e a migration de base fica em `backend/app/alembic/versions/`.
+O [diagrama `erd.svg`](erd.svg) mostra o ERD v5 de base. O esquema atual inclui `course.generation_id` e `course_object_cleanup`, definidos em [`models.py`](../../backend/app/models.py) e nas migrations [`13cda7f04a52`](../../backend/app/alembic/versions/13cda7f04a52_add_course_generation_id.py) e [`7cbad33f4a0e`](../../backend/app/alembic/versions/7cbad33f4a0e_add_course_object_cleanup.py).
 
-O diagrama está em [`erd.svg`](erd.svg). O fluxo que usa estas tabelas está em [`ARCHITECTURE.md`](../ARCHITECTURE.md).
+O fluxo que usa estas tabelas está em [`ARCHITECTURE.md`](../ARCHITECTURE.md).
 
-## Sete tabelas formam o esquema
+## Oito tabelas formam o esquema
 
 | Tabela | Guarda |
 | --- | --- |
@@ -17,6 +17,7 @@ O diagrama está em [`erd.svg`](erd.svg). O fluxo que usa estas tabelas está em
 | `document_chunk` | Trecho de um documento, com texto e embedding. |
 | `course_content` | Peça gerada do curso: tutorial, flashcards ou quiz. |
 | `content_citation` | Ligação entre um conteúdo publicado e os chunks que ele cita. |
+| `course_object_cleanup` | Pendência de limpeza da OCI para um curso excluído. |
 
 O esquema não tem histórico de gerações, rascunho de curso, nível de público por conteúdo, `detail_level` nem seleção de documentos por conteúdo.
 
@@ -38,7 +39,7 @@ Toda chave estrangeira apaga em cascata, exceto `course.niche_id`, que bloqueia 
 
 A chave composta de `document_chunk` impede que um chunk aponte para um curso diferente do curso do seu documento. As duas chaves compostas de `content_citation` impedem que um conteúdo cite um chunk de outro curso. Cada destino composto tem um índice único em `(id, course_id)`.
 
-A cascata do SQL não apaga objetos no OCI. A exclusão de um curso exige uma limpeza separada dos objetos sob `courses/{course_id}/`. A exclusão de um usuário apaga os cursos dele em cascata e exige a mesma limpeza para cada curso.
+A exclusão de curso ou conta grava uma pendência por curso na mesma transação que apaga os dados. A tarefa de fundo limpa os objetos sob `courses/{course_id}/`.
 
 ## Enums
 
@@ -107,6 +108,7 @@ O seed não remove slugs antigos de tema, como `rag` ou `prompt-engineering`. A 
 | Coluna | Tipo | Nulo | Padrão | Nota |
 | --- | --- | --- | --- | --- |
 | `id` | `uuid` | não | | Chave primária. |
+| `generation_id` | `uuid` | sim | | Identifica a tarefa que pode gravar resultados. O backend limpa o campo ao encerrar ou recuperar a geração. |
 | `owner_id` | `uuid` | não | | Referencia `user.id`. Indexada. |
 | `niche_id` | `smallint` | não | | Referencia `niche.id`. |
 | `title` | `varchar(255)` | não | | |
@@ -256,6 +258,15 @@ Cada linha liga o conteúdo publicado de um `course_content` a um chunk citado. 
 CHECK:
 
 - `ck_content_citation_cosine_similarity`: `similarity IS NULL OR similarity BETWEEN -1 AND 1`.
+
+### `course_object_cleanup`
+
+| Coluna | Tipo | Nulo | Padrão | Nota |
+| --- | --- | --- | --- | --- |
+| `course_id` | `uuid` | não | | Chave primária. Sem chave estrangeira, para a pendência sobreviver à exclusão do curso. |
+| `next_attempt_at` | `timestamptz` | não | Hora atual na aplicação | A tarefa só processa a linha a partir desse horário. |
+
+A tarefa remove a linha depois de apagar os objetos. Se houver falha na OCI, o backend adia a próxima tentativa em um minuto.
 
 ## O backend garante as regras que o banco não expressa
 
