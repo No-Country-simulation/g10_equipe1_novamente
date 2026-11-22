@@ -1,112 +1,92 @@
-# FastAPI Project - Docker Compose Deployment
+# Publique a demonstração do NovaMente na OCI
 
-You can deploy the project to your own remote server with Docker Compose. The deployment configuration includes Traefik to handle HTTPS and route incoming traffic to the application.
+Siga este guia depois do merge da Parte 1 do [T36](docs/tickets/T36-deploy-na-vm-da-oci.md). Use uma conta exclusiva e dados descartáveis. A demonstração serve HTTP na porta 80, com HTTPS e backup fora do escopo do hackathon.
 
-## Preparation
+## 1. Confira a VM e a rede
 
-* Have a remote server ready and available.
-* Configure DNS records pointing to the server for the application domain and any supporting service subdomains you want to expose, such as `fastapi-project.example.com` and `adminer.fastapi-project.example.com`.
-* Install and configure [Docker](https://docs.docker.com/engine/install/) on the remote server (Docker Engine, not Docker Desktop).
-
-## Copy the Code
+Confirme no console da OCI que a VM existente é `VM.Standard.A2.Flex`. Por SSH, confirme `aarch64` e confira se a porta 80 está livre.
 
 ```bash
-rsync -av --exclude=".git/" --filter=":- .gitignore" ./ root@your-server.example.com:/root/code/app/
+uname -m
+ss -ltn
 ```
 
-The `--filter=":- .gitignore"` option tells `rsync` to use the same ignore rules as Git, excluding files such as the Python virtual environment.
+Confira o efeito conjunto das security lists, dos NSGs e do firewall da VM. Abra só TCP 80 para o público e TCP 22 para o IP da pessoa que faz o deploy. Preserve as regras dos outros hosts em subnets compartilhadas. Confirme que a VM alcança o DNS, o Gemini, os registros de imagens e a OCI. [Regras de rede da OCI](https://docs.oracle.com/en-us/iaas/Content/Network/Concepts/securityrules.htm#if-you-use-both-security-lists-and-network-security-groups).
 
-## Configure the Application
+## 2. Configure o bucket e a identidade
 
-### Environment Variables
+Crie um bucket privado exclusivo na região da VM. No domínio de identidade padrão, crie um dynamic group com a regra `instance.id = '<ocid-da-vm>'`. Conceda a policy abaixo e guarde o namespace só na VM. [Identidade da instância](https://docs.oracle.com/en-us/iaas/Content/Identity/Tasks/callingservicesfrominstances.htm), [permissões do Object Storage](https://docs.oracle.com/en-us/iaas/Content/Identity/policyreference/objectstoragepolicyreference.htm).
 
-Set the application domain and project name:
+```text
+Allow dynamic-group <grupo> to manage objects in compartment <compartimento> where target.bucket.name = '<bucket>'
+```
+
+## 3. Escolha o endereço da demonstração
+
+Use o IPv4 público da VM. Se quiser usar um domínio, aponte o registro A para esse IP e confira de fora da OCI com `dig +short A novamente.example.com`, substituindo o domínio de exemplo. Publique AAAA só se a VM receber tráfego por IPv6.
+
+## 4. Prepare o Docker e o clone
+
+Instale o Docker Engine e o plugin Compose se faltarem. Habilite o Docker no boot com `sudo systemctl enable --now docker`. Se houver um runner de deploy do NovaMente, remova o registro no GitHub e desative o serviço na VM. [Instalação do Docker](https://docs.docker.com/engine/install/), [remoção do runner](https://docs.github.com/en/actions/how-tos/manage-runners/self-hosted-runners/remove-runners).
 
 ```bash
-export DOMAIN=fastapi-project.example.com
-export PROJECT_NAME="Full Stack FastAPI Project"
+git clone --branch master https://github.com/No-Country-simulation/g10_equipe1_novamente.git novamente
+cd novamente
 ```
 
-You can also configure these environment variables as needed:
+Use um diretório dedicado e mantenha seu caminho nas atualizações para preservar o projeto Compose e seus volumes.
 
-* `SENTRY_DSN`: The DSN for Sentry.
+## 5. Configure o ambiente e publique
 
-### Secrets
+Se o `.env` ainda não existir, crie com `install -m 600 /dev/null .env`. Troque os valores entre `< >` pelos valores da equipe. Rode `openssl rand -hex 32` uma vez por segredo novo. Preserve a senha do PostgreSQL se o volume já existir. O Compose monta `DATABASE_URL` com essa senha e o host `db`.
 
-Generate and set secure values for the database password and token signing key:
+```dotenv
+PROJECT_NAME=NovaMente
+SECRET_KEY=<segredo-gerado>
+POSTGRES_PASSWORD=<senha-do-postgres>
+GEMINI_API_KEY=<chave-do-projeto-de-demonstracao>
+GEMINI_GENERATION_MODEL=gemini-3.5-flash-lite
+OCI_AUTH=instance_principal
+OCI_BUCKET=<bucket-privado>
+OCI_NAMESPACE=<namespace>
+```
+
+Use um projeto Gemini exclusivo da demonstração, no plano gratuito e sem faturamento ativado. Com uma conta com acesso ao Docker, rode os comandos abaixo na ordem. Se um comando falhar, pare e corrija a causa.
 
 ```bash
-export POSTGRES_PASSWORD="$(python -c 'import secrets; print(secrets.token_urlsafe(32))')"
-export SECRET_KEY="$(python -c 'import secrets; print(secrets.token_urlsafe(32))')"
+bash scripts/deploy.sh
+docker compose -f compose.yml -f compose.deploy.yml exec -T backend python scripts/verify_storage.py
 ```
 
-## Deploy
+Confirme que envio, leitura, listagem e exclusão passam. Confira `linux/arm64` com `docker image inspect backend:latest --format '{{.Os}}/{{.Architecture}}'`. Confira um servidor com `docker compose -f compose.yml -f compose.deploy.yml top backend`.
+
+De fora da VM, abra `http://192.0.2.10/` no navegador, substituindo o IP de exemplo. O comando abaixo deve retornar `true`.
 
 ```bash
-cd /root/code/app/
-docker compose -f compose.yml -f compose.deploy.yml build
-docker compose -f compose.yml -f compose.deploy.yml run --rm backend bash scripts/prestart.sh
-docker compose -f compose.yml -f compose.deploy.yml up -d
+curl -fsS http://192.0.2.10/api/v1/utils/health-check/
 ```
 
-The `compose.deploy.yml` file adds HTTPS and automatic certificate handling to the shared `compose.yml` configuration. Explicitly listing both files excludes the local settings from `compose.override.yml`.
+Com `nc -vz -w 5 192.0.2.10 <porta>`, confirme que 80 responde e que 5432, 8000, 8080 e 8090 estão fechadas. Confirme que a porta 22 só responde do IP autorizado. Repita por IPv6 se a VM tiver esse acesso.
 
-The backend Docker image builds the frontend, so the server does not need Bun or prebuilt frontend files.
+## 6. Valide a demonstração
 
-## Deploy with GitHub Actions
+Crie a conta pela tela "Criar conta". O cadastro é aberto. Siga o [quiz da LAI](development.md#4-crie-leia-e-exclua-um-curso) até "Pronto" e responda a uma pergunta. Confira o documento e o JSON sob `courses/<course_id>/` no bucket. Exclua o curso pela tela e confira se o prefixo ficou vazio.
 
-The included `.github/workflows/deploy-docker-compose.yml` workflow runs the deployment commands on the server when manually triggered from GitHub Actions.
+## 7. Atualize
 
-Use a self-hosted runner only for a repository whose contributors and workflow code you trust. GitHub recommends using self-hosted runners with private repositories because workflows execute directly on the runner machine.
+Escolha uma janela sem geração ativa. Rode `bash scripts/deploy.sh` e confira a rota pública de saúde. A migração altera o banco antes de subir o backend novo. Preserve o volume `app-db-data`.
 
-### Configure Repository Variables and Secrets
+## 8. Registre o aceite
 
-In the repository, go to **Settings** > **Secrets and variables** > **Actions** and add these repository variables:
+Em uma janela combinada com a equipe, reinicie a VM. Confirme de fora que a rota de saúde responde novamente. Na VM, confira que `stat -c %a .env` retorna `600`.
 
-* `DOMAIN`
-* `PROJECT_NAME`
+Registre os resultados e a estimativa de custo no [aceite do T36](docs/tickets/T36-deploy-na-vm-da-oci.md#verificação-do-aceite). Abra o PR de conclusão com os estados comprovados em [Implantação](docs/ARCHITECTURE.md#implantação).
 
-To enable Sentry, add the optional `SENTRY_DSN` repository variable.
+## Diagnostique uma falha
 
-Add these repository secrets:
-
-* `POSTGRES_PASSWORD`
-* `SECRET_KEY`
-
-### Install a Self-Hosted Runner
-
-On the server, create a dedicated user and grant it access to Docker:
-
-```bash
-sudo adduser github
-sudo usermod -aG docker github
-sudo su - github
-```
-
-In the GitHub repository, go to **Settings** > **Actions** > **Runners**, select **New self-hosted runner**, choose Linux, and follow the commands GitHub provides to download, configure, and register the runner. Install it in `/home/github/actions-runner`.
-
-After registering the runner, exit the `github` user session and install the runner as a system service:
-
-```bash
-exit
-cd /home/github/actions-runner
-sudo ./svc.sh install github
-sudo ./svc.sh start
-sudo ./svc.sh status
-```
-
-See GitHub's guides for [adding a self-hosted runner](https://docs.github.com/en/actions/how-tos/manage-runners/self-hosted-runners/add-runners) and [configuring the runner as a service](https://docs.github.com/en/actions/how-tos/manage-runners/self-hosted-runners/configure-the-application?platform=linux).
-
-### Run the Deployment
-
-When the runner is online, open the repository's **Actions** tab, select **Deploy with Docker Compose**, and select **Run workflow**.
-
-## URLs
-
-Replace `fastapi-project.example.com` with your domain.
-
-Application (frontend and API): `https://fastapi-project.example.com`
-
-Interactive API docs: `https://fastapi-project.example.com/docs`
-
-Adminer: `https://adminer.fastapi-project.example.com`
+| Falha | Ação |
+| --- | --- |
+| Site não abre | Confira o IPv4 ou o DNS, a porta 80 em `docker compose -f compose.yml -f compose.deploy.yml ps`, a interface de rede na OCI e o firewall local. |
+| Migração ou inicialização | Confira a saída de `prestart.sh` e rode `docker compose -f compose.yml -f compose.deploy.yml logs db backend`. O backend recusa `changethis` no deploy. Preserve a senha do volume existente. |
+| Criação de curso retorna HTTP 503 | Rode `verify_storage.py` como no passo 5. Confira região, bucket, acesso do contêiner ao IMDSv2 e propagação da policy. |
+| Geração falha | Confira a mensagem do conteúdo e os logs de `backend`. Revise `GEMINI_API_KEY` e `GEMINI_GENERATION_MODEL` na VM. |

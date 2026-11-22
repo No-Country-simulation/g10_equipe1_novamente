@@ -12,6 +12,7 @@ O NovaMente transforma um documento técnico em conteúdos de estudo fiéis a el
 | Executar um ticket | [`docs/tickets/README.md`](docs/tickets/README.md), depois o ticket |
 | Entender o que o produto faz | [`docs/product-specs/index.md`](docs/product-specs/index.md) |
 | Entender como o sistema é construído | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) |
+| Publicar ou operar o NovaMente na OCI | [`deployment-docker-compose.md`](deployment-docker-compose.md) |
 | Saber que dados o banco guarda | [`docs/generated/db-schema.md`](docs/generated/db-schema.md) |
 
 ## Escrita
@@ -112,8 +113,8 @@ Tickets escritos das ondas 5 a 10:
 | [`T42`](docs/tickets/completed/T42-revisor-sem-alternativas-erradas.md) | Revisor sem as alternativas erradas do quiz |
 | [`T35`](docs/tickets/completed/T35-readme-diagrama-e-guia-de-instalacao.md) | README, diagrama e guia de instalação |
 
-O [T36](docs/tickets/T36-deploy-na-vm-da-oci.md) planeja o deploy na VM A2.Flex existente, com HTTPS e backup diário. O ticket termina com a verificação por uma pessoa na VM.
+O [T36](docs/tickets/T36-deploy-na-vm-da-oci.md) planeja o deploy da demonstração por HTTP na VM A2.Flex existente. O ticket termina com a verificação por uma pessoa na VM.
 
 ## Fora de `docs/`
 
-Use o código em `backend/` e `frontend/` e os documentos de `docs/` como fontes do projeto. Use também os arquivos em `examples/` quando o ticket os citar. O [README](README.md) apresenta o produto e o [guia de instalação](development.md) mostra como rodar e testar em um clone novo. `CONTRIBUTING.md` e `deployment.md` ainda vêm do template ou estão desatualizados.
+Use o código em `backend/` e `frontend/` e os documentos de `docs/` como fontes do projeto. Use também os arquivos em `examples/` quando o ticket os citar. O [README](README.md) apresenta o produto e o [guia de instalação](development.md) mostra como rodar e testar em um clone novo. `CONTRIBUTING.md` ainda vem do template.

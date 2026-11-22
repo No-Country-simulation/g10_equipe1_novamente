@@ -22,12 +22,22 @@ jobs:
         run: |
           cp .env.example .env
           cp frontend/.env.example frontend/.env
+      - name: Check production services and ports
+        run: |
+          services=$(docker compose -f compose.yml -f compose.deploy.yml config --services | sort)
+          test "$services" = "$(printf '%s\n' backend db)"
+          docker compose -f compose.yml -f compose.deploy.yml config --format json | jq -e '
+            [.services | to_entries[] | .key as $service | .value.ports[]?
+              | [$service, .published, .target, .protocol]] == [["backend", "80", 8000, "tcp"]]
+          ' > /dev/null
       - run: docker compose build
       - run: docker compose down -v --remove-orphans
       - run: docker compose run --rm backend bash scripts/prestart.sh
       - run: docker compose up -d --wait backend adminer
       - name: Test backend is up
-        run: curl http://localhost:8000/api/v1/utils/health-check
+        run: |
+          response=$(curl -fsS http://localhost:8000/api/v1/utils/health-check/)
+          test "$response" = true
       - name: Test frontend is up
-        run: curl http://localhost:8000
+        run: test "$(curl -fsS -o /dev/null -w '%{http_code}' http://localhost:8000/)" = 200
       - run: docker compose down -v --remove-orphans

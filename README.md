@@ -45,6 +45,7 @@ O [guia de instalação](development.md) leva do clone ao primeiro curso com Gem
 ## Documentação
 
 - [Arquitetura e fluxo de geração](docs/ARCHITECTURE.md)
+- [Deploy na OCI com Docker Compose](deployment-docker-compose.md)
 - [Especificações do produto](docs/product-specs/index.md)
 - [Fluxo e lista de tickets](docs/tickets/README.md)
 - [Mapa da base de conhecimento](AGENTS.md)

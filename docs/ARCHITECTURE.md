@@ -23,7 +23,7 @@ O arquivo editável do diagrama é [`system-diagram/arquitetura.excalidraw`](sys
 | OCI Object Storage | Documentos originais e JSON de cada conteúdo publicado. | Existe |
 | API Gemini | Embeddings de 768 dimensões e geração de texto. | Existe |
 
-O backend acessa o banco, o OCI e o Gemini. A configuração de Traefik do template encaminha o tráfego para o backend no Compose.
+O backend acessa o banco, o OCI e o Gemini. O Traefik encaminha o tráfego para o backend no Compose de desenvolvimento.
 
 ## O banco e o armazenamento de objetos dividem os dados
 
@@ -55,8 +55,9 @@ O CHECK `ck_course_content_published_pair` mantém as duas cópias em par: `cont
 | `backend/tests/` | Testes `pytest` contra um PostgreSQL real | Existe |
 | `frontend/src/routes/` | Rotas do TanStack Router para conta, lista de cursos, novo curso e leitores | Existe |
 | `frontend/src/client/` | Cliente HTTP gerado do OpenAPI. Não edite à mão. | Existe |
-| `compose.yml`, `compose.override.yml`, `compose.deploy.yml` | Configurações do Compose para `proxy`, `db`, `adminer` e `backend` | Existe |
+| `compose.yml`, `compose.override.yml`, `compose.deploy.yml` | Backend e banco comuns, Traefik e Adminer no desenvolvimento, porta HTTP 80 no deploy | Existe |
 | `compose.playwright.yml` | Sobreposição que monta o servidor de teste do Playwright | Existe |
+| `scripts/deploy.sh` | Atualização do clone, build, migração e subida do Compose | Existe |
 
 ## A criação de um curso segue doze passos
 
@@ -195,17 +196,11 @@ Os embeddings limitam a capacidade diária, não o texto. Sem contar novas tenta
 
 ## Implantação
 
-O [T36](tickets/T36-deploy-na-vm-da-oci.md) planeja publicar o NovaMente com Docker Compose na VM `VM.Standard.A2.Flex` (arm64) que a equipe já tem em execução. [Referência da VM](https://docs.oracle.com/en-us/iaas/Content/Compute/References/arm.htm).
+A configuração de deploy combina `compose.yml` e `compose.deploy.yml`. Só o backend publica uma porta, TCP 80. Ele serve o frontend e a API por HTTP na mesma origem e roda com um worker para compartilhar os limites do Gemini. O PostgreSQL usa um volume persistente. Traefik e Adminer ficam no Compose de desenvolvimento.
 
-| Ponto | Hoje no repositório | Decisão | Estado |
-| --- | --- | --- | --- |
-| Adminer | `compose.yml` publica em `adminer.${DOMAIN}` | Tirar da produção | A construir |
-| Processos do backend | `backend/Dockerfile` inicia 4 | Rodar um worker para compartilhar o limite do Gemini | A construir |
-| HTTPS | O Traefik usa o desafio TLS na porta 443 e exige um domínio | Usar o domínio da equipe ou DuckDNS e o desafio HTTP-01 na porta 80 | A construir |
-| Deploy automático | `deploy-docker-compose.yml` usa um runner `self-hosted` | Desativar. Deploy manual por SSH com um script | A construir |
-| Backup | Não existe | `pg_dump` diário enviado ao OCI Object Storage | A construir |
-| Banco | Sem porta pública em `compose.yml` | Manter. Dados em volume Docker | A construir |
-| Rede | As regras da OCI ficam fora do repositório | Publicar 80 e 443. Limitar o SSH aos IPs da equipe | A construir |
+O [guia de deploy](../deployment-docker-compose.md) usa SSH e `scripts/deploy.sh`. HTTPS e backup ficam fora do escopo da demonstração de hackathon. A equipe aceita tráfego sem criptografia e usa credenciais exclusivas da demonstração e dados descartáveis.
+
+A [Parte 2 do T36](tickets/T36-deploy-na-vm-da-oci.md#parte-2---pessoa) prevê publicar na VM `VM.Standard.A2.Flex` (arm64), configurar rede e identidade da instância, e validar o acesso HTTP por IP, o quiz, a exclusão e o reinício. A rede deve abrir só a porta 80 para o público e a 22 para o IP da pessoa que faz o deploy. [Referência da VM](https://docs.oracle.com/en-us/iaas/Content/Compute/References/arm.htm).
 
 A A2.Flex é uma [exceção à regra Always Free do briefing](product-specs/escopo-do-mvp.md#restrições). Uma única VM é um ponto único de falha, e a equipe aceita esse risco.
 

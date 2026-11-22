@@ -2,7 +2,7 @@
 
 ## Docker Compose
 
-For deployment to your own server, see the [Docker Compose deployment guide](./deployment-docker-compose.md).
+Siga o [guia de deploy do NovaMente na OCI](deployment-docker-compose.md).
 
 ## GitHub Repository Automation
 
