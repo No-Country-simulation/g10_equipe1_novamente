@@ -14,10 +14,10 @@ Cada ticket abre com um cabeçalho:
 | `title` | O que o ticket entrega, no imperativo. |
 | `blocked_by` | Tickets que precisam estar no `master` antes deste começar. |
 | `touches` | Arquivos e pastas que o ticket cria ou altera. |
-| `executor` | `agente` ou `pessoa`. Um ticket de `pessoa` pede chaves, contas ou uma decisão. |
+| `executor` | `agente`, `pessoa` ou `[agente, pessoa]`. Um ticket de `pessoa` pede chaves, contas ou uma decisão. Um ticket com os dois separa a parte de cada um, e a parte da pessoa começa depois do merge da parte do agente. |
 | `size` | Esforço de 1 a 5. Um ticket acima de 5 é dividido. |
 
-O ticket não guarda estado. O estado vem do GitHub:
+O estado do PR vem do GitHub:
 
 | Estado | Sinal |
 | --- | --- |
@@ -25,6 +25,8 @@ O ticket não guarda estado. O estado vem do GitHub:
 | Em andamento | Existe branch `tNN-*`, sem PR. |
 | Em revisão | Existe PR aberto do branch `tNN-*`. |
 | Pronto | O PR do branch `tNN-*` está no `master`. |
+
+Para um ticket com `executor: [agente, pessoa]`, o merge libera a parte da pessoa. O ticket termina quando ela registra o aceite.
 
 ## Como a ordem é calculada
 
@@ -124,7 +126,7 @@ No segundo PR, teste a concorrência entre DELETE e retry do mesmo curso. Se o r
 
 ## Ondas
 
-Os tickets das ondas 1 a 5 estão escritos, além de T29, T30, T31, T32, T33, T35, T41 e T42. Falta T36. Escreva-o quando os contratos de que ele depende estiverem definidos. A equipe descartou T34 e T43: quem apresenta gera os cursos da demonstração na própria máquina.
+Todos os tickets da tabela estão escritos. A equipe descartou T34 e T43. Quem apresenta pode gerar os cursos da demonstração na própria máquina.
 
 | Onda | Ticket | Entrega | Bloqueado por |
 | --- | --- | --- | --- |
@@ -162,11 +164,11 @@ Os tickets das ondas 1 a 5 estão escritos, além de T29, T30, T31, T32, T33, T3
 | 6 | T30 | Avaliação da busca e do revisor, com medição de falsas reprovações | T03, T24, T28, T37 |
 | 6 | T32 | Nova tentativa e regra dos 10 minutos | T28 |
 | 6 | T33 | Exclusão de curso e de conta com limpeza na OCI | T28 |
-| 6 | T36 | Deploy na VM da OCI (opcional) | T28 |
 | 7 | T31 | Teste no navegador da criação à leitura do conteúdo gerado | T08, T09, T10, T17, T27, T28, T29, T38 |
 | 7 | T41 | Casos de avaliação sobre os documentos da demonstração e primeira medição | T13, T30 |
 | 8 | T42 | Revisor sem as alternativas erradas do quiz | T41 |
 | 9 | T35 | README, diagrama e guia de instalação | T29, T31, T32, T33, T42 |
+| 10 | [T36](T36-deploy-na-vm-da-oci.md) | Deploy na VM A2.Flex existente com HTTPS e backup diário (opcional) | T35 |
 
 T39 saiu das medições de T12: a cota de embeddings conta cada texto como um pedido, e a indexação de um documento grande passava do limite por minuto. T28 passou a listar T39.
 
@@ -196,6 +198,6 @@ T35 fica na onda 9. O guia usa o teste sem chaves de T31 e a documentação desc
 
 T32 recoloca o conteúdo na fila da tarefa ativa. T32 e T33 usam o lock da linha de `Course` para coordenar nova tentativa, expiração e exclusão.
 
-T28 libera T29, T30, T32, T33 e T36. T29 também é bloqueio de T31.
+T28 libera T29, T30, T32 e T33. T29 também é bloqueio de T31. T36 espera o guia do T35 para verificar no site publicado a criação, a leitura e a exclusão do curso.
 
 T42 saiu da primeira medição de T41. No quiz da LAI, o revisor marcou o prazo de 20 dias como sem apoio e deixou passar o erro de 30 dias. T42 envia a resposta marcada por extenso no material e limita as afirmações aos fatos do material. A versão passa a `revisa-v3`.

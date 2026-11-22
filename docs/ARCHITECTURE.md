@@ -195,19 +195,19 @@ Os embeddings limitam a capacidade diária, não o texto. Sem contar novas tenta
 
 ## Implantação
 
-O deploy do T36 está planejado para a VM `VM.Standard.A2.Flex` (ARM) da OCI, com Docker Compose. [Referência da VM](https://docs.oracle.com/en-us/iaas/Content/Compute/References/arm.htm).
+O [T36](tickets/T36-deploy-na-vm-da-oci.md) planeja publicar o NovaMente com Docker Compose na VM `VM.Standard.A2.Flex` (arm64) que a equipe já tem em execução. [Referência da VM](https://docs.oracle.com/en-us/iaas/Content/Compute/References/arm.htm).
 
 | Ponto | Hoje no repositório | Decisão | Estado |
 | --- | --- | --- | --- |
 | Adminer | `compose.yml` publica em `adminer.${DOMAIN}` | Tirar da produção | A construir |
-| Processos do backend | `backend/Dockerfile` inicia 4 | Começar com 2 e medir | A construir |
-| HTTPS | O Traefik emite o certificado e exige um domínio | Usar um subdomínio gratuito | A construir |
+| Processos do backend | `backend/Dockerfile` inicia 4 | Rodar um worker para compartilhar o limite do Gemini | A construir |
+| HTTPS | O Traefik usa o desafio TLS na porta 443 e exige um domínio | Usar o domínio da equipe ou DuckDNS e o desafio HTTP-01 na porta 80 | A construir |
 | Deploy automático | `deploy-docker-compose.yml` usa um runner `self-hosted` | Desativar. Deploy manual por SSH com um script | A construir |
 | Backup | Não existe | `pg_dump` diário enviado ao OCI Object Storage | A construir |
 | Banco | Sem porta pública em `compose.yml` | Manter. Dados em volume Docker | A construir |
-| Rede | Não existe | Abrir só 80 e 443. Limitar o SSH aos IPs da equipe | A construir |
+| Rede | As regras da OCI ficam fora do repositório | Publicar 80 e 443. Limitar o SSH aos IPs da equipe | A construir |
 
-O T36 trata a [divergência com a regra Always Free](product-specs/escopo-do-mvp.md#restrições). Uma única VM é um ponto único de falha, e a equipe aceita esse risco.
+A A2.Flex é uma [exceção à regra Always Free do briefing](product-specs/escopo-do-mvp.md#restrições). Uma única VM é um ponto único de falha, e a equipe aceita esse risco.
 
 ## Segurança
 
