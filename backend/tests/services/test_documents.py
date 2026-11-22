@@ -239,6 +239,26 @@ def test_pdf_word_runs_follow_visual_lines(explicit_spaces: bool) -> None:
     assert document.text == "The cat sleeps.\n\nThe dog is awake."
 
 
+def test_pdf_kerning_does_not_split_a_word_between_text_blocks() -> None:
+    # Os três ajustes de TJ somam mais que a largura de um espaço.
+    commands = """\
+BT /F1 12 Tf 20 100 Td [(p) -100 (o) -100 (d) -100 (e)] TJ ET
+BT /F1 12 Tf 50.288 100 Td (r) Tj ET
+"""
+
+    document = read_document("guia.pdf", pdf_bytes(commands, raw_streams=True))
+
+    assert document.text == "poder"
+
+
+def test_pdf_superscript_stays_with_preceding_text() -> None:
+    commands = "BT /F1 12 Tf 20 100 Td (note) Tj /F1 8 Tf 22 3.5 Td (1) Tj ET"
+
+    document = read_document("guia.pdf", pdf_bytes(commands, raw_streams=True))
+
+    assert document.text == "note1"
+
+
 def test_pdf_two_columns_follow_content_stream_order() -> None:
     commands = """\
 BT /F1 12 Tf 20 170 Td (Left first.) Tj 0 -14 Td (Left second.) Tj ET
