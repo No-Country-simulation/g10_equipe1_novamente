@@ -25,8 +25,8 @@ O NovaMente transforma um documento técnico em conteúdos de estudo fiéis a el
 
 ## Esquema do banco (gerado)
 
-- [`docs/generated/db-schema.md`](docs/generated/db-schema.md): as sete tabelas, o que cada uma guarda e as regras de integridade.
-- [`docs/generated/erd.svg`](docs/generated/erd.svg): diagrama entidade-relacionamento.
+- [`docs/generated/db-schema.md`](docs/generated/db-schema.md): as oito tabelas atuais, o que cada uma guarda e as regras de integridade.
+- [`docs/generated/erd.svg`](docs/generated/erd.svg): ERD v5 de base.
 
 Não edite estes arquivos para mudar o esquema. O código em `backend/app/models.py` define as tabelas.
 
@@ -109,11 +109,11 @@ Tickets escritos das ondas 5 a 10:
 | [`T33`](docs/tickets/completed/T33-exclusao-de-curso.md) | Exclusão de curso e de conta com limpeza na OCI |
 | [`T31`](docs/tickets/completed/T31-teste-no-navegador.md) | Teste no navegador da criação à leitura do conteúdo gerado |
 | [`T41`](docs/tickets/completed/T41-casos-de-avaliacao-e-primeira-medicao.md) | Casos de avaliação sobre os documentos da demonstração e primeira medição |
-| [`T42`](docs/tickets/T42-revisor-sem-alternativas-erradas.md) | Revisor sem as alternativas erradas do quiz |
-| [`T35`](docs/tickets/T35-readme-diagrama-e-guia-de-instalacao.md) | README, diagrama e guia de instalação |
+| [`T42`](docs/tickets/completed/T42-revisor-sem-alternativas-erradas.md) | Revisor sem as alternativas erradas do quiz |
+| [`T35`](docs/tickets/completed/T35-readme-diagrama-e-guia-de-instalacao.md) | README, diagrama e guia de instalação |
 
 T36 ainda não foi escrito e está na [tabela de ondas](docs/tickets/README.md#ondas).
 
 ## Fora de `docs/`
 
-Use o código em `backend/` e `frontend/` e os documentos de `docs/` como fontes do projeto. Use também os arquivos em `examples/` quando o ticket os citar. Os arquivos `README.md`, `CONTRIBUTING.md`, `development.md` e `deployment.md` da raiz vêm do template ou estão velhos.
+Use o código em `backend/` e `frontend/` e os documentos de `docs/` como fontes do projeto. Use também os arquivos em `examples/` quando o ticket os citar. O [README](README.md) apresenta o produto e o [guia de instalação](development.md) mostra como rodar e testar em um clone novo. `CONTRIBUTING.md` e `deployment.md` ainda vêm do template ou estão desatualizados.

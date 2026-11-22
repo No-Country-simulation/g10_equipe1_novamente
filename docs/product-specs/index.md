@@ -32,8 +32,4 @@ Um conflito entre essas fontes se resolve nos documentos, com a equipe. Ninguém
 
 O JSON de exemplo do briefing é só um exemplo. O produto usa nomes em inglês e uma resposta própria.
 
-## Fontes usadas e o que ainda vale em cada uma
-
-| Fonte | Onde está | O que ainda vale | O que ficou velho |
-| --- | --- | --- | --- |
-| `README.md` | Raiz | A lista de tecnologias, em parte | A descrição do produto, que fala em pessoas neurodivergentes, modo foco e roadmaps adaptativos |
+O [README](../../README.md) apresenta o produto. O [guia de instalação](../../development.md) mostra como rodar e testar a aplicação.

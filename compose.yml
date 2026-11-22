@@ -57,6 +57,17 @@ services:
       SECRET_KEY: ${SECRET_KEY:?Variable not set}
       DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:?Variable not set}@db:5432/app
       SENTRY_DSN: ${SENTRY_DSN:-}
+      OCI_BUCKET: ${OCI_BUCKET:-}
+      OCI_NAMESPACE: ${OCI_NAMESPACE:-}
+      OCI_AUTH: ${OCI_AUTH:-}
+      OCI_CONFIG_FILE: ${OCI_CONFIG_FILE:-}
+      OCI_CONFIG_PROFILE: ${OCI_CONFIG_PROFILE:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_EMBEDDING_MODEL: ${GEMINI_EMBEDDING_MODEL:-}
+      GEMINI_GENERATION_MODEL: ${GEMINI_GENERATION_MODEL:-}
+      GEMINI_EMBEDDING_RPM: ${GEMINI_EMBEDDING_RPM:-}
+      GEMINI_EMBEDDING_TPM: ${GEMINI_EMBEDDING_TPM:-}
+      GEMINI_GENERATION_RPM: ${GEMINI_GENERATION_RPM:-}
 
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/utils/health-check/"]

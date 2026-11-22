@@ -1,6 +1,6 @@
 # Arquitetura do NovaMente
 
-O NovaMente recebe um documento técnico e gera conteúdos de estudo fiéis a ele. A aplicação é um backend FastAPI que serve um frontend React, guarda dados em PostgreSQL com pgvector, guarda arquivos no OCI Object Storage e usa a API Gemini.
+O NovaMente recebe um documento técnico e gera conteúdos de estudo fiéis a ele. A aplicação combina um frontend React, um backend FastAPI, PostgreSQL com pgvector, OCI Object Storage e a API Gemini.
 
 Este documento descreve as partes do sistema, o caminho de uma geração e as regras que o código deve manter. O esquema do banco fica em [`generated/db-schema.md`](generated/db-schema.md). O comportamento do produto fica em [`product-specs/`](product-specs/index.md).
 
@@ -17,13 +17,13 @@ O arquivo editável do diagrama é [`system-diagram/arquitetura.excalidraw`](sys
 
 | Parte | Papel | Estado |
 | --- | --- | --- |
-| Frontend React | Telas de conta, cursos e conteúdos. O backend serve o build estático. | Existe para conta. A construir para cursos. |
-| Backend FastAPI | API em `/api/v1`, validação, tarefa de fundo, decisão de publicar. | Existe para conta. A construir para cursos. |
-| PostgreSQL 18 com pgvector | Usuários, cursos, metadados, chunks, embeddings, JSON publicado, citações e estados. | Existe: sete tabelas e migration de base. |
-| OCI Object Storage | Documentos originais e JSON de cada conteúdo publicado. | A construir |
-| API Gemini | Embeddings de 768 dimensões e geração de texto. | A construir |
+| Frontend React | Telas de conta, cursos e leitores. O backend serve o build estático e o Vite serve o frontend no desenvolvimento local. | Existe |
+| Backend FastAPI | API em `/api/v1`, validação, geração em segundo plano, publicação, recuperação e limpeza. | Existe |
+| PostgreSQL 18 com pgvector | Usuários, cursos, chunks, embeddings, JSON publicado, citações, estados e pendências de limpeza. | Existe |
+| OCI Object Storage | Documentos originais e JSON de cada conteúdo publicado. | Existe |
+| API Gemini | Embeddings de 768 dimensões e geração de texto. | Existe |
 
-O Traefik recebe o tráfego e encaminha para o backend. O backend é o único que fala com o banco, com o OCI e com o Gemini.
+O backend acessa o banco, o OCI e o Gemini. A configuração de Traefik do template encaminha o tráfego para o backend no Compose.
 
 ## O banco e o armazenamento de objetos dividem os dados
 
@@ -44,21 +44,23 @@ O CHECK `ck_course_content_published_pair` mantém as duas cópias em par: `cont
 | Caminho | Conteúdo | Estado |
 | --- | --- | --- |
 | `backend/app/models.py` | Tabelas, enums e schemas da API | Existe |
-| `backend/app/alembic/versions/` | Migration de base com as sete tabelas e o seed de `niche` | Existe |
-| `backend/app/api/routes/` | `login.py`, `users.py`, `utils.py`, `private.py` | Existe |
-| `backend/app/api/routes/courses.py`, `niches.py` | Rotas de cursos e nichos | A construir |
+| `backend/app/alembic/versions/` | Migrations do esquema, com a base do ERD v5, o seed de `niche` e as mudanças de recuperação e limpeza | Existe |
+| `backend/app/api/routes/` | Rotas de conta, cursos, setores, utilitários e seed de desenvolvimento | Existe |
 | `backend/app/core/config.py` | Classe `Settings`, lida do `.env` | Existe |
-| `backend/app/core/storage.py` | Único módulo que chama o OCI Python SDK | A construir |
-| `backend/app/core/llm.py` | Único módulo que chama a API Gemini | A construir |
-| `backend/app/services/course_generation.py` | Tarefa de fundo: indexação, busca, geração e publicação | Existe |
+| `backend/app/core/storage.py` | Único módulo que chama o OCI Python SDK | Existe |
+| `backend/app/core/llm.py` | Único módulo que chama a API Gemini | Existe |
+| `backend/app/services/course_generation.py` | Indexação, busca, geração, publicação e recuperação de gerações paradas | Existe |
+| `backend/app/services/generation_graph.py` | Grafo LangGraph com `planeja`, `escreve` e `revisa` | Existe |
+| `backend/app/services/course_deletion.py` | Fila persistente e limpeza periódica dos objetos do curso | Existe |
 | `backend/tests/` | Testes `pytest` contra um PostgreSQL real | Existe |
-| `frontend/src/routes/` | Rotas do TanStack Router. A navegação fica no topo, com "Home" e "Novo curso" | Existe para login, cadastro, painel e configurações. A navegação no topo e `/courses/new` faltam |
+| `frontend/src/routes/` | Rotas do TanStack Router para conta, lista de cursos, novo curso e leitores | Existe |
 | `frontend/src/client/` | Cliente HTTP gerado do OpenAPI. Não edite à mão. | Existe |
-| `compose.yml`, `compose.override.yml`, `compose.deploy.yml` | Serviços `proxy`, `db`, `adminer` e `backend` | Existe |
+| `compose.yml`, `compose.override.yml`, `compose.deploy.yml` | Configurações do Compose para `proxy`, `db`, `adminer` e `backend` | Existe |
+| `compose.playwright.yml` | Sobreposição que monta o servidor de teste do Playwright | Existe |
 
 ## A criação de um curso segue doze passos
 
-A pessoa envia um ou mais documentos e escolhe uma ou mais saídas. Cada saída vira um conteúdo do curso. O backend responde ao pedido em cerca de um segundo. O trabalho lento roda em uma tarefa de fundo (`BackgroundTasks` do FastAPI), no mesmo processo da API.
+A pessoa envia um ou mais documentos e escolhe uma ou mais saídas. Cada saída vira um conteúdo do curso. O backend responde depois de gravar os documentos e confirmar a criação no banco. O trabalho lento roda em uma tarefa de fundo (`BackgroundTasks` do FastAPI), no mesmo processo da API.
 
 ```mermaid
 flowchart TD
@@ -90,7 +92,7 @@ flowchart TD
 5. A tarefa divide o texto em chunks de cerca de 1.000 caracteres e pede um embedding por chunk. Ela grava os chunks e o estado `indexed` na mesma transação, um documento por vez. Se um documento falha, a tarefa para e nenhum conteúdo é gerado.
 6. A tarefa pega os conteúdos na ordem de `position`, um por vez, e marca o conteúdo como `running`. Ela gera o embedding de `course_content.focus` e busca os 8 chunks mais próximos. A busca usa todos os documentos `indexed` do curso com o mesmo `embedding_model`.
 7. `planeja` propõe a estrutura do conteúdo e indica os trechos que sustentam cada item. `escreve` segue o plano usando os chunks, o `audience_level`, o `prompt_hint` do nicho e o formato. Ele devolve um JSON validado por um model Pydantic.
-8. `revisa` recebe o `content`, o foco, o nível de público e os mesmos chunks. Ele verifica se o material trata do foco com apoio nos chunks. Ele também lista as afirmações técnicas, indica o chunk que sustenta cada uma e avalia a clareza.
+8. `revisa` recebe o material de estudo, o foco, o nível de público e os mesmos chunks. Para quiz, o material traz o enunciado, a resposta marcada e a justificativa de cada pergunta. O revisor verifica se o material trata do foco, usa os chunks para conferir as afirmações técnicas e avalia a clareza.
 9. O backend calcula `grounding_score` e decide. Se o foco não é coberto, o conteúdo fica `failed` de imediato. Com foco coberto, o backend aprova se a revisão lista pelo menos uma afirmação e todas têm apoio em chunks válidos. Se a primeira revisão não lista afirmações ou alguma fica sem apoio, `escreve` gera uma segunda versão com a lista de afirmações sem apoio. Se a segunda revisão ainda falha, o conteúdo fica `failed`.
 10. O backend grava o JSON aprovado no OCI, com uma chave nova.
 11. O backend grava, em uma transação, o conteúdo, as notas, as citações e `status = succeeded`. O primeiro conteúdo publicado muda `course.status` para `ready`. Se a transação falha, o backend apaga o objeto do passo 10.
@@ -145,7 +147,7 @@ As dez regras de ciclo de vida do curso ficam em [`generated/db-schema.md`](gene
 | Exclusão de conta | A API responde HTTP 409 se algum curso tem conteúdo na fila ou em geração. Caso contrário, apaga a conta em cascata e registra uma pendência por curso na mesma transação. |
 | Limpeza no OCI falha | A tarefa de fundo busca pendências ao iniciar e a cada 30 segundos. Se a OCI falhar, registra os metadados do erro e tenta de novo após pelo menos um minuto. |
 
-A API trata as falhas na criação e as tarefas de fundo tratam as falhas na geração e na limpeza de objetos.
+A exclusão grava uma linha em `course_object_cleanup` por curso na mesma transação que apaga os dados do banco. A pendência sobrevive à exclusão e a reinícios. O backend a remove depois de listar e apagar os objetos do prefixo.
 
 O UUID interno `course.generation_id` identifica a tarefa que pode gravar resultados. A tarefa valida o UUID e o prazo sob o lock do curso antes de gravar. Quando encerra, limpa o UUID na mesma transação.
 
@@ -197,19 +199,19 @@ Os embeddings limitam a capacidade diária, não o texto. O texto comporta 41 cu
 
 ## Implantação
 
-O destino é uma VM Ampere A1 da camada Always Free da OCI, com Docker Compose. Nada disso existe ainda.
+O deploy do T36 está planejado para a VM `VM.Standard.A2.Flex` (ARM) da OCI, com Docker Compose. [Referência da VM](https://docs.oracle.com/en-us/iaas/Content/Compute/References/arm.htm).
 
-| Ponto | Hoje no repositório | Decisão |
-| --- | --- | --- |
-| Adminer | `compose.yml` publica em `adminer.${DOMAIN}` | Tirar da produção |
-| Processos do backend | `backend/Dockerfile` inicia 4 | Começar com 2 e medir |
-| HTTPS | O Traefik emite o certificado e exige um domínio | Usar um subdomínio gratuito |
-| Deploy automático | `deploy-docker-compose.yml` usa um runner `self-hosted` | Desativar. Deploy manual por SSH com um script |
-| Backup | Não existe | `pg_dump` diário enviado ao OCI Object Storage |
-| Banco | Sem porta pública em `compose.yml` | Manter. Dados em volume Docker |
-| Rede | Não existe | Abrir só 80 e 443. Limitar o SSH aos IPs da equipe |
+| Ponto | Hoje no repositório | Decisão | Estado |
+| --- | --- | --- | --- |
+| Adminer | `compose.yml` publica em `adminer.${DOMAIN}` | Tirar da produção | A construir |
+| Processos do backend | `backend/Dockerfile` inicia 4 | Começar com 2 e medir | A construir |
+| HTTPS | O Traefik emite o certificado e exige um domínio | Usar um subdomínio gratuito | A construir |
+| Deploy automático | `deploy-docker-compose.yml` usa um runner `self-hosted` | Desativar. Deploy manual por SSH com um script | A construir |
+| Backup | Não existe | `pg_dump` diário enviado ao OCI Object Storage | A construir |
+| Banco | Sem porta pública em `compose.yml` | Manter. Dados em volume Docker | A construir |
+| Rede | Não existe | Abrir só 80 e 443. Limitar o SSH aos IPs da equipe | A construir |
 
-A equipe usa só recursos marcados como Always Free e não muda a conta para Pay As You Go. Uma única VM é um ponto único de falha, e a equipe aceita esse risco.
+O T36 trata a [divergência com a regra Always Free](product-specs/escopo-do-mvp.md#restrições). Uma única VM é um ponto único de falha, e a equipe aceita esse risco.
 
 ## Segurança
 
@@ -222,22 +224,11 @@ A equipe usa só recursos marcados como Always Free e não muda a conta para Pay
 ## Testes
 
 - **Backend**: `pytest` contra o PostgreSQL do Compose. O CI exige 90% de cobertura de `backend/app`.
-- **Esquema**: `backend/tests/test_schema.py` compara o catálogo do PostgreSQL com o ERD.
+- **Esquema**: `backend/tests/test_schema.py` confere o catálogo do PostgreSQL após as migrations.
 - **Modelo**: os testes trocam as funções de `llm.py` por funções determinísticas. Nenhum teste automático chama a API Gemini.
 - **Frontend**: O Playwright usa Chromium, a API do produto e PostgreSQL com pgvector. `compose.playwright.yml` monta um ponto de entrada de teste que substitui o OCI por armazenamento em memória e as chamadas ao Gemini por respostas determinísticas. A tarefa de fundo, a busca, o grafo, o cálculo da nota e a publicação usam o código do produto. O CI roda a suíte completa com a sobreposição.
 
-  Para rodar os dois cenários de geração, use um clone de teste com as portas do Compose livres. Na raiz do clone, rode:
-
-  ```bash
-  cp .env.example .env
-  cp frontend/.env.example frontend/.env
-  export COMPOSE_FILE=compose.yml:compose.override.yml:compose.playwright.yml
-  export COMPOSE_PROJECT_NAME=novamente-e2e
-  docker compose build backend playwright
-  docker compose run --rm backend bash scripts/prestart.sh
-  docker compose up -d --wait backend
-  docker compose run --rm playwright bunx playwright test tests/generation.spec.ts
-  ```
+  O [guia de instalação](../development.md#5-rode-os-testes) traz o comando dos dois cenários.
 
 - **Avaliação**: [`backend/scripts/evaluate.py`](../backend/scripts/evaluate.py). O script mede a busca, o revisor e a geração com o modelo real, a partir dos [casos de avaliação](../examples/evals/README.md). Roda à mão, fora do CI.
 
@@ -248,23 +239,23 @@ A equipe usa só recursos marcados como Always Free e não muda a conta para Pay
 | Partir do `full-stack-fastapi-template` | Conta, login e cliente gerado já vêm prontos. | Existe |
 | Um só banco: PostgreSQL com pgvector | Evita operar um vector store separado. | Existe |
 | Busca exata, sem índice HNSW | Cerca de 15.000 chunks na escala planejada. | Existe |
-| Gemini para embeddings e texto | Uma só chave e um só cliente. | A construir |
+| Gemini para embeddings e texto | Uma só chave e um só cliente. | Existe |
 | Tarefa de fundo com `BackgroundTasks` | Uma fila externa é uma peça a mais para 10 usuários. | Existe |
-| JSON publicado no banco e no OCI | A API lê do banco. O OCI atende ao hackathon. | A construir |
-| OCI Python SDK, sem MinIO e sem `boto3` | Permite instance principal na VM e testa o OCI desde o início. | A construir |
-| `escreve` e `revisa`, com uma reescrita | A promessa do produto é fidelidade ao documento. | A construir |
-| Não publicar conteúdo reprovado | Conteúdo errado com aparência de pronto é pior que um erro claro. | A construir |
-| Um curso por nível de público | O esquema já fixa `audience_level` no curso. | Existe no esquema |
-| Limite de 10 minutos e nova tentativa manual | A tarefa de fundo não avisa quando morre. | A construir |
-| Exclusão: banco primeiro, OCI depois | Uma falha deixa um arquivo sem uso, não um curso quebrado. | A construir |
-| Uma VM Always Free com Docker Compose | Atende ao deploy em nuvem com poucas peças. | A construir |
-| LangGraph para o laço de escrita e revisão | O briefing lista agentes com LangGraph como diferencial, e o grafo deixa o fluxo visível. | A construir |
+| JSON publicado no banco e no OCI | A API lê do banco. O OCI atende ao hackathon. | Existe |
+| OCI Python SDK, sem MinIO e sem `boto3` | Permite instance principal na VM e testa o OCI desde o início. | Existe |
+| `escreve` e `revisa`, com até uma reescrita | A promessa do produto é fidelidade ao documento. | Existe |
+| Não publicar conteúdo reprovado | Conteúdo errado com aparência de pronto é pior que um erro claro. | Existe |
+| Um nível de público por curso | O esquema fixa `audience_level` no curso. | Existe |
+| Limite de 10 minutos e nova tentativa manual | A tarefa de fundo não avisa quando morre. | Existe |
+| Exclusão: banco primeiro, OCI depois | Uma falha deixa um arquivo sem uso, não um curso quebrado. | Existe |
+| Deploy em VM `VM.Standard.A2.Flex` (ARM) com Docker Compose | Destino do T36. | A construir |
+| LangGraph para o laço de escrita e revisão | O briefing lista agentes com LangGraph como diferencial, e o grafo deixa o fluxo visível. | Existe |
 | Etapa `planeja` antes de `escreve` | O briefing trata a cadeia de planejar, redigir e revisar como adicional. `planeja` só propõe a estrutura do conteúdo. | Existe |
-| Nomes em inglês no JSON e na API | O exemplo do briefing é só um exemplo. O produto usa os nomes do esquema. | A construir |
-| Vários documentos e várias saídas por curso | A pessoa escolhe os documentos e as saídas na criação. Todos os documentos valem para todas as saídas. | A construir |
-| Até 3 documentos e até 3 saídas, uma de cada formato | Todas as saídas têm o mesmo foco. Cada saída usa até cinco chamadas de texto ao modelo. | A construir |
-| Até 5 MiB por arquivo e 150 mil caracteres de texto por documento | Mantém cada documento perto da escala prevista no esquema. | A construir |
-| Arquivo no OCI com conteúdo, metadados e avaliação | Um sistema externo entende o arquivo sem consultar o banco. | A construir |
+| Nomes em inglês no JSON e na API | O exemplo do briefing é só um exemplo. O produto usa os nomes do esquema. | Existe |
+| Vários documentos e várias saídas por curso | A pessoa escolhe os documentos e as saídas na criação. Todos os documentos valem para todas as saídas. | Existe |
+| Até 3 documentos e até 3 saídas, uma de cada formato | Todas as saídas têm o mesmo foco. Cada saída usa até cinco chamadas de texto ao modelo. | Existe |
+| Até 5 MiB por arquivo e 150 mil caracteres de texto por documento | Mantém cada documento perto da escala prevista no esquema. | Existe |
+| Arquivo no OCI com conteúdo, metadados e avaliação | Um sistema externo entende o arquivo sem consultar o banco. | Existe |
 | Publicar só com foco coberto e pelo menos uma afirmação, todas com apoio | Em 19/11/2026, a regra anterior aprovou um tutorial com dois fatos falsos e outro que fugiu do foco. | Existe |
 
 Os limites de documentos, de saídas e de formato são regras da API. O banco não os impõe.

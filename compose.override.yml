@@ -62,6 +62,8 @@ services:
     # TODO: remove once coverage is done locally
     volumes:
       - ./backend/htmlcov:/app/backend/htmlcov
+      # Chave de API da OCI para OCI_AUTH=api_key. O usuário do contêiner é root.
+      - ${HOME}/.oci:/root/.oci:ro
     environment:
       FASTAPI_ENV: "development"
 
