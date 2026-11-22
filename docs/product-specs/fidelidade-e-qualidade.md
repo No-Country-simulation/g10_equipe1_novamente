@@ -17,7 +17,7 @@ Cada trecho citado existe no documento que a pessoa enviou.
 
 ## Como o produto decide publicar
 
-1. O revisor confere o material de estudo (`content`) e verifica se ele trata diretamente do foco com apoio nos trechos recuperados. Os metadados da raiz do JSON ficam fora da revisão.
+1. O revisor confere o material de estudo e verifica se ele trata diretamente do foco com apoio nos trechos recuperados. Para quiz, o material traz o enunciado, a resposta marcada e a justificativa de cada pergunta. Para tutorial e flashcards, o revisor recebe o campo `content`. Os trechos servem de evidência para os fatos do material. Os metadados da raiz do JSON ficam fora da revisão.
 2. O revisor lista as afirmações técnicas e aponta o trecho que sustenta cada uma, ou indica que não há apoio.
 3. O produto divide o número de afirmações sustentadas pelo total de afirmações. Se a revisão não lista afirmações, a nota é zero.
 4. Se o foco não é coberto, a geração falha de imediato com “O documento não trata do assunto pedido.”
@@ -66,11 +66,29 @@ A medição usa a primeira rodada do Pix e do Open Finance no commit `06a945b` e
 | Versão dos prompts | `planeja-v1+escreve-v4+revisa-v2` |
 | Busca | 20 de 20 trechos esperados entre os 8 (100%). |
 | Revisor | 4 de 5 erros plantados identificados na conferência. 0 alarmes falsos em 5 casos fiéis. |
-| Clareza | Não medida. A equipe não tem quem julgue o assunto dos documentos. A conferência passa para o teste de adaptação ao público com uma pessoa de fora no T34. |
+| Clareza | Não medida. A equipe não tem quem julgue o assunto dos documentos. |
 | Geração | 4 de 4 conteúdos aprovados para publicação. 0 reprovações, 0 falsas reprovações e 0 casos sem causa confirmada. |
 | Erros de execução | 2 de 6 gerações receberam HTTP 503 do Gemini. A primeira tentativa de indexar o Open Finance falhou antes dos casos. A repetição mediu o arquivo completo. |
 
 No quiz da LAI com erro plantado, a resposta marcada e a justificativa davam 30 dias como prazo inicial. O revisor reprovou o quiz ao marcar como sem apoio a alternativa de 20 dias, que o art. 11, § 1º, sustenta. O erro de 30 dias ficou sem marcação.
+
+### Rodada com `revisa-v3`
+
+A rodada usou o código do commit `8c6f019` e ocorreu antes de um rebase que manteve o código e os casos de avaliação.
+
+| O que mede | Resultado da rodada |
+| --- | --- |
+| Data (UTC) | 2026-11-21 |
+| Modelo de texto | `gemini-3.5-flash-lite` |
+| Modelo de embeddings | `gemini-embedding-2` |
+| Versão dos prompts | `planeja-v1+escreve-v4+revisa-v3` |
+| Busca | 20 de 20 trechos esperados entre os 8 (100%). |
+| Revisor | 5 de 5 erros plantados detectados. 0 alarmes falsos em 5 casos fiéis. |
+| Clareza | Não medida. |
+| Geração | 6 de 6 conteúdos aprovados para publicação. 1 de 6 precisou de uma segunda tentativa (flashcards de Pix Agendado, causa não confirmada). |
+| Erros de execução | Nenhum. |
+
+Em `lai-pedido-erro`, o revisor marcou como sem apoio o prazo inicial de 30 dias da resposta e da justificativa. Nos dois casos da LAI, a lista de afirmações sem apoio trouxe apenas fatos do material. Os quatro erros plantados do Pix e do Open Finance também apareceram nessa lista nos respectivos casos.
 
 ## O que fica fora
 
