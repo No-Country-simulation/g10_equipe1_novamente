@@ -19,6 +19,8 @@ jobs:
         with:
           persist-credentials: false
       - name: Create env files
+        env:
+          BACKEND_IMAGE_TAG: ci-validation
         run: |
           cp .env.example .env
           cp frontend/.env.example frontend/.env
