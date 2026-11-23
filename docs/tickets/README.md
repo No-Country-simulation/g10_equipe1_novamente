@@ -48,6 +48,7 @@ Um ticket só começa quando todos os seus bloqueios estão no `master`. Cada br
 5. Rode as verificações da seção abaixo e corrija todas as falhas.
 6. Faça commits no padrão do histórico (`feat:`, `fix:`, `docs:`, `test:`), em português.
 7. Abra o PR contra `master`. O título cita o `id`, por exemplo `feat: expõe a leitura de cursos (T02)`. A descrição diz o problema, a solução e como testar.
+    Se o ticket muda a interface, o PR traz uma evidência anexada: captura de tela da tela alterada, saída dos testes ou diff visual.
 8. Acompanhe o CI e corrija as falhas. Pare quando o CI estiver verde.
 
 Se o ticket contradiz o código ou uma especificação, pare e relate a contradição no PR ou na sessão. Não resolva a contradição só no código.
