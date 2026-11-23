@@ -160,7 +160,6 @@ Todos os tickets da tabela estão escritos. A equipe descartou T34 e T43. Quem a
 | 3 | T27 | Novo curso, passos 2 e 3, e envio | T07, T18, T23, T37 |
 | 3 | T38 | Tela "Curso": fidelidade, clareza, observações e trechos citados | T18 |
 | 4 | T26 | Agente `escreve`: quiz | T25 |
-| 4 | [T44](T44-correcao-no-leitor-de-quiz.md) | Correção no leitor de quiz: opção escolhida certa ou errada e a correta | T10 |
 | 5 | T28 | Tarefa de fundo para gerar os três formatos | T03, T19, T22, T23, T24, T26, T39 |
 | 6 | T29 | Etapa `planeja` | T24, T28 |
 | 6 | T30 | Avaliação da busca e do revisor, com medição de falsas reprovações | T03, T24, T28, T37 |
@@ -169,6 +168,7 @@ Todos os tickets da tabela estão escritos. A equipe descartou T34 e T43. Quem a
 | 7 | T31 | Teste no navegador da criação à leitura do conteúdo gerado | T08, T09, T10, T17, T27, T28, T29, T38 |
 | 7 | T41 | Casos de avaliação sobre os documentos da demonstração e primeira medição | T13, T30 |
 | 8 | T42 | Revisor sem as alternativas erradas do quiz | T41 |
+| 8 | [T44](T44-correcao-no-leitor-de-quiz.md) | Correção no leitor de quiz: opção escolhida certa ou errada e a correta | T10, T31 |
 | 9 | T35 | README, diagrama e guia de instalação | T29, T31, T32, T33, T42 |
 | 10 | [T36](T36-deploy-na-vm-da-oci.md) | Deploy na VM A2.Flex existente com HTTPS e backup diário (opcional) | T35 |
 
