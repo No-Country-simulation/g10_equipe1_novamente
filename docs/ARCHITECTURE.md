@@ -196,11 +196,11 @@ Os embeddings limitam a capacidade diária, não o texto. Sem contar novas tenta
 
 ## Implantação
 
-A configuração de deploy combina `compose.yml` e `compose.deploy.yml`. Só o backend publica uma porta, TCP 80. Ele serve o frontend e a API por HTTP na mesma origem e roda com um worker para compartilhar os limites do Gemini. O PostgreSQL usa um volume persistente. Traefik e Adminer ficam no Compose de desenvolvimento.
+A implantação validada na VM A2.Flex usa Docker Compose e uma imagem ARM64 versionada no OCIR. A VM não faz build nem clone Git. Só o backend publica a porta TCP 80 e serve o frontend e a API por HTTP na mesma origem, com um worker para compartilhar os limites do Gemini. O PostgreSQL usa um volume persistente. Traefik e Adminer ficam no Compose de desenvolvimento.
 
-O [guia de deploy](../deployment-docker-compose.md) usa SSH e `scripts/deploy.sh`. HTTPS e backup ficam fora do escopo da demonstração de hackathon. A equipe aceita tráfego sem criptografia e usa credenciais exclusivas da demonstração e dados descartáveis.
+O acesso público é HTTP, sem HTTPS. HTTPS e backup ficam fora do escopo da demonstração de hackathon. A equipe usa credenciais exclusivas da demonstração e dados descartáveis.
 
-A [Parte 2 do T36](tickets/T36-deploy-na-vm-da-oci.md#parte-2---pessoa) prevê publicar na VM `VM.Standard.A2.Flex` (arm64), configurar rede e identidade da instância, e validar o acesso HTTP por IP, o quiz, a exclusão e o reinício. A rede deve abrir só a porta 80 para o público e a 22 para o IP da pessoa que faz o deploy. [Referência da VM](https://docs.oracle.com/en-us/iaas/Content/Compute/References/arm.htm).
+O deploy validou o acesso HTTP público, frontend, API, PostgreSQL, autenticação, criação de curso, RAG/Gemini, quiz, Object Storage, exclusão e limpeza dos objetos. O workflow `Test Docker Compose` também passou. O teste de reinicialização da VM permanece pendente. A rede abre a porta 80 para o público e a 22 para o IP de quem faz o deploy. [Referência da VM](https://docs.oracle.com/en-us/iaas/Content/Compute/References/arm.htm).
 
 A A2.Flex é uma [exceção à regra Always Free do briefing](product-specs/escopo-do-mvp.md#restrições). Uma única VM é um ponto único de falha, e a equipe aceita esse risco.
 
@@ -239,7 +239,7 @@ A A2.Flex é uma [exceção à regra Always Free do briefing](product-specs/esco
 | Um nível de público por curso | O esquema fixa `audience_level` no curso. | Existe |
 | Limite de 10 minutos e nova tentativa manual | A tarefa de fundo não avisa quando morre. | Existe |
 | Exclusão: banco primeiro, OCI depois | Uma falha deixa um arquivo sem uso, não um curso quebrado. | Existe |
-| Deploy em VM `VM.Standard.A2.Flex` (ARM) com Docker Compose | Destino do T36. | A construir |
+| Deploy em VM `VM.Standard.A2.Flex` (ARM) com Docker Compose | Imagem ARM64 versionada no OCIR; sem build nem clone Git na VM. | Existe |
 | LangGraph para o laço de escrita e revisão | O briefing lista agentes com LangGraph como diferencial, e o grafo deixa o fluxo visível. | Existe |
 | Etapa `planeja` antes de `escreve` | O briefing trata a cadeia de planejar, redigir e revisar como adicional. `planeja` só propõe a estrutura do conteúdo. | Existe |
 | Nomes em inglês no JSON e na API | O exemplo do briefing é só um exemplo. O produto usa os nomes do esquema. | Existe |
