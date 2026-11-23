@@ -10,5 +10,7 @@ As capturas foram feitas em 18/11/2026, em um Chromium sem interface, com 1440 p
 | [`tela-6-conteudo-tutorial.png`](tela-6-conteudo-tutorial.png) | 6 · Conteúdo (tutorial estático, sem índice) | T18 (moldura), T08 (leitor) |
 | [`tela-q1-quiz.png`](tela-q1-quiz.png) | Q1 · Quiz comentado, aguardando resposta | T18 (moldura), T10 (leitor) |
 | [`tela-f1-flashcards.png`](tela-f1-flashcards.png) | F1 · Flashcards, frente | T18 (moldura), T09 (leitor) |
+| [`tela-q2-quiz-correta.png`](tela-q2-quiz-correta.png) | Q2 · Quiz comentado, resposta correta | T44 |
+| [`tela-q3-quiz-incorreta.png`](tela-q3-quiz-incorreta.png) | Q3 · Quiz comentado, resposta incorreta | T44 |
 
 As capturas mostram o design, não o produto. O progresso, o botão "Finalizar" e outros elementos ficam fora do MVP. O ticket de cada tela diz o que entra e o que sai.
