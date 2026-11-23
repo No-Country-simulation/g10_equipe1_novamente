@@ -19,12 +19,12 @@ jobs:
         with:
           persist-credentials: false
       - name: Create env files
-        env:
-          BACKEND_IMAGE_TAG: ci-validation
         run: |
           cp .env.example .env
           cp frontend/.env.example frontend/.env
       - name: Check production services and ports
+        env:
+          BACKEND_IMAGE_TAG: ci-validation
         run: |
           services=$(docker compose -f compose.yml -f compose.deploy.yml config --services | sort)
           test "$services" = "$(printf '%s\n' backend db)"
