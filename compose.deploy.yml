@@ -8,4 +8,4 @@ services:
     command: ["fastapi", "run", "--workers", "1"]
     restart: always
     ports:
-      - "127.0.0.1:80:8000"
+      - "80:8000"
