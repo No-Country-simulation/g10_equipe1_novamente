@@ -31,6 +31,8 @@
   --color-foreground-tertiary: var(--foreground-tertiary);
   --color-border-strong: var(--border-strong);
   --color-success: var(--success);
+  --color-success-background: var(--success-background);
+  --color-success-foreground: var(--success-foreground);
   --color-info: var(--info);
   --color-border: var(--border);
   --color-input: var(--input);
@@ -72,6 +74,8 @@
   --foreground-tertiary: #555b66;
   --border-strong: #7a818c;
   --success: #3fb68b;
+  --success-background: #d4f0e4;
+  --success-foreground: #14523a;
   --info: #1f4fd8;
   --border: #d5d9d2;
   --input: #7a818c;
@@ -111,6 +115,8 @@
   --destructive-foreground: oklch(0.704 0.191 22.216);
   --foreground-tertiary: oklch(0.708 0 0);
   --border-strong: oklch(1 0 0 / 30%);
+  --success-background: oklch(0.269 0 0);
+  --success-foreground: oklch(0.765 0.135 163);
   --info: #8fa8ff;
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
