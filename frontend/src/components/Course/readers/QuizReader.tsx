@@ -1,5 +1,5 @@
 import { Check, ChevronLeft, CircleCheck, CircleX, X } from "lucide-react"
-import { useState } from "react"
+import { useLayoutEffect, useRef, useState } from "react"
 import { z } from "zod"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
@@ -39,6 +39,7 @@ export function QuizReader({ content }: ReaderProps) {
 function Quiz({ questions }: z.infer<typeof quizSchema>) {
   const [index, setIndex] = useState(0)
   const [answers, setAnswers] = useState<Partial<Record<number, number>>>({})
+  const navigationRef = useRef<HTMLButtonElement>(null)
   const {
     prompt,
     options,
@@ -49,8 +50,18 @@ function Quiz({ questions }: z.infer<typeof quizSchema>) {
   const isAnswered = answer !== undefined
   const isAnswerCorrect = answer === correctIndex
   const ResultIcon = isAnswerCorrect ? CircleCheck : CircleX
+  const resultTitle = isAnswerCorrect ? "Resposta correta" : "Não foi dessa vez"
+  const correctSentence = isAnswerCorrect
+    ? ""
+    : `A resposta certa é ${optionLetters[correctIndex]}: ${options[correctIndex]}.`
   const position = index + 1
   const total = questions.length
+
+  useLayoutEffect(() => {
+    if (Object.keys(answers).length > 0) {
+      navigationRef.current?.focus()
+    }
+  }, [answers])
 
   return (
     <Card className="mx-auto w-full max-w-[900px] gap-0 overflow-hidden rounded-[12px] py-0">
@@ -142,45 +153,49 @@ function Quiz({ questions }: z.infer<typeof quizSchema>) {
             )
           })}
         </fieldset>
-        <div role="status" aria-atomic="true">
-          {isAnswered && (
-            <div
+        <p role="status" aria-atomic="true" className="sr-only">
+          {isAnswered &&
+            [`${resultTitle}.`, correctSentence, explanation]
+              .filter(Boolean)
+              .join(" ")}
+        </p>
+        {isAnswered && (
+          <div
+            aria-hidden="true"
+            data-testid="quiz-result"
+            className={cn(
+              "mt-5 space-y-2.5 rounded-md border border-l-[6px] bg-card p-5 wrap-anywhere",
+              isAnswerCorrect
+                ? "border-success-foreground"
+                : "border-destructive",
+            )}
+          >
+            <p
               className={cn(
-                "mt-5 space-y-2.5 rounded-md border border-l-[6px] bg-card p-5 wrap-anywhere",
+                "flex items-center gap-2 font-heading text-lg font-bold",
                 isAnswerCorrect
-                  ? "border-success-foreground"
-                  : "border-destructive",
+                  ? "text-success-foreground"
+                  : "text-destructive",
               )}
             >
-              <p
-                className={cn(
-                  "flex items-center gap-2 font-heading text-lg font-bold",
-                  isAnswerCorrect
-                    ? "text-success-foreground"
-                    : "text-destructive",
-                )}
-              >
-                <ResultIcon aria-hidden="true" className="size-5 shrink-0" />
-                {isAnswerCorrect ? "Resposta correta" : "Não foi dessa vez"}
-                {/* Preserva o espaço entre o título e a próxima frase no anúncio. */}
-                &nbsp;
+              <ResultIcon aria-hidden="true" className="size-5 shrink-0" />
+              {resultTitle}
+            </p>
+            {correctSentence && (
+              <p className="text-[15px]/[1.6] font-semibold text-muted-foreground">
+                {correctSentence}
               </p>
-              {!isAnswerCorrect && (
-                <p className="text-[15px]/[1.6] font-semibold text-muted-foreground">
-                  A resposta certa é {optionLetters[correctIndex]}:{" "}
-                  {options[correctIndex]}.
-                </p>
-              )}
-              <p className="text-base/[1.6] text-foreground">{explanation}</p>
-            </div>
-          )}
-        </div>
+            )}
+            <p className="text-base/[1.6] text-foreground">{explanation}</p>
+          </div>
+        )}
       </div>
       <nav
         aria-label="Navegação do quiz"
         className="flex flex-wrap justify-between gap-3 border-t bg-muted/50 p-6 [@media(max-width:360px)]:flex-col"
       >
         <Button
+          ref={position === total ? navigationRef : undefined}
           type="button"
           variant="outline"
           disabled={position === 1}
@@ -192,6 +207,7 @@ function Quiz({ questions }: z.infer<typeof quizSchema>) {
         </Button>
         {position < total && (
           <Button
+            ref={navigationRef}
             type="button"
             disabled={!isAnswered}
             onClick={() => setIndex(index + 1)}

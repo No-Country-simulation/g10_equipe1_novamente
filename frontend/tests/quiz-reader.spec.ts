@@ -43,6 +43,7 @@ function quiz(page: Page) {
     previous: page.getByRole("button", { name: "Pergunta anterior" }),
     next: page.getByRole("button", { name: "Próxima pergunta" }),
     feedback: page.getByRole("status"),
+    result: page.getByTestId("quiz-result"),
   }
 }
 
@@ -86,18 +87,23 @@ test("corrige a resposta, mostra a justificativa e mantém o resultado ao voltar
   page,
 }) => {
   await setup(page)
-  const { options, previous, next, feedback } = quiz(page)
+  const { options, previous, next, feedback, result } = quiz(page)
   const selected = options.first()
 
   await selected.press("Enter")
+  await expect(next).toBeFocused()
   await expect(selected).toHaveAccessibleName("Logs Sua resposta · correta")
   await expect(selected.locator("svg.lucide-check")).toHaveAttribute(
     "aria-hidden",
     "true",
   )
-  await expect(feedback).toContainText("Resposta correta")
-  await expect(feedback).toContainText(questions[0].explanation)
-  await expect(feedback).not.toContainText("A resposta certa é")
+  await expect(feedback).toHaveText(
+    `Resposta correta. ${questions[0].explanation}`,
+  )
+  await expect(result).toHaveAttribute("aria-hidden", "true")
+  await expect(
+    result.getByText("Resposta correta", { exact: true }),
+  ).toBeVisible()
   await expect(options.and(page.locator(":disabled"))).toHaveCount(4)
   await expect(next).toBeEnabled()
   await next.click()
@@ -105,6 +111,7 @@ test("corrige a resposta, mostra a justificativa e mantém o resultado ao voltar
   await expect(next).toBeDisabled()
   await expect(feedback).toBeEmpty()
   await selected.press("Space")
+  await expect(next).toBeFocused()
   await expect(selected).toHaveAccessibleName("Logs Sua resposta · incorreta")
   await expect(selected.locator("svg.lucide-x")).toHaveAttribute(
     "aria-hidden",
@@ -114,7 +121,10 @@ test("corrige a resposta, mostra a justificativa e mantém o resultado ao voltar
   await expect(options.nth(2)).toHaveAccessibleName("Métricas Resposta correta")
   await expect(options.nth(3)).toHaveAccessibleName("D Traces")
   await expect(options.and(page.locator(":disabled"))).toHaveCount(4)
-  await expect(feedback.locator("p")).toHaveText([
+  await expect(feedback).toHaveText(
+    `Não foi dessa vez. A resposta certa é C: Métricas. ${questions[1].explanation}`,
+  )
+  await expect(result.locator("p")).toHaveText([
     "Não foi dessa vez",
     "A resposta certa é C: Métricas.",
     questions[1].explanation,
@@ -168,10 +178,24 @@ for (const [colorScheme, colors] of [
         name: colorScheme === "light" ? "Claro" : "Escuro",
       })
       .click()
-    const { options, next } = quiz(page)
+    const { options, next, result } = quiz(page)
+    const [, incorrectColor] = colors[0]
+    const [, correctColor] = colors[2]
+
     await options.first().click()
+    await expect(result).toHaveCSS("border-left-color", correctColor)
+    await expect(result).toHaveCSS("border-left-width", "6px")
+    await expect(
+      result.getByText("Resposta correta", { exact: true }),
+    ).toHaveCSS("color", correctColor)
+
     await next.click()
     await options.first().click()
+    await expect(result).toHaveCSS("border-left-color", incorrectColor)
+    await expect(result).toHaveCSS("border-left-width", "6px")
+    await expect(
+      result.getByText("Não foi dessa vez", { exact: true }),
+    ).toHaveCSS("color", incorrectColor)
 
     for (const [index, [background, border, text]] of colors.entries()) {
       const option = options.nth(index)
@@ -201,7 +225,7 @@ for (const [colorScheme, colors] of [
       [
         document.documentElement,
         ...document.querySelectorAll(
-          'fieldset[aria-label="Opções de resposta"] button, [role="status"]',
+          'fieldset[aria-label="Opções de resposta"] button, [data-testid="quiz-result"]',
         ),
       ].some((element) => element.scrollWidth > element.clientWidth),
     )
@@ -223,7 +247,8 @@ test("mostra só o botão de voltar na última pergunta e reinicia ao recarregar
   await expect(
     page.getByRole("progressbar", { name: "Posição no quiz" }),
   ).toHaveAttribute("aria-valuenow", "5")
-  await options.first().click()
+  await options.first().press("Enter")
+  await expect(previous).toBeFocused()
   await expect(options.first()).toHaveAccessibleName(
     "Logs Sua resposta · correta",
   )

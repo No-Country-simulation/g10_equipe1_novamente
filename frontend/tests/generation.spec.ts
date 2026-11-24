@@ -117,8 +117,12 @@ test("cria um curso e abre os três leitores com conteúdo gerado", async ({
   const feedback = page
     .getByRole("status")
     .filter({ hasText: "Resposta correta" })
-  await expect(feedback).toBeVisible()
   await expect(feedback).toContainText(sourceSentence)
+  await expect(
+    page
+      .getByTestId("quiz-result")
+      .getByText("Resposta correta", { exact: true }),
+  ).toBeVisible()
 })
 
 test("mostra a reprovação do foco e omite o leitor", async ({ page }) => {
