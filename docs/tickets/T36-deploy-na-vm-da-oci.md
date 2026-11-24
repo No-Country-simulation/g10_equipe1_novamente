@@ -26,7 +26,7 @@ size: 3
 
 Publique o NovaMente na VM `VM.Standard.A2.Flex` (arm64) que a equipe já tem em execução. Use Docker Compose e sirva a demonstração por HTTP na porta 80. A [decisão de custo](../product-specs/escopo-do-mvp.md#restrições) registra a exceção ao Always Free.
 
-A **Parte 1** entrega Compose, script e guia em um PR. Depois do merge, uma pessoa com acesso à OCI e à VM executa a **Parte 2** e registra o aceite. Chaves SSH, OCIDs, fingerprints, namespace e valores reais do `.env` ficam com essa pessoa. Use só exemplos e resultados sem identificadores no repositório, no PR e nas sessões de agente.
+A **Parte 1** entrega Compose, CI e guia em um PR. Depois do merge, uma pessoa com acesso à OCI e à VM executa a **Parte 2** e registra o aceite. Chaves SSH, OCIDs, fingerprints, namespace e valores reais do `.env` ficam com essa pessoa. Use só exemplos e resultados sem identificadores no repositório, no PR e nas sessões de agente.
 
 ## Decisões
 
@@ -35,8 +35,8 @@ A **Parte 1** entrega Compose, script e guia em um PR. Depois do merge, uma pess
 | VM | Use a A2.Flex existente. | A equipe já tem a VM. A alternativa Always Free está registrada na especificação. |
 | HTTP | Publique a porta 80 da VM no backend. Use o IPv4 público ou um domínio opcional. | O backend serve o frontend e a API na mesma origem. O acesso por IP dispensa DNS. |
 | HTTPS e backup | Deixe fora do escopo. Use credenciais exclusivas da demonstração e dados descartáveis. | A entrega é uma demonstração de hackathon por HTTP. A equipe aceita tráfego sem criptografia e a perda do banco da demonstração. |
-| Deploy | Entre por SSH e rode o script. Apague o workflow manual com runner `self-hosted`. | O repositório é público. O script elimina o runner de deploy na VM e os segredos de deploy no GitHub. [Orientação do GitHub](https://docs.github.com/en/actions/how-tos/manage-runners/self-hosted-runners/add-runners). |
-| Build | Compile a imagem do backend na VM. Mantenha o CI em `ubuntu-latest`. | O build nativo valida arm64 na VM existente. |
+| Deploy | Entre por SSH e use Docker Compose com uma imagem ARM64 versionada no OCIR. Apague o workflow manual com runner `self-hosted`. | A VM não clona o repositório nem compila a imagem. O repositório é público e não deve guardar segredos de deploy. [Orientação do GitHub](https://docs.github.com/en/actions/how-tos/manage-runners/self-hosted-runners/add-runners). |
+| Imagem | Use a imagem versionada `gru.ocir.io/grb8lprt42cf/novamente/backend:<tag>` e configure `BACKEND_IMAGE_TAG`. | O Compose de deploy consome a imagem do OCIR; a VM ARM64 não faz o build. |
 | Backend | Use `fastapi run --workers 1` na VM. | Os limitadores em `backend/app/core/llm.py` compartilham estado e lock no mesmo processo. |
 | Object Storage | Use um bucket privado da demonstração na região da VM, com `OCI_AUTH=instance_principal`. | A identidade da VM dispensa uma chave de API da OCI. |
 
@@ -49,17 +49,17 @@ A **Parte 1** entrega Compose, script e guia em um PR. Depois do merge, uma pess
 3. Troque `--workers 4` por `--workers 1` em `backend/Dockerfile`. Exclua `.env*` em qualquer diretório do contexto de build.
 4. Apague `.github/workflows/deploy-docker-compose.yml`. No CI de Compose, valide com `docker compose -f compose.yml -f compose.deploy.yml config --services` que o deploy tem só `backend` e `db`. Mantenha `docker compose up -d --wait backend adminer`. Use `curl -fsS` na rota completa `/api/v1/utils/health-check/` e compare o corpo com `true`. Exija sucesso HTTP em `/`.
 
-### Script de deploy
+### Fluxo de deploy na VM
 
-Em `scripts/deploy.sh`, use `set -euo pipefail`, entre na raiz do clone a partir do caminho do script e use `-f compose.yml -f compose.deploy.yml` em todo comando Compose. O Compose lê o `.env`.
+O deploy usa `compose.yml` e `compose.deploy.yml` no diretório dedicado da VM. Mantenha o mesmo caminho para preservar o nome do projeto Compose e o volume `app-db-data`. A VM não clona o repositório nem compila a imagem. `BACKEND_IMAGE_TAG` deve apontar para uma versão já publicada no OCIR, e a VM precisa ter acesso de leitura ao registry. Este ticket não define como publicar a imagem, autenticar o pull nem provisionar os arquivos Compose.
 
-Exija um checkout limpo no branch `master`. Rode `git pull --ff-only origin master` e confira que `HEAD` e `FETCH_HEAD` coincidem. Rode, em ordem, `build backend`, `up -d --wait db`, `run --rm --no-deps backend bash scripts/prestart.sh` e `up -d --wait --remove-orphans`. O `prestart.sh` executa `alembic upgrade head`. Pare no primeiro erro. Mostre `ps` e o commit publicado. Use o script só no projeto Compose dedicado ao NovaMente.
+Com `COMPOSE_FILE=compose.yml:compose.deploy.yml` no `.env`, rode, em ordem, `docker compose pull backend`, `docker compose up -d --wait db`, `docker compose run --rm --no-deps backend bash scripts/prestart.sh` e `docker compose up -d --wait --remove-orphans`. O `prestart.sh` executa `alembic upgrade head`. Confira `docker compose ps` e a rota pública de saúde. `scripts/deploy.sh` não representa esse fluxo: exige checkout Git em `master` e chama `docker compose build backend`, embora o Compose de deploy desative `build` e exija `BACKEND_IMAGE_TAG`.
 
 ### Guia
 
 Reescreva [o guia de deploy](../../deployment-docker-compose.md) em português, na ordem da Parte 2. Inclua comandos, campos do `.env`, atualização e diagnóstico de rede, migração, acesso ao armazenamento e geração. Use valores fictícios ou marcados como `<valor>`. Siga o [guia de escrita](../WRITING.md).
 
-Em [`deployment.md`](../../deployment.md), linke o guia e preserve a seção de automação do repositório. Adicione o link ao [README](../../README.md) e ao [`AGENTS.md`](../../AGENTS.md). Atualize [Implantação](../ARCHITECTURE.md#implantação) e o mapa do código. Mantenha a publicação e a verificação na VM como planejadas até a Parte 2.
+Em [`deployment.md`](../../deployment.md), linke o guia e preserve a seção de automação do repositório. Adicione o link ao [README](../../README.md) e ao [`AGENTS.md`](../../AGENTS.md). Atualize [Implantação](../ARCHITECTURE.md#implantação) e o mapa do código conforme o fluxo efetivamente implantado. A arquitetura registra o deploy e as verificações da demonstração como validados; o reinício da VM continua pendente.
 
 ### Aceite da Parte 1
 
@@ -74,11 +74,11 @@ Em [`deployment.md`](../../deployment.md), linke o guia e preserve a seção de 
 1. **VM e rede.** Confirme o shape `VM.Standard.A2.Flex` no console e `aarch64` com `uname -m` por SSH. Confira serviços que já usam portas. Verifique o efeito conjunto das security lists, dos NSGs e do firewall. Deixe abertas só TCP 80 para o público e TCP 22 para o IP da pessoa que faz o deploy. Preserve as regras de outros hosts em subnets compartilhadas. Confirme que a VM alcança o DNS, o Gemini, os registros de imagens e a OCI. [Regras de rede da OCI](https://docs.oracle.com/en-us/iaas/Content/Network/Concepts/securityrules.htm#if-you-use-both-security-lists-and-network-security-groups).
 2. **Bucket e identidade.** Use um bucket privado exclusivo na região da VM. No domínio de identidade padrão, crie um dynamic group com a regra `instance.id = '<ocid-da-vm>'`. Conceda `Allow dynamic-group <grupo> to manage objects in compartment <compartimento> where target.bucket.name = '<bucket>'`. Configure o namespace só na VM. [Identidade da instância](https://docs.oracle.com/en-us/iaas/Content/Identity/Tasks/callingservicesfrominstances.htm), [permissões do Object Storage](https://docs.oracle.com/en-us/iaas/Content/Identity/policyreference/objectstoragepolicyreference.htm).
 3. **Endereço.** Use o IPv4 público. Se usar domínio, aponte o registro A para esse IPv4 e confirme a resolução de fora da OCI. Publique AAAA só se a VM também receber tráfego por IPv6.
-4. **Docker e código.** Use o Docker Engine e o plugin Compose. Habilite o Docker no boot. Se houver um runner de deploy do NovaMente nessa VM, remova o registro no GitHub e desative o serviço. Clone o `master` por HTTPS em um diretório dedicado e mantenha o caminho nas atualizações para preservar o projeto e seus volumes. [Instalação do Docker](https://docs.docker.com/engine/install/).
-5. **Configuração e deploy.** Crie o `.env` com permissão `600`. Rode `bash scripts/deploy.sh` e `docker compose -f compose.yml -f compose.deploy.yml exec -T backend python scripts/verify_storage.py`. Confira o envio, a leitura, a listagem e a exclusão.
+4. **Docker e Compose.** Use o Docker Engine e o plugin Compose. Habilite o Docker no boot. Se houver um runner de deploy do NovaMente nessa VM, remova o registro no GitHub e desative o serviço. Mantenha os dois arquivos Compose em um diretório dedicado e estável; a VM não clona o repositório. [Instalação do Docker](https://docs.docker.com/engine/install/).
+5. **Configuração e deploy.** Crie o `.env` privado com permissão `600`, incluindo `BACKEND_IMAGE_TAG` para uma imagem ARM64 já publicada no OCIR. Rode os comandos de pull, migração e subida descritos em "Fluxo de deploy na VM". Depois rode `docker compose exec -T backend python scripts/verify_storage.py` e confira envio, leitura, listagem e exclusão.
 6. **Demonstração.** Crie uma conta exclusiva pela tela "Criar conta". Acesse pelo IPv4 público, rode o quiz da LAI e verifique a leitura e a exclusão do curso.
-7. **Atualização.** Escolha uma janela sem geração ativa. Rode `bash scripts/deploy.sh` e confira a rota pública de saúde. A migração altera o banco antes de subir o backend novo. Preserve o volume `app-db-data`.
-8. **Conclusão.** Execute a verificação manual e registre o aceite. No PR de conclusão, troque `A construir` por `Existe` na linha "Deploy em VM `VM.Standard.A2.Flex` (ARM) com Docker Compose" de [Decisões](../ARCHITECTURE.md#decisões). Em [Implantação](../ARCHITECTURE.md#implantação), atualize o parágrafo "A Parte 2 do T36 prevê" com o que você fez e verificou na VM. Corrija o guia se algum passo mudou.
+7. **Atualização.** Escolha uma janela sem geração ativa. Atualize os arquivos Compose e `BACKEND_IMAGE_TAG` para a imagem publicada e repita o fluxo de pull, migração e subida. Confira a rota pública de saúde. A migração altera o banco antes de subir o backend novo. Preserve o volume `app-db-data`.
+8. **Conclusão.** Execute a verificação manual e registre o aceite, incluindo o teste de reinício que ainda está pendente. Mantenha [Decisões](../ARCHITECTURE.md#decisões) e [Implantação](../ARCHITECTURE.md#implantação) coerentes com os resultados observados na VM e atualize este guia se algum passo mudar.
 
 ### Campos do .env da VM
 
@@ -86,6 +86,7 @@ Em [`deployment.md`](../../deployment.md), linke o guia e preserve a seção de 
 | --- | --- |
 | `COMPOSE_FILE` | `compose.yml:compose.deploy.yml` |
 | `PROJECT_NAME` | `NovaMente` |
+| `BACKEND_IMAGE_TAG` | Tag de uma imagem ARM64 já publicada em `gru.ocir.io/grb8lprt42cf/novamente/backend` |
 | `SECRET_KEY` | Valor gerado com `openssl rand -hex 32` |
 | `POSTGRES_PASSWORD` | Outro valor gerado com `openssl rand -hex 32` para volume novo. Preserve a senha de um volume existente. |
 | `GEMINI_API_KEY` | Chave exclusiva da demonstração, de um projeto no plano gratuito sem faturamento ativado |
@@ -98,15 +99,15 @@ O Compose monta `DATABASE_URL` com a senha do banco e o host `db`. O cadastro é
 
 ### Verificação manual
 
-- [ ] Na VM, `uname -m` mostra `aarch64`. O build passa e `docker image inspect backend:latest --format '{{.Os}}/{{.Architecture}}'` mostra `linux/arm64`. O Compose mostra o backend saudável e `docker compose -f compose.yml -f compose.deploy.yml top backend` mostra um servidor.
+- [ ] Na VM, `uname -m` mostra `aarch64`. `docker image inspect "$(docker compose images -q backend)" --format '{{.Os}}/{{.Architecture}}'` mostra `linux/arm64`. O Compose mostra o backend saudável e `docker compose top backend` mostra um servidor.
 - [ ] De fora da VM, abra `http://<ipv4-publico>/` e confira que `curl -fsS "http://<ipv4-publico>/api/v1/utils/health-check/"` retorna `true`. Confira que 80 responde e que 5432, 8000, 8080 e 8090 estão fechadas. Verifique a porta 22 de um IP autorizado e de outro fora da lista. Confira IPv6 se houver.
 - [ ] No navegador, siga o [quiz da LAI](../../development.md#4-crie-leia-e-exclua-um-curso) até "Pronto" e responda a uma pergunta. Veja o documento e o JSON sob `courses/<course_id>/` no console da OCI. Exclua o curso pela tela e confira que a limpeza esvazia o prefixo.
 - [ ] Em uma janela combinada pela equipe, reinicie a VM. Confirme de fora que a rota de saúde voltou a responder `true`. Na VM, `stat -c %a .env` mostra `600`.
 
 ## Verificação do aceite
 
-Registre a data, o commit, o shape, a região e os resultados do build, do acesso HTTP, do quiz, da exclusão e do reinício. Registre o custo mensal estimado da VM com base no uso e no preço aplicável no console. Compartilhe o endereço da demonstração com a equipe e a banca pelo canal escolhido.
+Registre a data, a tag da imagem, o shape, a região e os resultados do acesso HTTP, do quiz, da exclusão e do reinício. Registre o custo mensal estimado da VM com base no uso e no preço aplicável no console. Compartilhe o endereço da demonstração com a equipe e a banca pelo canal escolhido.
 
 ## Fora do escopo
 
-HTTPS, backup, deploy automático, registry de imagens, nova VM, alta disponibilidade e monitoramento externo.
+HTTPS, backup, deploy automático, automação de publicação da imagem no OCIR, nova VM, alta disponibilidade e monitoramento externo. O deploy já consome uma imagem versionada do OCIR.

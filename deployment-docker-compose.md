@@ -25,16 +25,11 @@ Allow dynamic-group <grupo> to manage objects in compartment <compartimento> whe
 
 Use o IPv4 público da VM. Se quiser usar um domínio, aponte o registro A para esse IP e confira de fora da OCI com `dig +short A novamente.example.com`, substituindo o domínio de exemplo. Publique AAAA só se a VM receber tráfego por IPv6.
 
-## 4. Prepare o Docker e o clone
+## 4. Prepare o Docker e a imagem
 
-Instale o Docker Engine e o plugin Compose se faltarem. Habilite o Docker no boot com `sudo systemctl enable --now docker`. Se houver um runner de deploy do NovaMente, remova o registro no GitHub e desative o serviço na VM. [Instalação do Docker](https://docs.docker.com/engine/install/), [remoção do runner](https://docs.github.com/en/actions/how-tos/manage-runners/self-hosted-runners/remove-runners).
+Instale o Docker Engine e o plugin Compose se faltarem. Habilite o Docker no boot com `sudo systemctl enable --now docker`. A VM executa uma imagem ARM64 versionada do OCIR; ela não precisa clonar o repositório nem compilar a imagem. Tenha disponível uma tag já publicada no caminho de imagem configurado em `compose.deploy.yml` e acesso de leitura da VM ao OCIR. A branch não documenta como publicar a imagem, autenticar para baixá-la nem provisionar os arquivos Compose na VM. [Instalação do Docker](https://docs.docker.com/engine/install/).
 
-```bash
-git clone --branch master https://github.com/No-Country-simulation/g10_equipe1_novamente.git novamente
-cd novamente
-```
-
-Use um diretório dedicado e mantenha seu caminho nas atualizações para preservar o projeto Compose e seus volumes.
+Prepare um diretório dedicado com `compose.yml` e `compose.deploy.yml` da versão implantada. Use sempre o mesmo caminho. O Compose deriva o nome do projeto do diretório; mudar o nome pode criar outro volume em vez de reutilizar `app-db-data`. Se ainda houver um runner de deploy do NovaMente, remova o registro no GitHub e desative o serviço na VM. [Remoção do runner](https://docs.github.com/en/actions/how-tos/manage-runners/self-hosted-runners/remove-runners).
 
 ## 5. Configure o ambiente e publique
 
@@ -43,6 +38,7 @@ Se o `.env` ainda não existir, crie com `install -m 600 /dev/null .env`. Troque
 ```dotenv
 COMPOSE_FILE=compose.yml:compose.deploy.yml
 PROJECT_NAME=NovaMente
+BACKEND_IMAGE_TAG=<tag-publicada-no-ocir>
 SECRET_KEY=<segredo-gerado>
 POSTGRES_PASSWORD=<senha-do-postgres>
 GEMINI_API_KEY=<chave-do-projeto-de-demonstracao>
@@ -52,16 +48,20 @@ OCI_BUCKET=<bucket-privado>
 OCI_NAMESPACE=<namespace>
 ```
 
-Na VM, `COMPOSE_FILE` faz os comandos `docker compose` sem `-f` usarem só os arquivos de deploy.
+Guarde esse `.env` somente na VM, com permissão `600`. `COMPOSE_FILE` seleciona os arquivos de deploy. `BACKEND_IMAGE_TAG` precisa corresponder a uma imagem já publicada no OCIR.
 
 Use um projeto Gemini exclusivo da demonstração, no plano gratuito e sem faturamento ativado. Com uma conta com acesso ao Docker, rode os comandos abaixo na ordem. Se um comando falhar, pare e corrija a causa.
 
 ```bash
-bash scripts/deploy.sh
-docker compose -f compose.yml -f compose.deploy.yml exec -T backend python scripts/verify_storage.py
+docker compose pull backend
+docker compose up -d --wait db
+docker compose run --rm --no-deps backend bash scripts/prestart.sh
+docker compose up -d --wait --remove-orphans
+docker compose ps
+docker compose exec -T backend python scripts/verify_storage.py
 ```
 
-Confirme que envio, leitura, listagem e exclusão passam. Confira `linux/arm64` com `docker image inspect backend:latest --format '{{.Os}}/{{.Architecture}}'`. Confira um servidor com `docker compose -f compose.yml -f compose.deploy.yml top backend`.
+Confirme que envio, leitura, listagem e exclusão passam. Confira que a imagem usada pelo contêiner é `linux/arm64` com `docker image inspect "$(docker compose images -q backend)" --format '{{.Os}}/{{.Architecture}}'`. Confira um servidor com `docker compose top backend`.
 
 De fora da VM, abra `http://192.0.2.10/` no navegador, substituindo o IP de exemplo. O comando abaixo deve retornar `true`.
 
@@ -77,7 +77,7 @@ Crie a conta pela tela "Criar conta". O cadastro é aberto. Siga o [quiz da LAI]
 
 ## 7. Atualize
 
-Escolha uma janela sem geração ativa. Rode `bash scripts/deploy.sh` e confira a rota pública de saúde. A migração altera o banco antes de subir o backend novo. Preserve o volume `app-db-data`.
+Escolha uma janela sem geração ativa. Atualize os arquivos Compose e `BACKEND_IMAGE_TAG` para a versão publicada, então repita a sequência de pull, espera do banco, migração e subida do passo 5. Confira a rota pública de saúde. A migração altera o banco antes de subir o backend novo. Preserve o volume `app-db-data`.
 
 ## 8. Registre o aceite
 
