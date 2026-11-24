@@ -162,6 +162,8 @@ function Quiz({ questions }: z.infer<typeof quizSchema>) {
               >
                 <ResultIcon aria-hidden="true" className="size-5 shrink-0" />
                 {isAnswerCorrect ? "Resposta correta" : "Não foi dessa vez"}
+                {/* Preserva o espaço entre o título e a próxima frase no anúncio. */}
+                &nbsp;
               </p>
               {!isAnswerCorrect && (
                 <p className="text-[15px]/[1.6] font-semibold text-muted-foreground">
