@@ -114,7 +114,10 @@ test("cria um curso e abre os três leitores com conteúdo gerado", async ({
   await page.getByRole("link", { name: "Voltar ao curso" }).click()
   await page.getByRole("link", { name: "Abrir Quiz de comandos Git" }).click()
   await page.getByRole("button", { name: "A git status", exact: true }).click()
-  const feedback = page.getByRole("status").filter({ hasText: "Justificativa" })
+  const feedback = page
+    .getByRole("status")
+    .filter({ hasText: "Resposta correta" })
+  await expect(feedback).toBeVisible()
   await expect(feedback).toContainText(sourceSentence)
 })
 

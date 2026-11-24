@@ -1,27 +1,22 @@
-import { ChevronLeft } from "lucide-react"
+import { Check, ChevronLeft, CircleCheck, CircleX, X } from "lucide-react"
 import { useState } from "react"
 import { z } from "zod"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
+import { cn } from "@/lib/utils"
 import type { ReaderProps } from "./types"
 
 const text = z.string().trim().min(1)
-const questionSchema = z
-  .object({
-    prompt: text,
-    options: z
-      .array(text)
-      .length(4)
-      .refine((options) => new Set(options).size === options.length),
-    correct_index: z.int().min(0).max(3),
-    explanation: text,
-  })
-  .transform(({ prompt, options, explanation }) => ({
-    prompt,
-    options,
-    explanation,
-  }))
+const questionSchema = z.object({
+  prompt: text,
+  options: z
+    .array(text)
+    .length(4)
+    .refine((options) => new Set(options).size === options.length),
+  correct_index: z.int().min(0).max(3),
+  explanation: text,
+})
 const quizSchema = z.object({ questions: z.array(questionSchema).length(5) })
 const optionLetters = ["A", "B", "C", "D"]
 
@@ -43,9 +38,17 @@ export function QuizReader({ content }: ReaderProps) {
 
 function Quiz({ questions }: z.infer<typeof quizSchema>) {
   const [index, setIndex] = useState(0)
-  const [revealed, setRevealed] = useState(() => new Set<number>())
-  const { prompt, options, explanation } = questions[index]
-  const isRevealed = revealed.has(index)
+  const [answers, setAnswers] = useState<Partial<Record<number, number>>>({})
+  const {
+    prompt,
+    options,
+    correct_index: correctIndex,
+    explanation,
+  } = questions[index]
+  const answer = answers[index]
+  const isAnswered = answer !== undefined
+  const isAnswerCorrect = answer === correctIndex
+  const ResultIcon = isAnswerCorrect ? CircleCheck : CircleX
   const position = index + 1
   const total = questions.length
 
@@ -76,29 +79,97 @@ function Quiz({ questions }: z.infer<typeof quizSchema>) {
           aria-label="Opções de resposta"
           className="grid min-w-0 gap-3"
         >
-          {options.map((option, optionIndex) => (
-            <Button
-              key={option}
-              type="button"
-              variant="outline"
-              disabled={isRevealed}
-              onClick={() =>
-                setRevealed((current) => new Set(current).add(index))
-              }
-              className="h-auto min-h-16 w-full justify-start gap-4 rounded-md border-border-strong p-4 text-left text-lg font-normal whitespace-normal"
-            >
-              <span className="grid size-8 shrink-0 place-items-center rounded-[6px] border bg-muted/50 text-sm font-semibold">
-                {optionLetters[optionIndex]}
-              </span>{" "}
-              <span className="wrap-anywhere">{option}</span>
-            </Button>
-          ))}
+          {options.map((option, optionIndex) => {
+            const isSelected = optionIndex === answer
+            const isCorrect = isAnswered && optionIndex === correctIndex
+            const isIncorrect = isSelected && !isCorrect
+            const label = isCorrect
+              ? isSelected
+                ? "Sua resposta · correta"
+                : "Resposta correta"
+              : isIncorrect
+                ? "Sua resposta · incorreta"
+                : null
+
+            return (
+              <Button
+                key={option}
+                type="button"
+                variant="outline"
+                disabled={isAnswered}
+                onClick={() =>
+                  setAnswers((current) => ({
+                    ...current,
+                    [index]: optionIndex,
+                  }))
+                }
+                className={cn(
+                  "h-auto min-h-16 w-full justify-start gap-4 rounded-md border-border-strong p-4 text-left text-lg font-normal whitespace-normal disabled:opacity-100",
+                  isCorrect &&
+                    "border-2 border-success-foreground bg-success-background font-semibold text-success-foreground dark:border-success-foreground dark:bg-success-background",
+                  isIncorrect &&
+                    "border-2 border-destructive bg-destructive-background font-semibold text-destructive-foreground dark:border-destructive dark:bg-destructive-background",
+                  isAnswered &&
+                    !label &&
+                    "border-border bg-background text-foreground-tertiary dark:border-border dark:bg-background",
+                )}
+              >
+                <span
+                  className={cn(
+                    "grid size-8 shrink-0 place-items-center rounded-[6px] border bg-muted/50 text-sm font-semibold",
+                    isAnswered && "bg-card",
+                    isCorrect && "border-0 bg-success-foreground text-card",
+                    isIncorrect && "border-0 bg-destructive text-card",
+                  )}
+                >
+                  {isCorrect ? (
+                    <Check aria-hidden="true" className="size-[18px]" />
+                  ) : isIncorrect ? (
+                    <X aria-hidden="true" className="size-[18px]" />
+                  ) : (
+                    optionLetters[optionIndex]
+                  )}
+                </span>{" "}
+                <span className="grid min-w-0 flex-1 items-center gap-x-4 gap-y-1 wrap-anywhere sm:grid-cols-[minmax(0,1fr)_auto]">
+                  <span>{option}</span>
+                  {label && (
+                    <span className="text-sm font-semibold sm:text-right">
+                      {label}
+                    </span>
+                  )}
+                </span>
+              </Button>
+            )
+          })}
         </fieldset>
-        <div role="status">
-          {isRevealed && (
-            <div className="mt-6 space-y-1 wrap-anywhere text-base/6">
-              <p className="font-semibold">Justificativa</p>
-              <p>{explanation}</p>
+        <div role="status" aria-atomic="true">
+          {isAnswered && (
+            <div
+              className={cn(
+                "mt-5 space-y-2.5 rounded-md border border-l-[6px] bg-card p-5 wrap-anywhere",
+                isAnswerCorrect
+                  ? "border-success-foreground"
+                  : "border-destructive",
+              )}
+            >
+              <p
+                className={cn(
+                  "flex items-center gap-2 font-heading text-lg font-bold",
+                  isAnswerCorrect
+                    ? "text-success-foreground"
+                    : "text-destructive",
+                )}
+              >
+                <ResultIcon aria-hidden="true" className="size-5 shrink-0" />
+                {isAnswerCorrect ? "Resposta correta" : "Não foi dessa vez"}
+              </p>
+              {!isAnswerCorrect && (
+                <p className="text-[15px]/[1.6] font-semibold text-muted-foreground">
+                  A resposta certa é {optionLetters[correctIndex]}:{" "}
+                  {options[correctIndex]}.
+                </p>
+              )}
+              <p className="text-base/[1.6] text-foreground">{explanation}</p>
             </div>
           )}
         </div>
@@ -120,7 +191,7 @@ function Quiz({ questions }: z.infer<typeof quizSchema>) {
         {position < total && (
           <Button
             type="button"
-            disabled={!isRevealed}
+            disabled={!isAnswered}
             onClick={() => setIndex(index + 1)}
             className="min-h-12 bg-foreground px-7 text-background hover:bg-foreground/90 disabled:bg-muted disabled:text-foreground-tertiary"
           >
