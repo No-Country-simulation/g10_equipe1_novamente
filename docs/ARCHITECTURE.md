@@ -57,7 +57,6 @@ O CHECK `ck_course_content_published_pair` mantém as duas cópias em par: `cont
 | `frontend/src/client/` | Cliente HTTP gerado do OpenAPI. Não edite à mão. | Existe |
 | `compose.yml`, `compose.override.yml`, `compose.deploy.yml` | Backend e banco comuns, Traefik e Adminer no desenvolvimento, porta HTTP 80 no deploy | Existe |
 | `compose.playwright.yml` | Sobreposição que monta o servidor de teste do Playwright | Existe |
-| `scripts/deploy.sh` | Atualização do clone, build, migração e subida do Compose | Existe |
 
 ## A criação de um curso segue doze passos
 

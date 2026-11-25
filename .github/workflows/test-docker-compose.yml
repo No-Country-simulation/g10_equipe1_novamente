@@ -24,11 +24,12 @@ jobs:
           cp frontend/.env.example frontend/.env
       - name: Check production services and ports
         env:
-          BACKEND_IMAGE_TAG: ci-validation
+          BACKEND_IMAGE: example.invalid/novamente/backend:ci-validation
         run: |
           services=$(docker compose -f compose.yml -f compose.deploy.yml config --services | sort)
           test "$services" = "$(printf '%s\n' backend db)"
-          docker compose -f compose.yml -f compose.deploy.yml config --format json | jq -e '
+          docker compose -f compose.yml -f compose.deploy.yml config --format json | jq -e --arg image "$BACKEND_IMAGE" '
+            (.services.backend.image == $image and (.services.backend | has("build") | not)) and
             [.services | to_entries[] | .key as $service | .value.ports[]?
               | [$service, .published, .target, .protocol]] == [["backend", "80", 8000, "tcp"]]
           ' > /dev/null

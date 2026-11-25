@@ -168,7 +168,7 @@ Todos os tickets da tabela estão escritos. A equipe descartou T34 e T43. Quem a
 | 7 | T31 | Teste no navegador da criação à leitura do conteúdo gerado | T08, T09, T10, T17, T27, T28, T29, T38 |
 | 7 | T41 | Casos de avaliação sobre os documentos da demonstração e primeira medição | T13, T30 |
 | 8 | T42 | Revisor sem as alternativas erradas do quiz | T41 |
-| 8 | [T44](T44-correcao-no-leitor-de-quiz.md) | Correção no leitor de quiz: opção escolhida certa ou errada e a correta | T10, T31 |
+| 8 | T44 | Correção no leitor de quiz: opção escolhida certa ou errada e a correta | T10, T31 |
 | 9 | T35 | README, diagrama e guia de instalação | T29, T31, T32, T33, T42 |
 | 10 | [T36](T36-deploy-na-vm-da-oci.md) | Deploy da demonstração por HTTP na VM A2.Flex existente (opcional) | T35 |
 

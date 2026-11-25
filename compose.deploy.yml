@@ -3,7 +3,7 @@ services:
     restart: always
 
   backend:
-    image: gru.ocir.io/grb8lprt42cf/novamente/backend:${BACKEND_IMAGE_TAG:?Versao nao definida}
+    image: ${BACKEND_IMAGE:?Defina BACKEND_IMAGE no .env}
     build: !reset null
     command: ["fastapi", "run", "--workers", "1"]
     restart: always

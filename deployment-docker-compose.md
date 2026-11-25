@@ -15,7 +15,7 @@ Confira o efeito conjunto das security lists, dos NSGs e do firewall da VM. Abra
 
 ## 2. Configure o bucket e a identidade
 
-Crie um bucket privado exclusivo na região da VM. No domínio de identidade padrão, crie um dynamic group com a regra `instance.id = '<ocid-da-vm>'`. Conceda a policy abaixo e guarde o namespace só na VM. [Identidade da instância](https://docs.oracle.com/en-us/iaas/Content/Identity/Tasks/callingservicesfrominstances.htm), [permissões do Object Storage](https://docs.oracle.com/en-us/iaas/Content/Identity/policyreference/objectstoragepolicyreference.htm).
+Crie um bucket privado exclusivo na região da VM. No domínio de identidade padrão, crie um dynamic group com a regra `instance.id = '<ocid-da-vm>'`. Conceda a policy abaixo e configure `OCI_NAMESPACE` no `.env` da VM. [Identidade da instância](https://docs.oracle.com/en-us/iaas/Content/Identity/Tasks/callingservicesfrominstances.htm), [permissões do Object Storage](https://docs.oracle.com/en-us/iaas/Content/Identity/policyreference/objectstoragepolicyreference.htm).
 
 ```text
 Allow dynamic-group <grupo> to manage objects in compartment <compartimento> where target.bucket.name = '<bucket>'
@@ -27,18 +27,39 @@ Use o IPv4 público da VM. Se quiser usar um domínio, aponte o registro A para 
 
 ## 4. Prepare o Docker e a imagem
 
-Instale o Docker Engine e o plugin Compose se faltarem. Habilite o Docker no boot com `sudo systemctl enable --now docker`. A VM executa uma imagem ARM64 versionada do OCIR; ela não precisa clonar o repositório nem compilar a imagem. Tenha disponível uma tag já publicada no caminho de imagem configurado em `compose.deploy.yml` e acesso de leitura da VM ao OCIR. A branch não documenta como publicar a imagem, autenticar para baixá-la nem provisionar os arquivos Compose na VM. [Instalação do Docker](https://docs.docker.com/engine/install/).
+Crie ou reutilize o repositório privado `novamente/backend` no OCIR. Na máquina de build, abra a raiz do clone na versão que vai publicar. Entre com uma conta que possa publicar nesse repositório e informe o auth token quando o Docker pedir a senha. Se a conta usa um domínio de identidade no login, use `<namespace>/<dominio-de-identidade>/<usuario>`. [Login no OCIR](https://docs.oracle.com/en-us/iaas/Content/Registry/Tasks/registrypushingimagesusingthedockercli.htm).
 
-Prepare um diretório dedicado com `compose.yml` e `compose.deploy.yml` da versão implantada. Use sempre o mesmo caminho. O Compose deriva o nome do projeto do diretório; mudar o nome pode criar outro volume em vez de reutilizar `app-db-data`. Se ainda houver um runner de deploy do NovaMente, remova o registro no GitHub e desative o serviço na VM. [Remoção do runner](https://docs.github.com/en/actions/how-tos/manage-runners/self-hosted-runners/remove-runners).
+```bash
+docker login '<regiao>.ocir.io' --username '<namespace>/<usuario-publicador>'
+docker buildx build --platform linux/arm64 -f backend/Dockerfile \
+  --tag '<regiao>.ocir.io/<namespace>/novamente/backend:<tag>' --push .
+```
+
+Use uma tag própria para a versão. O builder precisa executar builds para `linux/arm64`. [Docker Buildx](https://docs.docker.com/build/building/multi-platform/).
+
+Na VM, instale o Docker Engine e o plugin Compose se faltarem. Habilite o Docker no boot com `sudo systemctl enable --now docker`. Com a conta do sistema que roda o Compose, entre no OCIR com o token de uma conta que tenha só permissão de leitura no repositório. [Instalação do Docker](https://docs.docker.com/engine/install/), [políticas de acesso ao OCIR](https://docs.oracle.com/en-us/iaas/Content/Registry/Concepts/registrypolicyrepoaccess.htm).
+
+```bash
+docker login '<regiao>.ocir.io' --username '<namespace>/<usuario-leitor>'
+```
+
+Da máquina de build, copie os dois arquivos Compose da mesma versão da imagem. O exemplo usa `~/novamente` na VM. Se o deploy já existe, mantenha o diretório em uso para preservar o volume `app-db-data` e atualize `BACKEND_IMAGE` no `.env` antes de copiar o novo `compose.deploy.yml`.
+
+```bash
+ssh '<usuario-ssh>@<ipv4-publico>' 'mkdir -p ~/novamente'
+scp compose.yml compose.deploy.yml '<usuario-ssh>@<ipv4-publico>:novamente/'
+```
+
+Se houver um runner de deploy do NovaMente na VM, remova o registro no GitHub e desative o serviço na VM. [Remoção do runner](https://docs.github.com/en/actions/how-tos/manage-runners/self-hosted-runners/remove-runners).
 
 ## 5. Configure o ambiente e publique
 
-Se o `.env` ainda não existir, crie com `install -m 600 /dev/null .env`. Troque os valores entre `< >` pelos valores da equipe. Rode `openssl rand -hex 32` uma vez por segredo novo. Preserve a senha do PostgreSQL se o volume já existir. O Compose monta `DATABASE_URL` com essa senha e o host `db`.
+Na VM, entre no diretório que contém os dois arquivos Compose. Se o `.env` ainda não existir, crie com `install -m 600 /dev/null .env`. Troque os valores entre `< >` pelos valores da equipe. Rode `openssl rand -hex 32` uma vez por segredo novo. Preserve a senha do PostgreSQL se o volume já existir. O Compose monta `DATABASE_URL` com essa senha e o host `db`.
 
 ```dotenv
 COMPOSE_FILE=compose.yml:compose.deploy.yml
 PROJECT_NAME=NovaMente
-BACKEND_IMAGE_TAG=<tag-publicada-no-ocir>
+BACKEND_IMAGE=<regiao>.ocir.io/<namespace>/novamente/backend:<tag>
 SECRET_KEY=<segredo-gerado>
 POSTGRES_PASSWORD=<senha-do-postgres>
 GEMINI_API_KEY=<chave-do-projeto-de-demonstracao>
@@ -48,7 +69,7 @@ OCI_BUCKET=<bucket-privado>
 OCI_NAMESPACE=<namespace>
 ```
 
-Guarde esse `.env` somente na VM, com permissão `600`. `COMPOSE_FILE` seleciona os arquivos de deploy. `BACKEND_IMAGE_TAG` precisa corresponder a uma imagem já publicada no OCIR.
+Guarde esse `.env` somente na VM, com permissão `600`. `COMPOSE_FILE` seleciona os arquivos de deploy. `BACKEND_IMAGE` recebe o caminho completo com a tag publicada no passo 4.
 
 Use um projeto Gemini exclusivo da demonstração, no plano gratuito e sem faturamento ativado. Com uma conta com acesso ao Docker, rode os comandos abaixo na ordem. Se um comando falhar, pare e corrija a causa.
 
@@ -77,13 +98,13 @@ Crie a conta pela tela "Criar conta". O cadastro é aberto. Siga o [quiz da LAI]
 
 ## 7. Atualize
 
-Escolha uma janela sem geração ativa. Atualize os arquivos Compose e `BACKEND_IMAGE_TAG` para a versão publicada, então repita a sequência de pull, espera do banco, migração e subida do passo 5. Confira a rota pública de saúde. A migração altera o banco antes de subir o backend novo. Preserve o volume `app-db-data`.
+Escolha uma janela sem geração ativa. Atualize `BACKEND_IMAGE` para a versão publicada antes de copiar os arquivos Compose da mesma versão. Repita a sequência de pull, espera do banco, migração e subida do passo 5. Confira a rota pública de saúde. A migração altera o banco antes de subir o backend novo. Preserve o volume `app-db-data`.
 
 ## 8. Registre o aceite
 
 Em uma janela combinada com a equipe, reinicie a VM. Confirme de fora que a rota de saúde responde novamente. Na VM, confira que `stat -c %a .env` retorna `600`.
 
-Registre os resultados e a estimativa de custo no [aceite do T36](docs/tickets/T36-deploy-na-vm-da-oci.md#verificação-do-aceite). No PR de conclusão, troque `A construir` por `Existe` na linha "Deploy em VM `VM.Standard.A2.Flex` (ARM) com Docker Compose" de [Decisões](docs/ARCHITECTURE.md#decisões). Em [Implantação](docs/ARCHITECTURE.md#implantação), atualize o parágrafo "A Parte 2 do T36 prevê" com o que você fez e verificou na VM.
+Registre os resultados, o teste de reinício e a estimativa de custo no [aceite do T36](docs/tickets/T36-deploy-na-vm-da-oci.md#verificação-do-aceite). Mantenha [Decisões](docs/ARCHITECTURE.md#decisões) e [Implantação](docs/ARCHITECTURE.md#implantação) coerentes com o que verificou na VM. Atualize este guia se algum passo mudar.
 
 ## Diagnostique uma falha
 

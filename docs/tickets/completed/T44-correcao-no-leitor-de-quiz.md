@@ -21,8 +21,8 @@ As especificações pedem correção e justificativa logo após a escolha. T10 e
 
 O layout vem de duas capturas das Telas finais:
 
-- [`tela-q2-quiz-correta.png`](../design/telas-finais/tela-q2-quiz-correta.png): a pessoa acertou.
-- [`tela-q3-quiz-incorreta.png`](../design/telas-finais/tela-q3-quiz-incorreta.png): a pessoa errou, e a tela mostra a correta.
+- [`tela-q2-quiz-correta.png`](../../design/telas-finais/tela-q2-quiz-correta.png): a pessoa acertou.
+- [`tela-q3-quiz-incorreta.png`](../../design/telas-finais/tela-q3-quiz-incorreta.png): a pessoa errou, e a tela mostra a correta.
 
 Use as capturas como referência para as opções respondidas e o bloco de resultado. A seção "Onde o design e a especificação divergem" indica as adaptações ao produto.
 
@@ -142,17 +142,17 @@ Nada muda em relação a T10. Na quinta pergunta, a pessoa vê as marcas e o blo
 
 ## Critérios de aceite
 
-- [ ] Depois de uma escolha certa, a opção escolhida aparece com o estilo de acerto e o rótulo "Sua resposta · correta", e o bloco de resultado mostra "Resposta correta" e a justificativa.
-- [ ] Depois de uma escolha errada, a opção escolhida aparece com o estilo de erro e o rótulo "Sua resposta · incorreta". A opção correta aparece com o estilo de acerto e o rótulo "Resposta correta". O bloco mostra "Não foi dessa vez", a justificativa e "A resposta certa é ...".
-- [ ] As outras opções ficam desabilitadas, sem marca, com o texto em `text-foreground-tertiary`.
-- [ ] O acerto e o erro aparecem por texto e ícone. A região de status anuncia o resultado após a escolha.
-- [ ] Em ambos os temas, os textos de correção têm contraste de pelo menos 4,5:1, e os ícones de acerto e erro têm pelo menos 3:1 contra o próprio fundo. Em 360 px, as opções e o bloco de resultado cabem sem rolagem horizontal.
-- [ ] Ao voltar a uma pergunta respondida, as marcas e o bloco continuam visíveis. Recarregar a página ou receber um quiz alterado limpa as respostas.
-- [ ] `index.css` tem `--success-background` e `--success-foreground` em `:root` e `.dark`, registradas em `@theme inline`. Nenhum componente tem valor hexadecimal.
-- [ ] Anexe ao PR capturas do produto rodando, conforme o passo 7 de `docs/tickets/README.md`. Mostre acerto e erro em tema claro a 1440 px, erro a 360 px e erro em tema escuro. Anexe a saída do Playwright para `quiz-reader.spec.ts` e `generation.spec.ts`.
-- [ ] Responda pelo teclado e confira o anúncio de acerto e erro com um leitor de tela. Registre o resultado no PR.
-- [ ] Os testes Playwright que já existem passam.
-- [ ] `bun run lint` e `bun run build` passam.
+- [x] Depois de uma escolha certa, a opção escolhida aparece com o estilo de acerto e o rótulo "Sua resposta · correta", e o bloco de resultado mostra "Resposta correta" e a justificativa.
+- [x] Depois de uma escolha errada, a opção escolhida aparece com o estilo de erro e o rótulo "Sua resposta · incorreta". A opção correta aparece com o estilo de acerto e o rótulo "Resposta correta". O bloco mostra "Não foi dessa vez", a justificativa e "A resposta certa é ...".
+- [x] As outras opções ficam desabilitadas, sem marca, com o texto em `text-foreground-tertiary`.
+- [x] O acerto e o erro aparecem por texto e ícone. A região de status anuncia o resultado após a escolha.
+- [x] Em ambos os temas, os textos de correção têm contraste de pelo menos 4,5:1, e os ícones de acerto e erro têm pelo menos 3:1 contra o próprio fundo. Em 360 px, as opções e o bloco de resultado cabem sem rolagem horizontal.
+- [x] Ao voltar a uma pergunta respondida, as marcas e o bloco continuam visíveis. Recarregar a página ou receber um quiz alterado limpa as respostas.
+- [x] `index.css` tem `--success-background` e `--success-foreground` em `:root` e `.dark`, registradas em `@theme inline`. Nenhum componente tem valor hexadecimal.
+- [x] Anexe ao PR capturas do produto rodando, conforme o passo 7 de `docs/tickets/README.md`. Mostre acerto e erro em tema claro a 1440 px, erro a 360 px e erro em tema escuro. Anexe a saída do Playwright para `quiz-reader.spec.ts` e `generation.spec.ts`.
+- [x] Responda pelo teclado e confira o anúncio de acerto e erro com um leitor de tela. Registre o resultado no PR.
+- [x] Os testes Playwright que já existem passam.
+- [x] `bun run lint` e `bun run build` passam.
 
 ## Cenários de teste
 
@@ -165,3 +165,10 @@ Em `frontend/tests/quiz-reader.spec.ts`, com as perguntas que o arquivo já defi
 5. Recarregue a página. A primeira pergunta aparece com as opções habilitadas, sem marca e sem bloco de resultado.
 6. Responda à quinta pergunta. As marcas e o bloco aparecem, e a faixa de navegação mostra só "Pergunta anterior".
 7. No teste de atualização automática, confira que perguntas iguais preservam a posição e o resultado. Troque só o `correct_index` de uma pergunta na atualização seguinte. O leitor volta à primeira pergunta, com opções habilitadas e status vazio.
+
+## Verificação do aceite
+
+- PR revisado: [#57](https://github.com/No-Country-simulation/g10_equipe1_novamente/pull/57), integrado no commit `0c62871`.
+- CI do PR: os 15 checks passaram.
+- Revisão automática: três achados, corrigidos nos commits `084501b` e `24b8e14`. O foco do teclado passa ao botão de navegação depois da escolha, com teste. O resultado é anunciado uma vez, numa frase única, e o bloco visual fica fora da árvore de acessibilidade. Os testes conferem a cor e a largura da borda do bloco e a cor do título no acerto e no erro.
+- Leitor de tela: o PR registra a conferência no Firefox com Orca 46.1, com um anúncio por resposta.
