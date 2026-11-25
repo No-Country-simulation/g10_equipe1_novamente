@@ -2,10 +2,11 @@ services:
 
   proxy:
     image: traefik:v3.7
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     ports:
       - "80:80"
       - "8090:8080"
-    # Duplicate the command from compose.yml to add --api.insecure=true
     command:
       # Enable Docker in Traefik, so that it reads labels from Docker services
       - --providers.docker
@@ -28,10 +29,20 @@ services:
       - "5432:5432"
 
   adminer:
+    image: adminer
+    depends_on:
+      - db
+    environment:
+      - ADMINER_DESIGN=pepa-linha-dark
     ports:
       - "8080:8080"
 
   backend:
+    labels:
+      - traefik.enable=true
+      - traefik.http.services.backend.loadbalancer.server.port=8000
+      - traefik.http.routers.backend-http.rule=Host(`${DOMAIN:-localhost}`)
+      - traefik.http.routers.backend-http.entrypoints=http
     ports:
       - "8000:8000"
     build:

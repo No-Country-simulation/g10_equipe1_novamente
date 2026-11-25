@@ -1,52 +1,83 @@
 # NovaMente
 
-O NovaMente transforma documentação técnica em material de estudo para quem está aprendendo ou preparando um treinamento. Ao criar um curso, você envia até três documentos, escolhe o título, o setor, o nível de público e os formatos que quer gerar: tutorial, flashcards e quiz. O produto publica um conteúdo quando a revisão confirma que ele cobre o foco e que todas as afirmações técnicas têm apoio nos trechos dos documentos.
+O NovaMente transforma documentos técnicos em materiais de estudo revisados e adaptados ao público. A aplicação atende estudantes e pessoas que preparam treinamentos e precisam converter documentação densa em conteúdos de aprendizagem sem reescrevê-la manualmente.
 
-## Arquitetura
+## O produto
 
-![Diagrama das cinco partes do NovaMente e dos 12 passos da geração](docs/system-diagram/arquitetura.png)
+Ao criar um curso, a pessoa envia até três documentos em PDF com texto, Markdown ou texto digitado. Escolhe o título, o setor, o nível do público e um ou mais formatos: tutorial, flashcards e quiz. O sistema indexa as fontes, gera cada conteúdo e só publica os que passam pela revisão de fidelidade.
 
-- O **frontend React** oferece as telas de conta, cursos e leitores.
-- O **backend FastAPI** valida as entradas, executa a geração em segundo plano e decide o que publicar. O LangGraph encadeia `planeja`, `escreve` e `revisa`.
-- O **PostgreSQL com pgvector** guarda os cursos, os chunks, os embeddings, os conteúdos publicados e as citações.
-- O **OCI Object Storage** guarda os documentos originais e um pacote JSON por conteúdo publicado, em um bucket privado.
-- A **API Gemini** gera os embeddings e o texto usado pelos agentes.
+O nível de público pode ser não técnico, técnico básico ou técnico avançado. O setor pode ser Fintech, Saúde, E-commerce ou Geral. A mesma documentação pode gerar formatos e conteúdos adaptados a diferentes públicos.
 
-As cinco partes já funcionam no ambiente de desenvolvimento. O deploy está planejado para uma VM `VM.Standard.A2.Flex` (ARM) na OCI. Veja [os doze passos da geração](docs/ARCHITECTURE.md#a-criação-de-um-curso-segue-doze-passos).
+## Arquitetura em nuvem
+
+![Topologia e fluxo de geração do NovaMente](docs/system-diagram/arquitetura.png)
+
+Na implantação da demonstração, a topologia é composta por:
+
+- **Cliente web**: acessa a aplicação por HTTP na porta 80.
+- **VM OCI `VM.Standard.A2.Flex` ARM64**: executa o backend FastAPI em Docker Compose. O backend serve tanto a interface React quanto a API REST na mesma origem e usa um worker.
+- **PostgreSQL 18 com pgvector**: roda no Compose e mantém os dados relacionais, chunks, embeddings, estados de geração, citações e conteúdos publicados. Um volume preserva os dados entre reinícios dos contêineres.
+- **OCI Object Storage**: bucket privado para documentos originais e pacotes JSON dos conteúdos publicados. Na VM, o backend autentica com identidade da instância (`instance principal`).
+- **API Gemini**: recebe pedidos de embeddings e geração de texto.
+
+A VM usa uma imagem ARM64 versionada no OCIR; o banco não publica porta para a rede pública. O acesso da demonstração é HTTP, sem HTTPS. O teste de reinicialização da VM ainda está pendente. O [guia de implantação](deployment-docker-compose.md) descreve a topologia e a operação.
+
+## Tecnologias
+
+- **Frontend**: React, TypeScript, Vite e TanStack Router.
+- **Backend**: Python, FastAPI, SQLModel, Pydantic e Alembic.
+- **Banco e busca vetorial**: PostgreSQL 18, pgvector e busca por distância de cosseno.
+- **Orquestração de IA**: LangGraph.
+- **Modelos**: Gemini para embeddings e geração estruturada de texto.
+- **Armazenamento de objetos**: OCI Object Storage e OCI Python SDK.
+- **Entrega**: Docker, Docker Compose e imagens ARM64 no OCIR.
+
+## Como a geração usa IA
+
+A geração combina RAG (geração aumentada por recuperação) com etapas separadas de planejamento, escrita e revisão. O backend controla o fluxo e mantém a decisão de publicação; os modelos não publicam conteúdo diretamente.
+
+1. **Ingestão e indexação**: o backend lê os documentos do OCI, divide o texto em trechos de cerca de 1.000 caracteres e cria embeddings. Os vetores de 768 dimensões ficam no PostgreSQL junto aos trechos de origem.
+2. **Recuperação contextual**: para cada saída solicitada, o sistema cria um embedding do foco do conteúdo e busca os oito trechos mais próximos entre os documentos indexados do curso.
+3. **Planejamento**: o agente `planeja` propõe a estrutura e associa trechos de suporte a cada item planejado.
+4. **Escrita estruturada**: o agente `escreve` recebe o plano, os trechos recuperados, o formato, o nível do público e as orientações do setor. Produz tutorial, flashcards ou quiz em um schema Pydantic estrito.
+5. **Revisão de fidelidade**: o agente `revisa` confere cobertura do foco, apoio documental das afirmações técnicas e clareza. No quiz, também avalia enunciados, respostas e justificativas.
+6. **Decisão e eventual reescrita**: o backend calcula a nota de fundamentação a partir das afirmações sustentadas. Se necessário, permite uma reescrita com os mesmos trechos e o mesmo plano. Conteúdo sem foco coberto ou com afirmações sem apoio após a revisão é marcado como falha e não é publicado.
+7. **Publicação**: o backend grava o pacote JSON no Object Storage e, em uma transação, salva o conteúdo, as notas e as citações no banco. A interface acompanha os estados da geração.
+
+Os prompts tratam documentos e rascunhos como dados, para que instruções encontradas nas fontes não controlem os agentes. As versões dos prompts e os modelos usados ficam registradas por conteúdo. O backend também limita o ritmo de chamadas ao Gemini e aguarda a janela de cota quando recebe HTTP 429. Testes automatizados substituem as chamadas externas por respostas determinísticas.
 
 ## Demonstração
 
-- **Open Finance** gera tutorial e flashcards para dois públicos: não técnico e técnico avançado.
-- **Regulamento do Pix**, na redação de 2020, serve de fonte para um tutorial de nível técnico básico.
-- **Lei de Acesso à Informação** serve de fonte para um quiz de nível técnico básico.
+Os casos definidos para a demonstração incluem:
 
-Veja o [roteiro da demonstração](docs/product-specs/demonstracao.md) e os [arquivos de entrada, fontes e condições de uso](examples/README.md).
+- **Open Finance**: tutorial e flashcards para público não técnico e técnico avançado.
+- **Regulamento do Pix**: tutorial técnico básico.
+- **Lei de Acesso à Informação**: quiz técnico básico.
 
-Exemplo de campos do pacote JSON de um quiz.
+Consulte o [roteiro da demonstração](docs/product-specs/demonstracao.md), os [documentos e condições de uso](examples/README.md) e o [formato do pacote publicado](docs/product-specs/pacote-json-e-armazenamento.md).
 
-```json
-{
-  "format": "quiz",
-  "audience_level": "technical_basic",
-  "niche": "geral",
-  "title": "Pedidos de acesso à informação",
-  "grounding_score": 1.0
-}
-```
+## Melhorias futuras
 
-O bucket guarda um pacote por conteúdo. A API entrega os conteúdos dentro da resposta do curso, com estados e citações. Veja a [especificação do pacote JSON](docs/product-specs/pacote-json-e-armazenamento.md).
+As próximas evoluções podem ampliar a disponibilidade, a segurança e a capacidade de geração:
 
-## Rode localmente
+- habilitar HTTPS e configurar backup e restauração do banco;
+- testar reinicialização e recuperação da VM, além de formalizar procedimentos de operação;
+- avaliar uma fila de tarefas externa e múltiplos workers quando o volume justificar maior paralelismo;
+- medir continuamente a busca e as decisões do revisor com os casos de avaliação, ajustando prompts e modelos com base nos resultados;
+- avaliar leitura de imagens e diagramas, exportação de materiais e histórico de versões, hoje fora do MVP.
 
-O backend usa Python, FastAPI, SQLModel e LangGraph. O frontend usa React, TypeScript, Vite e TanStack Router. O Docker Compose sobe o PostgreSQL com pgvector. O `uv` instala as dependências Python e o Bun instala e executa as do frontend.
+Essas propostas são projeções e não fazem parte da implementação descrita nesta branch.
 
-O [guia de instalação](development.md) leva do clone ao primeiro curso com Gemini e OCI. Ele também mostra como testar a geração no navegador com respostas controladas, sem credenciais externas.
+## Desenvolvimento local
 
-## Documentação
+O [guia de instalação](development.md) orienta a preparação do ambiente, a configuração de Gemini e OCI e a execução local. Para executar os testes, consulte a seção correspondente do guia. O CI usa respostas determinísticas para não depender de credenciais externas.
 
-- [Arquitetura e fluxo de geração](docs/ARCHITECTURE.md)
+## Documentação do projeto
+
+- [Arquitetura e fluxo completo de geração](docs/ARCHITECTURE.md)
+- [Guia de implantação na OCI](deployment-docker-compose.md)
 - [Especificações do produto](docs/product-specs/index.md)
-- [Fluxo e lista de tickets](docs/tickets/README.md)
-- [Mapa da base de conhecimento](AGENTS.md)
+- [Esquema do banco de dados](docs/generated/db-schema.md)
+- [Fluxo e tickets do projeto](docs/tickets/README.md)
 
 Projeto da Equipe 1 do G10, Simulação No-Country. [Licença MIT](LICENSE).

@@ -23,7 +23,7 @@ O arquivo editável do diagrama é [`system-diagram/arquitetura.excalidraw`](sys
 | OCI Object Storage | Documentos originais e JSON de cada conteúdo publicado. | Existe |
 | API Gemini | Embeddings de 768 dimensões e geração de texto. | Existe |
 
-O backend acessa o banco, o OCI e o Gemini. A configuração de Traefik do template encaminha o tráfego para o backend no Compose.
+O backend acessa o banco, o OCI e o Gemini. O Traefik encaminha o tráfego para o backend no Compose de desenvolvimento.
 
 ## O banco e o armazenamento de objetos dividem os dados
 
@@ -55,7 +55,7 @@ O CHECK `ck_course_content_published_pair` mantém as duas cópias em par: `cont
 | `backend/tests/` | Testes `pytest` contra um PostgreSQL real | Existe |
 | `frontend/src/routes/` | Rotas do TanStack Router para conta, lista de cursos, novo curso e leitores | Existe |
 | `frontend/src/client/` | Cliente HTTP gerado do OpenAPI. Não edite à mão. | Existe |
-| `compose.yml`, `compose.override.yml`, `compose.deploy.yml` | Configurações do Compose para `proxy`, `db`, `adminer` e `backend` | Existe |
+| `compose.yml`, `compose.override.yml`, `compose.deploy.yml` | Backend e banco comuns, Traefik e Adminer no desenvolvimento, porta HTTP 80 no deploy | Existe |
 | `compose.playwright.yml` | Sobreposição que monta o servidor de teste do Playwright | Existe |
 
 ## A criação de um curso segue doze passos
@@ -195,17 +195,11 @@ Os embeddings limitam a capacidade diária, não o texto. Sem contar novas tenta
 
 ## Implantação
 
-O [T36](tickets/T36-deploy-na-vm-da-oci.md) planeja publicar o NovaMente com Docker Compose na VM `VM.Standard.A2.Flex` (arm64) que a equipe já tem em execução. [Referência da VM](https://docs.oracle.com/en-us/iaas/Content/Compute/References/arm.htm).
+A implantação validada na VM A2.Flex usa Docker Compose e uma imagem ARM64 versionada no OCIR. A VM não faz build nem clone Git. Só o backend publica a porta TCP 80 e serve o frontend e a API por HTTP na mesma origem, com um worker para compartilhar os limites do Gemini. O PostgreSQL usa um volume persistente. Traefik e Adminer ficam no Compose de desenvolvimento.
 
-| Ponto | Hoje no repositório | Decisão | Estado |
-| --- | --- | --- | --- |
-| Adminer | `compose.yml` publica em `adminer.${DOMAIN}` | Tirar da produção | A construir |
-| Processos do backend | `backend/Dockerfile` inicia 4 | Rodar um worker para compartilhar o limite do Gemini | A construir |
-| HTTPS | O Traefik usa o desafio TLS na porta 443 e exige um domínio | Usar o domínio da equipe ou DuckDNS e o desafio HTTP-01 na porta 80 | A construir |
-| Deploy automático | `deploy-docker-compose.yml` usa um runner `self-hosted` | Desativar. Deploy manual por SSH com um script | A construir |
-| Backup | Não existe | `pg_dump` diário enviado ao OCI Object Storage | A construir |
-| Banco | Sem porta pública em `compose.yml` | Manter. Dados em volume Docker | A construir |
-| Rede | As regras da OCI ficam fora do repositório | Publicar 80 e 443. Limitar o SSH aos IPs da equipe | A construir |
+O acesso público é HTTP, sem HTTPS. HTTPS e backup ficam fora do escopo da demonstração de hackathon. A equipe usa credenciais exclusivas da demonstração e dados descartáveis.
+
+O deploy validou o acesso HTTP público, frontend, API, PostgreSQL, autenticação, criação de curso, RAG/Gemini, quiz, Object Storage, exclusão e limpeza dos objetos. O workflow `Test Docker Compose` também passou. O teste de reinicialização da VM permanece pendente. A rede abre a porta 80 para o público e a 22 para o IP de quem faz o deploy. [Referência da VM](https://docs.oracle.com/en-us/iaas/Content/Compute/References/arm.htm).
 
 A A2.Flex é uma [exceção à regra Always Free do briefing](product-specs/escopo-do-mvp.md#restrições). Uma única VM é um ponto único de falha, e a equipe aceita esse risco.
 
@@ -244,7 +238,7 @@ A A2.Flex é uma [exceção à regra Always Free do briefing](product-specs/esco
 | Um nível de público por curso | O esquema fixa `audience_level` no curso. | Existe |
 | Limite de 10 minutos e nova tentativa manual | A tarefa de fundo não avisa quando morre. | Existe |
 | Exclusão: banco primeiro, OCI depois | Uma falha deixa um arquivo sem uso, não um curso quebrado. | Existe |
-| Deploy em VM `VM.Standard.A2.Flex` (ARM) com Docker Compose | Destino do T36. | A construir |
+| Deploy em VM `VM.Standard.A2.Flex` (ARM) com Docker Compose | Imagem ARM64 versionada no OCIR; sem build nem clone Git na VM. | Existe |
 | LangGraph para o laço de escrita e revisão | O briefing lista agentes com LangGraph como diferencial, e o grafo deixa o fluxo visível. | Existe |
 | Etapa `planeja` antes de `escreve` | O briefing trata a cadeia de planejar, redigir e revisar como adicional. `planeja` só propõe a estrutura do conteúdo. | Existe |
 | Nomes em inglês no JSON e na API | O exemplo do briefing é só um exemplo. O produto usa os nomes do esquema. | Existe |

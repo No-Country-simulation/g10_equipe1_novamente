@@ -1,4 +1,4 @@
-FROM oven/bun:1 AS frontend-build
+FROM --platform=$BUILDPLATFORM oven/bun:1 AS frontend-build
 
 WORKDIR /app
 
@@ -23,10 +23,6 @@ ENV PYTHONUNBUFFERED=1
 # Install uv
 # Ref: https://docs.astral.sh/uv/guides/integration/docker/#installing-uv
 COPY --from=ghcr.io/astral-sh/uv:0.9.26 /uv /uvx /bin/
-
-# Compile bytecode
-# Ref: https://docs.astral.sh/uv/guides/integration/docker/#compiling-bytecode
-ENV UV_COMPILE_BYTECODE=1
 
 # uv Cache
 # Ref: https://docs.astral.sh/uv/guides/integration/docker/#caching
@@ -62,4 +58,4 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 
 WORKDIR /app/backend/
 
-CMD ["fastapi", "run", "--workers", "4"]
+CMD ["fastapi", "run", "--workers", "1"]
