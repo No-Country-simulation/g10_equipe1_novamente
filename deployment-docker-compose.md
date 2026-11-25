@@ -1,6 +1,6 @@
 # Publique a demonstração do NovaMente na OCI
 
-Siga este guia depois do merge da Parte 1 do [T36](docs/tickets/T36-deploy-na-vm-da-oci.md). Use uma conta exclusiva e dados descartáveis. A demonstração serve HTTP na porta 80, com HTTPS e backup fora do escopo do hackathon.
+Siga este guia depois do merge da Parte 1 do [T36](docs/tickets/completed/T36-deploy-na-vm-da-oci.md). Use uma conta exclusiva e dados descartáveis. A demonstração serve HTTP na porta 80, com HTTPS e backup fora do escopo do hackathon.
 
 ## 1. Confira a VM e a rede
 
@@ -104,7 +104,7 @@ Escolha uma janela sem geração ativa. Atualize `BACKEND_IMAGE` para a versão 
 
 Em uma janela combinada com a equipe, reinicie a VM. Confirme de fora que a rota de saúde responde novamente. Na VM, confira que `stat -c %a .env` retorna `600`.
 
-Registre os resultados, o teste de reinício e a estimativa de custo no [aceite do T36](docs/tickets/T36-deploy-na-vm-da-oci.md#verificação-do-aceite). Mantenha [Decisões](docs/ARCHITECTURE.md#decisões) e [Implantação](docs/ARCHITECTURE.md#implantação) coerentes com o que verificou na VM. Atualize este guia se algum passo mudar.
+Registre os resultados, o teste de reinício e a estimativa de custo no [aceite do T36](docs/tickets/completed/T36-deploy-na-vm-da-oci.md#verificação-do-aceite). Mantenha [Decisões](docs/ARCHITECTURE.md#decisões) e [Implantação](docs/ARCHITECTURE.md#implantação) coerentes com o que verificou na VM. Atualize este guia se algum passo mudar.
 
 ## Diagnostique uma falha
 

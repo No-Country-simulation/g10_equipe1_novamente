@@ -170,7 +170,7 @@ Todos os tickets da tabela estão escritos. A equipe descartou T34 e T43. Quem a
 | 8 | T42 | Revisor sem as alternativas erradas do quiz | T41 |
 | 8 | T44 | Correção no leitor de quiz: opção escolhida certa ou errada e a correta | T10, T31 |
 | 9 | T35 | README, diagrama e guia de instalação | T29, T31, T32, T33, T42 |
-| 10 | [T36](T36-deploy-na-vm-da-oci.md) | Deploy da demonstração por HTTP na VM A2.Flex existente (opcional) | T35 |
+| 10 | T36 | Deploy da demonstração por HTTP na VM A2.Flex existente (opcional) | T35 |
 
 T39 saiu das medições de T12: a cota de embeddings conta cada texto como um pedido, e a indexação de um documento grande passava do limite por minuto. T28 passou a listar T39.
 
