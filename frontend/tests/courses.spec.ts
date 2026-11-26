@@ -64,14 +64,61 @@ test("lista cursos em ordem com níveis e estados e abre o cartão", async ({
     "Curso B",
     "Curso A",
   ])
-  await expect(cards.nth(0)).toContainText("Técnico avançado")
-  await expect(cards.nth(0)).toContainText("Gerando")
-  await expect(cards.nth(1)).toContainText("Técnico básico")
-  await expect(cards.nth(1)).toContainText("Falhou")
-  await expect(cards.nth(2)).toContainText("Não técnico")
-  await expect(cards.nth(2)).toContainText("Pronto")
+  const levels = [
+    { label: "Técnico avançado", status: "Gerando", activeBars: 3 },
+    { label: "Técnico básico", status: "Falhou", activeBars: 2 },
+    { label: "Não técnico", status: "Pronto", activeBars: 1 },
+  ]
+  for (const [index, { label, status, activeBars }] of levels.entries()) {
+    const card = cards.nth(index)
+    await expect(card.getByText(label, { exact: true })).toBeVisible()
+    await expect(card.getByText(status, { exact: true })).toBeVisible()
+    const bars = card.locator('span[aria-hidden="true"] > span')
+    await expect(bars).toHaveCount(3)
+    for (let barIndex = 0; barIndex < 3; barIndex++) {
+      const bar = bars.nth(barIndex)
+      await expect(bar).toBeVisible()
+      await expect(bar.and(card.locator("[data-active]"))).toHaveCount(
+        Number(barIndex < activeBars),
+      )
+    }
+  }
+  const [activeColor, inactiveColor] = await cards
+    .nth(2)
+    .locator('span[aria-hidden="true"] > span')
+    .evaluateAll((bars) =>
+      bars.map((bar) => getComputedStyle(bar).backgroundColor),
+    )
+  expect(activeColor).not.toBe(inactiveColor)
   await cards.nth(2).click()
   await expect(page).toHaveURL(`/courses/${a.id}`)
+})
+
+test("alinha os selos de estado com títulos de alturas diferentes", async ({
+  page,
+}) => {
+  const shortTitle = "Git básico"
+  const longTitle = "Introdução aos comandos do Git e ao controle de versões"
+  await seed(shortTitle, "ready", "succeeded")
+  await seed(longTitle, "ready", "succeeded")
+  await page.reload()
+
+  const shortCard = page.getByRole("link", { name: shortTitle, exact: true })
+  const longCard = page.getByRole("link", { name: longTitle, exact: true })
+  await expect(shortCard).toBeVisible()
+  await expect(longCard).toBeVisible()
+  await page.evaluate(() => document.fonts.ready.then(() => undefined))
+
+  const shortCardBox = (await shortCard.boundingBox())!
+  const longCardBox = (await longCard.boundingBox())!
+  const shortTitleBox = (await shortCard.getByRole("heading").boundingBox())!
+  const longTitleBox = (await longCard.getByRole("heading").boundingBox())!
+  const shortBadgeBox = (await shortCard.getByText("Pronto").boundingBox())!
+  const longBadgeBox = (await longCard.getByText("Pronto").boundingBox())!
+
+  expect(Math.abs(shortCardBox.y - longCardBox.y)).toBeLessThanOrEqual(1)
+  expect(longTitleBox.height).toBeGreaterThan(shortTitleBox.height)
+  expect(Math.abs(shortBadgeBox.y - longBadgeBox.y)).toBeLessThanOrEqual(1)
 })
 
 test("não mostra curso de outra pessoa", async ({ page }) => {

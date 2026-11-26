@@ -68,7 +68,7 @@ function Login() {
   }
 
   return (
-    <AuthLayout tagline="Cursos personalizados a partir dos seus materiais, no nível que você escolher.">
+    <AuthLayout>
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
