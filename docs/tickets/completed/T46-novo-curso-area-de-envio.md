@@ -21,9 +21,9 @@ O passo 1 de "Novo curso" (T07) tem duas abas: "Enviar arquivo" e "Digitar texto
 
 Capturas em `docs/design/ajustes-finais/`:
 
-- [`05-novo-curso-passo1-1440.png`](../design/ajustes-finais/05-novo-curso-passo1-1440.png) e [`05-novo-curso-passo1-360.png`](../design/ajustes-finais/05-novo-curso-passo1-360.png): aba "Enviar arquivo" hoje.
-- [`06-novo-curso-passo1-texto-1440.png`](../design/ajustes-finais/06-novo-curso-passo1-texto-1440.png) e [`06-novo-curso-passo1-texto-360.png`](../design/ajustes-finais/06-novo-curso-passo1-texto-360.png): aba "Digitar texto" hoje.
-- [`referencia-dropzone.png`](../design/ajustes-finais/referencia-dropzone.png): a referência do layout novo.
+- [`05-novo-curso-passo1-1440.png`](../../design/ajustes-finais/05-novo-curso-passo1-1440.png) e [`05-novo-curso-passo1-360.png`](../../design/ajustes-finais/05-novo-curso-passo1-360.png): aba "Enviar arquivo" hoje.
+- [`06-novo-curso-passo1-texto-1440.png`](../../design/ajustes-finais/06-novo-curso-passo1-texto-1440.png) e [`06-novo-curso-passo1-texto-360.png`](../../design/ajustes-finais/06-novo-curso-passo1-texto-360.png): aba "Digitar texto" hoje.
+- [`referencia-dropzone.png`](../../design/ajustes-finais/referencia-dropzone.png): a referência do layout novo.
 
 O bloco do shadcnblocks é Pro. Use a imagem pública como referência visual e mantenha o `input` nativo e os eventos de envio atuais.
 
@@ -94,13 +94,13 @@ O texto digitado já fica no estado de `DocumentsStep`, então ele se mantém ao
 
 ## Critérios de aceite
 
-- [ ] A área de envio mostra, empilhados e centralizados, o ícone no círculo, o título, a linha dos limites e o botão.
-- [ ] A escolha de arquivos e o arraste continuam aplicando os limites. Os documentos aceitos e recusados aparecem na lista.
-- [ ] A altura do painel ativo e do cartão do passo e a posição de "Continuar" se mantêm ao trocar de aba a 1440 px e a 360 px.
-- [ ] A tela, a navegação por Tab e a árvore de acessibilidade expõem só o painel ativo e seus controles.
-- [ ] Nenhum pacote novo.
-- [ ] Anexe ao PR capturas do produto rodando nas duas abas, a 1440 px e a 360 px, no tema escuro, conforme o passo 7 de `docs/tickets/README.md`.
-- [ ] O lint, o build e os testes Playwright passam.
+- [x] A área de envio mostra, empilhados e centralizados, o ícone no círculo, o título, a linha dos limites e o botão.
+- [x] A escolha de arquivos e o arraste continuam aplicando os limites. Os documentos aceitos e recusados aparecem na lista.
+- [x] A altura do painel ativo e do cartão do passo e a posição de "Continuar" se mantêm ao trocar de aba a 1440 px e a 360 px.
+- [x] A tela, a navegação por Tab e a árvore de acessibilidade expõem só o painel ativo e seus controles.
+- [x] Nenhum pacote novo.
+- [x] Anexe ao PR capturas do produto rodando nas duas abas, a 1440 px e a 360 px, no tema escuro, conforme o passo 7 de `docs/tickets/README.md`.
+- [x] O lint, o build e os testes Playwright passam.
 
 ## Cenários de teste
 
@@ -110,3 +110,10 @@ Em `frontend/tests/new-course.spec.ts`:
 2. Na aba "Enviar arquivo", confira a ordem vertical de ícone, título, linha de ajuda e botão. Confira que o botão está centrado na área de envio, com tolerância de 2 px.
 3. Em cada aba, confira que a busca por papel acessível retorna só o painel ativo. Com Tab a partir desse painel, o primeiro controle recebe foco: "Escolher arquivos" ou "Texto do documento", conforme a aba. O controle do outro painel fica fora da navegação.
 4. Digite texto, troque de aba e volte. O campo mantém o texto.
+
+## Verificação do aceite
+
+- PR revisado: [#60](https://github.com/No-Country-simulation/g10_equipe1_novamente/pull/60), integrado no commit `af085d0`.
+- CI do PR: todos os checks passaram.
+- Revisão automática: um achado. As capturas em tema escuro estavam só em um artefato do CI que expiraria e foram anexadas à descrição do PR.
+- Teste de ponta a ponta no `master` em 26/11/2026: os 141 testes Playwright passaram. No produto rodando com Gemini e OCI reais, um curso com os três formatos ficou pronto em cerca de 35 segundos, os três leitores abriram e a exclusão limpou o prefixo no bucket.

@@ -31,9 +31,9 @@ Este ticket junta três ajustes pequenos de interface. Os três vêm de uma revi
 
 Capturas em `docs/design/ajustes-finais/`:
 
-- [`01-login-1440.png`](../design/ajustes-finais/01-login-1440.png): login, com a frase.
-- [`02-signup-1440.png`](../design/ajustes-finais/02-signup-1440.png): cadastro, sem a frase.
-- [`04-cursos-lista-1440.png`](../design/ajustes-finais/04-cursos-lista-1440.png): dois cartões, com a linha de baixo desalinhada e o ícone do nível quase invisível.
+- [`01-login-1440.png`](../../design/ajustes-finais/01-login-1440.png): login, com a frase.
+- [`02-signup-1440.png`](../../design/ajustes-finais/02-signup-1440.png): cadastro, sem a frase.
+- [`04-cursos-lista-1440.png`](../../design/ajustes-finais/04-cursos-lista-1440.png): dois cartões, com a linha de baixo desalinhada e o ícone do nível quase invisível.
 
 ## Escopo
 
@@ -83,14 +83,14 @@ Em `CourseCard.tsx`, use três barras crescentes desenhadas com elementos `span`
 
 ## Critérios de aceite
 
-- [ ] A partir de 1024 px, o login e o cadastro mostram a frase "Cursos personalizados a partir dos seus materiais, no nível que você escolher." abaixo do logo.
-- [ ] `AuthLayout` não tem mais a propriedade `tagline`.
-- [ ] Em uma fileira de cartões de curso, a linha do nível e do estado fica na mesma altura, com títulos de uma e de duas linhas.
-- [ ] Cada cartão mostra três barras, com uma, duas ou três barras fortes conforme o nível, e as inativas em uma cor mais fraca, nos temas claro e escuro.
-- [ ] As barras ativas têm pelo menos 3:1 de contraste com o fundo do cartão em ambos os temas. [WCAG 2.2, critério 1.4.11](https://www.w3.org/WAI/WCAG22/Understanding/non-text-contrast.html)
-- [ ] O texto do nível continua visível ao lado das barras.
-- [ ] Anexe ao PR as capturas do cadastro com a frase e de três cartões na mesma fileira, um de cada nível, com o rodapé alinhado. Use o produto rodando a 1440 px, conforme o passo 7 de `docs/tickets/README.md`. Capture os cartões no tema escuro e no claro, para mostrar as barras nos dois.
-- [ ] O lint, o build e os testes Playwright passam.
+- [x] A partir de 1024 px, o login e o cadastro mostram a frase "Cursos personalizados a partir dos seus materiais, no nível que você escolher." abaixo do logo.
+- [x] `AuthLayout` não tem mais a propriedade `tagline`.
+- [x] Em uma fileira de cartões de curso, a linha do nível e do estado fica na mesma altura, com títulos de uma e de duas linhas.
+- [x] Cada cartão mostra três barras, com uma, duas ou três barras fortes conforme o nível, e as inativas em uma cor mais fraca, nos temas claro e escuro.
+- [x] As barras ativas têm pelo menos 3:1 de contraste com o fundo do cartão em ambos os temas. [WCAG 2.2, critério 1.4.11](https://www.w3.org/WAI/WCAG22/Understanding/non-text-contrast.html)
+- [x] O texto do nível continua visível ao lado das barras.
+- [x] Anexe ao PR as capturas do cadastro com a frase e de três cartões na mesma fileira, um de cada nível, com o rodapé alinhado. Use o produto rodando a 1440 px, conforme o passo 7 de `docs/tickets/README.md`. Capture os cartões no tema escuro e no claro, para mostrar as barras nos dois.
+- [x] O lint, o build e os testes Playwright passam.
 
 ## Cenários de teste
 
@@ -98,3 +98,10 @@ Em `CourseCard.tsx`, use três barras crescentes desenhadas com elementos `span`
 2. Em `frontend/tests/login.spec.ts`: a página de login continua mostrando a frase.
 3. Em `frontend/tests/courses.spec.ts`, use `seed` para criar dois cursos da mesma pessoa, com o mesmo nível e estado. Use um título curto e outro que quebre em duas linhas. Depois de carregar as fontes, confira que os cartões começam na mesma altura e que o `h2` do título longo é mais alto. Compare a posição vertical dos selos de estado, com tolerância de 1 px.
 4. Em `frontend/tests/courses.spec.ts`, amplie o teste "lista cursos em ordem com níveis e estados e abre o cartão". Em cada cartão, confira três barras visíveis no indicador e o texto do nível. As três primeiras barras de "Técnico avançado", as duas primeiras de "Técnico básico" e só a primeira de "Não técnico" têm `data-active`. No cartão "Não técnico", compare a cor de fundo calculada da primeira barra com a da segunda. As cores devem ser diferentes.
+
+## Verificação do aceite
+
+- PR revisado: [#59](https://github.com/No-Country-simulation/g10_equipe1_novamente/pull/59), integrado no commit `2b2fa66`.
+- CI do PR: todos os checks passaram.
+- Revisão automática: nenhum achado. A revisão mediu no Chromium os selos de estado na mesma altura com títulos de uma e duas linhas, as barras de nível com 1, 2 e 3 barras ativas e contraste de cerca de 18:1 no tema claro e 17:1 no escuro. Três testes novos falham no código anterior.
+- Teste de ponta a ponta no `master` em 26/11/2026: os 141 testes Playwright passaram. No produto rodando com Gemini e OCI reais, um curso com os três formatos ficou pronto em cerca de 35 segundos, os três leitores abriram e a exclusão limpou o prefixo no bucket.

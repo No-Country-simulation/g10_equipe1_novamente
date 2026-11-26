@@ -120,9 +120,9 @@ Tickets escritos da onda 11, ajustes finais da interface:
 
 | Ticket | Entrega |
 | --- | --- |
-| [`T45`](docs/tickets/T45-cadastro-e-cartoes-de-curso.md) | Frase do produto no cadastro, rodapé alinhado e indicador de nível nos cartões de curso |
-| [`T46`](docs/tickets/T46-novo-curso-area-de-envio.md) | Novo curso: área de envio redesenhada e mesma altura nas duas abas |
-| [`T47`](docs/tickets/T47-sem-bordas-azuis-no-conteudo.md) | Telas de conteúdo sem as bordas azuis |
+| [`T45`](docs/tickets/completed/T45-cadastro-e-cartoes-de-curso.md) | Frase do produto no cadastro, rodapé alinhado e indicador de nível nos cartões de curso |
+| [`T46`](docs/tickets/completed/T46-novo-curso-area-de-envio.md) | Novo curso: área de envio redesenhada e mesma altura nas duas abas |
+| [`T47`](docs/tickets/completed/T47-sem-bordas-azuis-no-conteudo.md) | Telas de conteúdo sem as bordas azuis |
 
 ## Fora de `docs/`
 

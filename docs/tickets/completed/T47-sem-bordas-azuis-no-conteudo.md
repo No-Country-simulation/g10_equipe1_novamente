@@ -32,9 +32,9 @@ As Telas finais mostram a faixa e a borda do cartão. Esta é uma decisão nova,
 
 Capturas em `docs/design/ajustes-finais/`:
 
-- [`11-conteudo-tutorial-1440.png`](../design/ajustes-finais/11-conteudo-tutorial-1440.png): faixa do cabeçalho e borda dos trechos citados.
-- [`12-flashcards-frente-1440.png`](../design/ajustes-finais/12-flashcards-frente-1440.png): borda do cartão.
-- [`15-quiz-aguardando-1440.png`](../design/ajustes-finais/15-quiz-aguardando-1440.png): faixa do cabeçalho no quiz.
+- [`11-conteudo-tutorial-1440.png`](../../design/ajustes-finais/11-conteudo-tutorial-1440.png): faixa do cabeçalho e borda dos trechos citados.
+- [`12-flashcards-frente-1440.png`](../../design/ajustes-finais/12-flashcards-frente-1440.png): borda do cartão.
+- [`15-quiz-aguardando-1440.png`](../../design/ajustes-finais/15-quiz-aguardando-1440.png): faixa do cabeçalho no quiz.
 
 ## Escopo
 
@@ -71,15 +71,22 @@ Em `docs/design/telas-finais/README.md`, registre o ajuste de T47 depois do últ
 
 ## Critérios de aceite
 
-- [ ] As telas de tutorial, flashcards e quiz não mostram a faixa azul abaixo do cabeçalho.
-- [ ] Os trechos citados não têm borda à esquerda.
-- [ ] O cartão de flashcards tem a borda neutra de 1 px da variante `outline`.
-- [ ] `docs/design/telas-finais/README.md` registra a divergência.
-- [ ] Anexe ao PR capturas do tutorial com trechos citados, dos flashcards e do quiz. Use o produto rodando em tema escuro a 1440 px, conforme o passo 7 de `docs/tickets/README.md`.
-- [ ] O lint, o build e os testes Playwright passam.
+- [x] As telas de tutorial, flashcards e quiz não mostram a faixa azul abaixo do cabeçalho.
+- [x] Os trechos citados não têm borda à esquerda.
+- [x] O cartão de flashcards tem a borda neutra de 1 px da variante `outline`.
+- [x] `docs/design/telas-finais/README.md` registra a divergência.
+- [x] Anexe ao PR capturas do tutorial com trechos citados, dos flashcards e do quiz. Use o produto rodando em tema escuro a 1440 px, conforme o passo 7 de `docs/tickets/README.md`.
+- [x] O lint, o build e os testes Playwright passam.
 
 ## Cenários de teste
 
 1. Em `frontend/tests/course.spec.ts`, no teste "abre o tutorial pela grade e volta ao curso", confira `border-bottom-width: 0px` no `header` que contém o `h1` do curso.
 2. Em `frontend/tests/content-evaluation.spec.ts`, no teste "mostra a avaliação e os trechos do documento", use `citationItems(page)` e confira `border-left-width: 0px` em cada item.
 3. Em `frontend/tests/flashcards-reader.spec.ts`, no teste "mostra um cartão por vez e vira com clique ou teclado", confira `border-top-width: 1px` no botão "Virar cartão". Antes do clique, compare a cor calculada da borda com a do botão "Próximo", que também usa `outline`.
+
+## Verificação do aceite
+
+- PR revisado: [#58](https://github.com/No-Country-simulation/g10_equipe1_novamente/pull/58), integrado no commit `011a835`.
+- CI do PR: todos os checks passaram.
+- Revisão automática: três achados, corrigidos no commit `c3a51e3`. O teste do cabeçalho agora falha no código anterior, com borda de 4 px. As capturas foram anexadas à descrição do PR. O teste usado só para capturas saiu.
+- Teste de ponta a ponta no `master` em 26/11/2026: os 141 testes Playwright passaram. No produto rodando com Gemini e OCI reais, um curso com os três formatos ficou pronto em cerca de 35 segundos, os três leitores abriram e a exclusão limpou o prefixo no bucket.
