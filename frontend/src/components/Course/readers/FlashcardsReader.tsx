@@ -97,7 +97,7 @@ function FlashcardSet({
               setFlipped(!flipped)
               setShowHint(false)
             }}
-            className="h-auto min-h-[280px] w-full flex-col items-start justify-between gap-6 rounded-[12px] border-2 border-info bg-card p-8 text-left whitespace-normal dark:border-info dark:bg-card"
+            className="h-auto min-h-[280px] w-full flex-col items-start justify-between gap-6 rounded-[12px] bg-card p-8 text-left whitespace-normal dark:bg-card"
           >
             <Badge className="bg-info/10 font-semibold text-info uppercase">
               {side.toUpperCase()}

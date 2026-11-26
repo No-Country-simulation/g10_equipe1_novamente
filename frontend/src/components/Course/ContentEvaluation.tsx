@@ -21,7 +21,7 @@ function CitationItem({ citation }: { citation: CitationPublic }) {
       : citation.text
 
   return (
-    <li className="rounded-lg border-l-[3px] border-info bg-muted/50 p-4">
+    <li className="rounded-lg bg-muted/50 p-4">
       <p className="wrap-anywhere text-[13px] text-foreground-tertiary">
         <span className="font-mono">{citation.document_title}</span>
         {citation.page_number !== null && ` · página ${citation.page_number}`}
