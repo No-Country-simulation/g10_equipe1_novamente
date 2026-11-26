@@ -366,3 +366,24 @@ test("preserva perguntas iguais e reinicia a leitura quando o quiz muda", async 
   await expect(previous).toBeDisabled()
   await expect(next).toBeDisabled()
 })
+
+test("não repete o ponto final quando a opção correta já termina com ponto", async ({
+  page,
+}) => {
+  await setup(page, {
+    questions: [
+      {
+        ...questions[0],
+        options: ["Logs", "logs", "Métricas.", "Traces"],
+        correct_index: 2,
+      },
+      ...questions.slice(1),
+    ],
+  })
+  const { options, result } = quiz(page)
+
+  await options.first().click()
+  await expect(
+    result.getByText("A resposta certa é C: Métricas.", { exact: true }),
+  ).toBeVisible()
+})
