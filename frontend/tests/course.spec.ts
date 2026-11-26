@@ -195,6 +195,74 @@ test("abre o tutorial pela grade e volta ao curso", async ({ page }) => {
   ).toBeVisible()
 })
 
+test("mostra os três leitores sem faixa azul no tema escuro", async ({
+  page,
+}, testInfo) => {
+  await page.setViewportSize({ width: 1440, height: 1000 })
+  const excerpt = "Revise os pré-requisitos antes de passar aos exemplos."
+  const course = await setup(page, {
+    documents: [{ original_filename: "guia.md", chunks: [excerpt] }],
+    contents: [
+      { ...publishedTutorial, cited_chunks: [0] },
+      {
+        format: "flashcards",
+        status: "succeeded",
+        content: {
+          introduction: "Revise os conceitos do curso.",
+          cards: Array.from({ length: 8 }, (_, index) => ({
+            front: `Qual é o pré-requisito ${index + 1}?`,
+            back: `Revise o conceito ${index + 1}.`,
+          })),
+        },
+      },
+      {
+        format: "quiz",
+        status: "succeeded",
+        content: {
+          questions: Array.from({ length: 5 }, () => ({
+            prompt: "O que você deve fazer antes de passar aos exemplos?",
+            options: [
+              "Revisar a base",
+              "Ler o resumo",
+              "Ver o índice",
+              "Fazer o quiz",
+            ],
+            correct_index: 0,
+            explanation: excerpt,
+          })),
+        },
+      },
+    ],
+  })
+  await page.goto(`/courses/${course.id}`)
+  await expect(page.locator("html")).toHaveClass("dark")
+
+  const header = page.locator("header").filter({
+    has: page.getByRole("heading", { name: course.title, level: 1 }),
+  })
+  const readers = [
+    ["Introdução", "tutorial", page.getByText(excerpt)],
+    [
+      "Flashcards",
+      "flashcards",
+      page.getByRole("button", { name: "Virar cartão" }),
+    ],
+    ["Quiz", "quiz", page.getByRole("group", { name: "Opções de resposta" })],
+  ] as const
+  for (const [title, format, content] of readers) {
+    await page
+      .getByRole("link", { name: `Abrir ${title}`, exact: true })
+      .click()
+    await expect(content).toBeVisible()
+    await expect(header).toHaveCSS("border-bottom-width", "0px")
+    await testInfo.attach(`${format}-escuro-1440.png`, {
+      body: await page.screenshot({ fullPage: true, animations: "disabled" }),
+      contentType: "image/png",
+    })
+    await page.getByRole("link", { name: "Voltar ao curso" }).click()
+  }
+})
+
 test("mantém o conteúdo publicado legível durante falha ou geração", async ({
   page,
 }) => {
