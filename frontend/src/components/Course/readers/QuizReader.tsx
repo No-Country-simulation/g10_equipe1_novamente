@@ -51,9 +51,10 @@ function Quiz({ questions }: z.infer<typeof quizSchema>) {
   const isAnswerCorrect = answer === correctIndex
   const ResultIcon = isAnswerCorrect ? CircleCheck : CircleX
   const resultTitle = isAnswerCorrect ? "Resposta correta" : "Não foi dessa vez"
+  const correctOption = options[correctIndex]
   const correctSentence = isAnswerCorrect
     ? ""
-    : `A resposta certa é ${optionLetters[correctIndex]}: ${options[correctIndex]}.`
+    : `A resposta certa é ${optionLetters[correctIndex]}: ${correctOption}${/[.!?]$/.test(correctOption) ? "" : "."}`
   const position = index + 1
   const total = questions.length
 
