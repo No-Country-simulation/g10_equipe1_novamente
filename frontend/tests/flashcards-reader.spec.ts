@@ -67,6 +67,13 @@ test("mostra um cartão por vez e vira com clique ou teclado", async ({
   await expect(card).toHaveAttribute("aria-pressed", "false")
   await expect(liveRegion).toHaveText("Pergunta: Observabilidade: pergunta 1")
 
+  const next = page.getByRole("button", { name: "Próximo" })
+  const outlineColor = await next.evaluate(
+    (button) => getComputedStyle(button).borderTopColor,
+  )
+  await expect(card).toHaveCSS("border-top-width", "1px")
+  await expect(card).toHaveCSS("border-top-color", outlineColor)
+
   await card.click()
   await expect(card.getByText("RESPOSTA", { exact: true })).toBeVisible()
   await expect(card.getByText("Observabilidade: resposta 1")).toBeVisible()

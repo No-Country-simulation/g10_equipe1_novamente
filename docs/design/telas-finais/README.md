@@ -14,3 +14,11 @@ As capturas foram feitas em 18/11/2026, em um Chromium sem interface, com 1440 p
 | [`tela-q3-quiz-incorreta.png`](tela-q3-quiz-incorreta.png) | Q3 · Quiz comentado, resposta incorreta | T44 |
 
 As capturas mostram o design, não o produto. O progresso, o botão "Finalizar" e outros elementos ficam fora do MVP. O ticket de cada tela diz o que entra e o que sai.
+
+O T47 definiu três ajustes em relação às telas finais:
+
+- Removeu a faixa azul abaixo do cabeçalho do tutorial, dos flashcards e do quiz.
+- Removeu a borda azul à esquerda dos trechos citados.
+- Trocou a borda azul do cartão de flashcards pela borda neutra de 1 px da variante `outline`.
+
+Veja as [capturas anteriores ao ajuste](../ajustes-finais/README.md).

@@ -48,7 +48,7 @@ export function ContentScreen({
 
   return (
     <div className="space-y-8">
-      <header className="space-y-2 rounded-[12px] border-b-4 border-info bg-foreground px-8 py-5 text-background dark:bg-card dark:text-card-foreground">
+      <header className="space-y-2 rounded-[12px] bg-foreground px-8 py-5 text-background dark:bg-card dark:text-card-foreground">
         <Link
           to={standalone ? "/courses/$courseId" : "/courses"}
           params={standalone ? { courseId: course.id } : undefined}

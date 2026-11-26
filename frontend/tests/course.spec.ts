@@ -176,9 +176,10 @@ test("abre o tutorial pela grade e volta ao curso", async ({ page }) => {
   await expect(page).toHaveURL(
     `${coursePath}/contents/${course.contents[0].id}`,
   )
-  await expect(
-    page.getByRole("heading", { name: course.title, level: 1 }),
-  ).toBeVisible()
+  const heading = page.getByRole("heading", { name: course.title, level: 1 })
+  await expect(heading).toBeVisible()
+  const header = page.locator("header").filter({ has: heading })
+  await expect(header).toHaveCSS("border-bottom-width", "0px")
   await expect(
     page.getByText("Tutorial · Técnico básico · Geral"),
   ).toBeVisible()

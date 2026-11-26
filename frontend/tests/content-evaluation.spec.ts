@@ -83,6 +83,7 @@ test("mostra a avaliação e os trechos do documento", async ({ page }) => {
   await expect(items).toHaveCount(2)
   for (const text of [chunks[0], chunks[2]]) {
     const item = items.filter({ hasText: text })
+    await expect(item).toHaveCSS("border-left-width", "0px")
     const excerpt = item.getByText(text, { exact: true })
     await expect(excerpt).toBeVisible()
     await expect(excerpt).toHaveJSProperty("innerText", text)
