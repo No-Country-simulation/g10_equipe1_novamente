@@ -1,18 +1,19 @@
 import { Link } from "@tanstack/react-router"
-import { SignalHigh, SignalLow, SignalMedium } from "lucide-react"
 import type { AudienceLevel, CourseSummary } from "@/client"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { AUDIENCE_LABELS, COURSE_STATUS_LABELS } from "@/lib/courses"
 
-const audienceIcons = {
-  non_technical: SignalLow,
-  technical_basic: SignalMedium,
-  technical_advanced: SignalHigh,
-} satisfies Record<AudienceLevel, typeof SignalLow>
+const audienceBarCounts = {
+  non_technical: 1,
+  technical_basic: 2,
+  technical_advanced: 3,
+} satisfies Record<AudienceLevel, number>
+
+const barHeights = ["h-1.5", "h-2.5", "h-4"]
 
 export function CourseCard({ course }: { course: CourseSummary }) {
-  const AudienceIcon = audienceIcons[course.audience_level]
+  const activeBars = audienceBarCounts[course.audience_level]
   const color =
     course.status === "ready"
       ? "bg-success text-white"
@@ -31,9 +32,20 @@ export function CourseCard({ course }: { course: CourseSummary }) {
             {course.title}
           </h2>
         </CardHeader>
-        <CardContent className="flex items-center justify-between gap-2">
+        <CardContent className="mt-auto flex items-center justify-between gap-2">
           <span className="inline-flex items-center gap-2 text-muted-foreground">
-            <AudienceIcon aria-hidden="true" className="size-4 shrink-0" />
+            <span
+              aria-hidden="true"
+              className="inline-flex shrink-0 items-end gap-0.5"
+            >
+              {barHeights.map((height, index) => (
+                <span
+                  key={height}
+                  data-active={index < activeBars ? true : undefined}
+                  className={`w-1 bg-border-strong data-active:bg-foreground ${height}`}
+                />
+              ))}
+            </span>
             {AUDIENCE_LABELS[course.audience_level]}
           </span>
           <Badge className={color}>{COURSE_STATUS_LABELS[course.status]}</Badge>

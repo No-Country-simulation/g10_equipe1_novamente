@@ -25,6 +25,16 @@ const verifyInput = async (page: Page, testId: string) => {
   await expect(input).toBeEditable()
 }
 
+test("mostra a frase do produto", async ({ page }) => {
+  await page.goto("/login")
+  await expect(
+    page.getByText(
+      "Cursos personalizados a partir dos seus materiais, no nível que você escolher.",
+      { exact: true },
+    ),
+  ).toBeVisible()
+})
+
 test("Inputs are visible, empty and editable", async ({ page }) => {
   await page.goto("/login")
 
