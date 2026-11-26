@@ -34,7 +34,9 @@ test("1. mostra os controles iniciais", async ({ page }) => {
 })
 
 test("2. aceita Markdown e habilita continuar", async ({ page }) => {
-  await input(page).setInputFiles(file("guia.md", 2048))
+  const chooser = page.waitForEvent("filechooser")
+  await page.getByRole("button", { name: "Escolher arquivos" }).click()
+  await (await chooser).setFiles(file("guia.md", 2048))
   await expect(page.getByText("guia.md")).toBeVisible()
   await expect(remove(page, "guia.md")).toBeVisible()
   await expect(next(page)).toBeEnabled()
@@ -179,18 +181,158 @@ test("12. etapa concluída navega e futura não é botão", async ({ page }) => 
   await expect(page.getByText("guia.md")).toBeVisible()
 })
 
-test("13. aceita arquivo solto na área de envio", async ({ page }) => {
+test("13. valida arquivos soltos na área de envio", async ({ page }) => {
   const transfer = await page.evaluateHandle(() => {
     const data = new DataTransfer()
     data.items.add(new File(["conteúdo"], "guia.md", { type: "text/markdown" }))
+    data.items.add(new File(["conteúdo"], "notas.txt", { type: "text/plain" }))
     return data
   })
   const area = page.getByRole("region", { name: "Área de envio de arquivos" })
   await area.dispatchEvent("dragover", { dataTransfer: transfer })
   await area.dispatchEvent("drop", { dataTransfer: transfer })
   await expect(page.getByText("guia.md")).toBeVisible()
+  await expect(page.getByText("notas.txt")).toBeVisible()
+  await expect(
+    page.getByText("Envie um arquivo .md ou PDF, ou digite o texto."),
+  ).toBeVisible()
+  await expect(page.getByText("1 de 3 documentos")).toBeVisible()
   await expect(next(page)).toBeEnabled()
   await transfer.dispose()
+})
+
+for (const width of [1440, 360]) {
+  test(`mantém o layout do passo 1 ao trocar de aba a ${width} px`, async ({
+    page,
+  }, testInfo) => {
+    await page.setViewportSize({ width, height: 900 })
+    await page.emulateMedia({ colorScheme: "dark" })
+    await expect(page.locator("html")).toHaveClass(/\bdark\b/)
+    await page.evaluate(async () => {
+      await document.fonts.ready
+    })
+
+    const panel = page.getByRole("tabpanel")
+    const card = page.locator('[data-slot="card"]').filter({
+      hasText: "ETAPA 1 DE 3",
+    })
+    const uploadTab = page.getByRole("tab", { name: "Enviar arquivo" })
+    const typedTab = page.getByRole("tab", { name: "Digitar texto" })
+    const measure = async () => {
+      const panelBox = await panel.boundingBox()
+      const cardBox = await card.boundingBox()
+      const buttonBox = await next(page).boundingBox()
+      if (!panelBox || !cardBox || !buttonBox)
+        throw new Error(
+          "O painel, o cartão e o botão Continuar devem estar visíveis.",
+        )
+      return [
+        panelBox.height,
+        cardBox.height,
+        buttonBox.y + (await page.evaluate(() => window.scrollY)),
+      ]
+    }
+    const expectSameLayout = (before: number[], after: number[]) => {
+      const labels = [
+        "altura do painel",
+        "altura do cartão",
+        "posição de Continuar",
+      ]
+      for (const [index, label] of labels.entries())
+        expect(
+          Math.abs(before[index] - after[index]),
+          label,
+        ).toBeLessThanOrEqual(1)
+    }
+    const capture = async (tab: string) => {
+      const name = `${tab}-${width}.png`
+      const path = testInfo.outputPath(name)
+      await page.screenshot({ path, fullPage: true })
+      await testInfo.attach(name, { path, contentType: "image/png" })
+    }
+
+    await expect(panel).toHaveAccessibleName("Enviar arquivo")
+    const withUpload = await measure()
+    await capture("enviar-arquivo")
+    await typedTab.click()
+    await expect(panel).toHaveAccessibleName("Digitar texto")
+    expectSameLayout(withUpload, await measure())
+    await capture("digitar-texto")
+
+    await page.getByRole("textbox", { name: "Texto do documento" }).fill(" ")
+    await page.getByRole("button", { name: "Adicionar texto" }).click()
+    await expect(page.getByRole("alert")).toHaveText("O arquivo não tem texto.")
+    const withError = await measure()
+    expect(withError[0]).toBeGreaterThan(withUpload[0])
+    await uploadTab.click()
+    await expect(panel).toHaveAccessibleName("Enviar arquivo")
+    await expect(page.getByRole("alert")).toHaveCount(0)
+    expectSameLayout(withError, await measure())
+  })
+}
+
+test("empilha e centraliza os controles da área de envio", async ({ page }) => {
+  const area = page.getByRole("region", { name: "Área de envio de arquivos" })
+  const areaBox = await area.boundingBox()
+  if (!areaBox) throw new Error("A área de envio deve estar visível.")
+
+  const elements = [
+    area.locator("svg").first(),
+    area.getByText("Arraste os arquivos até aqui"),
+    area.getByText("MD ou PDF, até 5 MiB"),
+    area.getByRole("button", { name: "Escolher arquivos" }),
+  ]
+  let previousBottom = areaBox.y
+  for (const element of elements) {
+    const box = await element.boundingBox()
+    if (!box)
+      throw new Error("Os elementos da área de envio devem estar visíveis.")
+    expect(box.y).toBeGreaterThanOrEqual(previousBottom)
+    expect(
+      Math.abs(box.x + box.width / 2 - (areaBox.x + areaBox.width / 2)),
+    ).toBeLessThanOrEqual(2)
+    previousBottom = box.y + box.height
+  }
+})
+
+test("expõe só os controles da aba ativa e preserva o texto digitado", async ({
+  page,
+}) => {
+  const panel = page.getByRole("tabpanel")
+  const uploadTab = page.getByRole("tab", { name: "Enviar arquivo" })
+  const typedTab = page.getByRole("tab", { name: "Digitar texto" })
+  const choose = page.getByRole("button", { name: "Escolher arquivos" })
+  const text = page.getByRole("textbox", { name: "Texto do documento" })
+
+  await expect(panel).toHaveCount(1)
+  await expect(panel).toHaveAccessibleName("Enviar arquivo")
+  await expect(text).toHaveCount(0)
+  await input(page).setInputFiles(file("guia.md"))
+  await uploadTab.focus()
+  await page.keyboard.press("Tab")
+  await expect(panel).toBeFocused()
+  await page.keyboard.press("Tab")
+  await expect(choose).toBeFocused()
+  await page.keyboard.press("Tab")
+  await expect(remove(page, "guia.md")).toBeFocused()
+
+  await typedTab.click()
+  expect(
+    await page
+      .getByText("Escolher arquivos", { exact: true })
+      .evaluate((button) => getComputedStyle(button).visibility),
+  ).toBe("hidden")
+  await expect(panel).toHaveCount(1)
+  await expect(panel).toHaveAccessibleName("Digitar texto")
+  await expect(choose).toHaveCount(0)
+  await page.keyboard.press("Tab")
+  await expect(panel).toBeFocused()
+  await page.keyboard.press("Tab")
+  await expect(text).toBeFocused()
+  await text.fill("Material em edição")
+  await uploadTab.click()
+  await typedTab.click()
+  await expect(text).toHaveValue("Material em edição")
 })
 
 const titleInput = (page: Page) =>
