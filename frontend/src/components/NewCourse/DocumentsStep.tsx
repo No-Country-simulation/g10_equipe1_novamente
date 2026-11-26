@@ -112,106 +112,116 @@ export function DocumentsStep({
               Digitar texto
             </TabsTrigger>
           </TabsList>
-          <TabsContent value="upload">
-            <section
-              className={cn(
-                "flex flex-col items-center gap-3.5 rounded-[12px] border-2 border-dashed bg-background px-6 py-5 text-center transition-colors motion-reduce:transition-none sm:flex-row sm:text-left",
-                full && "opacity-60",
-                !full && !dragging && "hover:border-border-strong",
-                dragging && !full && "border-primary bg-primary/5",
-              )}
-              onDragOver={(event) => {
-                event.preventDefault()
-                if (!full) setDragging(true)
-              }}
-              onDragLeave={(event) => {
-                if (
-                  !event.currentTarget.contains(
-                    event.relatedTarget as Node | null,
-                  )
-                )
-                  setDragging(false)
-              }}
-              onDrop={(event) => {
-                event.preventDefault()
-                setDragging(false)
-                if (!full) addFiles(event.dataTransfer.files)
-              }}
-              aria-label="Área de envio de arquivos"
-              aria-disabled={full}
+          {/* Os botões herdam a visibilidade do painel sem transição ao ocultá-lo. */}
+          <div className="grid grid-cols-1 [&>[data-state=inactive]_button]:transition-none">
+            <TabsContent
+              value="upload"
+              forceMount
+              className="col-start-1 row-start-1 flex data-[state=inactive]:invisible"
             >
-              <Upload
-                className="size-8 shrink-0 text-muted-foreground"
-                strokeWidth={1.75}
-                aria-hidden="true"
-              />
-              <div className="flex-1">
-                <p className="font-semibold">Arraste os arquivos até aqui</p>
-                <p className="text-sm text-muted-foreground">
-                  MD ou PDF, até 5 MiB
-                </p>
-              </div>
-              <Input
-                ref={input}
-                aria-label="Arquivos"
-                type="file"
-                accept=".md,.pdf"
-                multiple
-                className="hidden"
+              <section
+                className={cn(
+                  "flex flex-1 flex-col items-center justify-center gap-3.5 rounded-[12px] border-2 border-dashed bg-background px-6 py-5 text-center transition-colors motion-reduce:transition-none",
+                  full && "opacity-60",
+                  !full && !dragging && "hover:border-border-strong",
+                  dragging && !full && "border-primary bg-primary/5",
+                )}
+                onDragOver={(event) => {
+                  event.preventDefault()
+                  if (!full) setDragging(true)
+                }}
+                onDragLeave={(event) => {
+                  if (
+                    !event.currentTarget.contains(
+                      event.relatedTarget as Node | null,
+                    )
+                  )
+                    setDragging(false)
+                }}
+                onDrop={(event) => {
+                  event.preventDefault()
+                  setDragging(false)
+                  if (!full) addFiles(event.dataTransfer.files)
+                }}
+                aria-label="Área de envio de arquivos"
+                aria-disabled={full}
+              >
+                <div className="flex size-12 shrink-0 items-center justify-center rounded-full border bg-card">
+                  <Upload
+                    className="size-5 text-muted-foreground"
+                    strokeWidth={1.75}
+                    aria-hidden="true"
+                  />
+                </div>
+                <div>
+                  <p className="font-semibold">Arraste os arquivos até aqui</p>
+                  <p className="text-sm text-muted-foreground">
+                    MD ou PDF, até 5 MiB
+                  </p>
+                </div>
+                <Input
+                  ref={input}
+                  aria-label="Arquivos"
+                  type="file"
+                  accept=".md,.pdf"
+                  multiple
+                  className="hidden"
+                  disabled={full}
+                  onChange={(event) => {
+                    if (event.target.files) addFiles(event.target.files)
+                    event.target.value = ""
+                  }}
+                />
+                <Button
+                  variant="outline"
+                  className="min-h-12 bg-card px-[22px]"
+                  disabled={full}
+                  onClick={() => input.current?.click()}
+                >
+                  Escolher arquivos
+                </Button>
+              </section>
+            </TabsContent>
+            <TabsContent
+              value="typed"
+              forceMount
+              className="col-start-1 row-start-1 space-y-3 rounded-xl border bg-background/50 p-5 data-[state=inactive]:invisible"
+            >
+              <Label htmlFor="document-text">Texto do documento</Label>
+              <Textarea
+                id="document-text"
+                className="h-44 field-sizing-fixed resize-none bg-card leading-relaxed"
+                placeholder="Cole ou escreva aqui o conteúdo que vai servir de base para o curso."
+                aria-invalid={!!error}
+                aria-describedby={error ? "document-text-error" : undefined}
+                value={text}
                 disabled={full}
                 onChange={(event) => {
-                  if (event.target.files) addFiles(event.target.files)
-                  event.target.value = ""
+                  setText(event.target.value)
+                  setError(null)
                 }}
               />
-              <Button
-                variant="outline"
-                className="min-h-12 bg-card px-[22px]"
-                disabled={full}
-                onClick={() => input.current?.click()}
-              >
-                Escolher arquivos
-              </Button>
-            </section>
-          </TabsContent>
-          <TabsContent
-            value="typed"
-            className="space-y-3 rounded-xl border bg-background/50 p-5"
-          >
-            <Label htmlFor="document-text">Texto do documento</Label>
-            <Textarea
-              id="document-text"
-              className="h-44 field-sizing-fixed resize-none bg-card leading-relaxed"
-              placeholder="Cole ou escreva aqui o conteúdo que vai servir de base para o curso."
-              aria-invalid={!!error}
-              aria-describedby={error ? "document-text-error" : undefined}
-              value={text}
-              disabled={full}
-              onChange={(event) => {
-                setText(event.target.value)
-                setError(null)
-              }}
-            />
-            {error && (
-              <p
-                id="document-text-error"
-                role="alert"
-                className="text-sm text-destructive"
-              >
-                {error}
-              </p>
-            )}
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <span className="text-xs text-foreground-tertiary">
-                {text.length.toLocaleString("pt-BR")} /{" "}
-                {MAX_TEXT_CHARS.toLocaleString("pt-BR")} caracteres
-              </span>
-              <Button disabled={full || !text} onClick={addText}>
-                <Plus aria-hidden="true" />
-                Adicionar texto
-              </Button>
-            </div>
-          </TabsContent>
+              {error && (
+                <p
+                  id="document-text-error"
+                  role="alert"
+                  className="text-sm text-destructive"
+                >
+                  {error}
+                </p>
+              )}
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <span className="text-xs text-foreground-tertiary">
+                  {text.length.toLocaleString("pt-BR")} /{" "}
+                  {MAX_TEXT_CHARS.toLocaleString("pt-BR")} caracteres
+                </span>
+                <Button disabled={full || !text} onClick={addText}>
+                  <Plus aria-hidden="true" />
+                  Adicionar texto
+                </Button>
+              </div>
+            </TabsContent>
+          </div>
         </Tabs>
         {full && (
           <p
