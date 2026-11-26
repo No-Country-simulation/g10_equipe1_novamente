@@ -171,6 +171,9 @@ Todos os tickets da tabela estão escritos. A equipe descartou T34 e T43. Quem a
 | 8 | T44 | Correção no leitor de quiz: opção escolhida certa ou errada e a correta | T10, T31 |
 | 9 | T35 | README, diagrama e guia de instalação | T29, T31, T32, T33, T42 |
 | 10 | T36 | Deploy da demonstração por HTTP na VM A2.Flex existente (opcional) | T35 |
+| 11 | [T45](T45-cadastro-e-cartoes-de-curso.md) | Frase do produto no cadastro, rodapé alinhado e indicador de nível nos cartões de curso | T06, T17 |
+| 11 | [T46](T46-novo-curso-area-de-envio.md) | Novo curso: área de envio redesenhada e mesma altura nas duas abas | T07 |
+| 11 | [T47](T47-sem-bordas-azuis-no-conteudo.md) | Telas de conteúdo sem as bordas azuis | T09, T18, T38 |
 
 T39 saiu das medições de T12: a cota de embeddings conta cada texto como um pedido, e a indexação de um documento grande passava do limite por minuto. T28 passou a listar T39.
 
@@ -203,3 +206,5 @@ T32 recoloca o conteúdo na fila da tarefa ativa. T32 e T33 usam o lock da linha
 T28 libera T29, T30, T32 e T33. T29 também é bloqueio de T31. T36 espera o guia do T35 para verificar no site publicado a criação, a leitura e a exclusão do curso.
 
 T42 saiu da primeira medição de T41. No quiz da LAI, o revisor marcou o prazo de 20 dias como sem apoio e deixou passar o erro de 30 dias. T42 envia a resposta marcada por extenso no material e limita as afirmações aos fatos do material. A versão passa a `revisa-v3`.
+
+T45, T46 e T47 formam a onda 11, acrescentada após a revisão das telas de 26/11/2026. Os bloqueios já estão no `master`. Cada ticket edita arquivos diferentes, então os três podem rodar em paralelo. Para esses ajustes, siga as decisões dos tickets de layout. [Capturas da revisão](../design/ajustes-finais/README.md)

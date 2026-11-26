@@ -48,7 +48,8 @@ O índice [`docs/product-specs/index.md`](docs/product-specs/index.md) lista os 
 
 ## Design
 
-- [`docs/design/telas-finais/`](docs/design/telas-finais/README.md): capturas das Telas finais do Drive, a única fonte de layout. O ticket de cada tela cita as capturas que usa.
+- [`docs/design/telas-finais/`](docs/design/telas-finais/README.md): capturas das Telas finais do Drive, a base do layout. Cada ticket cita as capturas e descreve seus ajustes.
+- [`docs/design/ajustes-finais/`](docs/design/ajustes-finais/README.md): capturas do produto antes dos ajustes de T45, T46 e T47 e referência da área de envio.
 
 ## Tickets
 
@@ -114,6 +115,14 @@ Tickets escritos das ondas 5 a 10:
 | [`T35`](docs/tickets/completed/T35-readme-diagrama-e-guia-de-instalacao.md) | README, diagrama e guia de instalação |
 | [`T44`](docs/tickets/completed/T44-correcao-no-leitor-de-quiz.md) | Correção no leitor de quiz |
 | [`T36`](docs/tickets/completed/T36-deploy-na-vm-da-oci.md) | Deploy da demonstração por HTTP na VM A2.Flex |
+
+Tickets escritos da onda 11, ajustes finais da interface:
+
+| Ticket | Entrega |
+| --- | --- |
+| [`T45`](docs/tickets/T45-cadastro-e-cartoes-de-curso.md) | Frase do produto no cadastro, rodapé alinhado e indicador de nível nos cartões de curso |
+| [`T46`](docs/tickets/T46-novo-curso-area-de-envio.md) | Novo curso: área de envio redesenhada e mesma altura nas duas abas |
+| [`T47`](docs/tickets/T47-sem-bordas-azuis-no-conteudo.md) | Telas de conteúdo sem as bordas azuis |
 
 ## Fora de `docs/`
 
