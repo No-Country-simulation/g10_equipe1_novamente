@@ -1,0 +1,36 @@
+Foco: HTTP requisições respostas códigos de status autenticação autorização JSON
+Nível: tecnico_basico
+Setor: geral
+Formato: tutorial
+Use EXCLUSIVAMENTE os trechos numerados como fonte factual. Não invente fatos. Escreva em português brasileiro. Use exemplos do setor apenas se sustentados pelos trechos. Se faltar informação, reduza o detalhamento sem inventar. Preencha title, estimated_minutes, key_concepts, prerequisites e content. Escreva resumo, de 2 a 4 seções e 3 a 5 itens 'Para levar'.
+
+TRECHOS RECUPERADOS (simulação local de RAG):
+[C004] idar permissões do lado do servidor.
+
+## Exemplo de consulta
+Um sistema de treinamento pode consultar GET /cursos/42 para obter informações de um curso. Se o curso existir e a pessoa tiver acesso, o servidor pode devolver 200 e um objeto JSON. Se o curso não existir, pode devolver 404. Se a identidade não tiver permissão, pode devolver 403 conforme as regras definidas.
+
+## Exemplo de criação
+Um sistema pode enviar POST /cursos com um corpo JSON contendo título e descrição. Quando um recurso é criado com sucesso, o servidor pode responder 201. Antes de criar o registro, o backend valida os dados e confere se o usuário tem permissão.
+
+## Erros e observabilidade
+Respostas de erro devem informar ao cliente o que aconteceu sem revelar segredos. Logs internos podem registrar identificadores de correlação, tempos e códigos de status. Não devem r
+
+[C002] urso no endereço solicitado. PATCH descreve uma modificação parcial. DELETE solicita a remoção de um recurso. Essas definições não garantem que o servidor execute qualquer operação sem verificar permissões ou regras de negócio.
+
+## Códigos de sucesso
+200 (OK) sinaliza sucesso na operação. 201 (Created) informa a criação de um recurso. 204 (No Content) sinaliza sucesso sem corpo de resposta. O significado exato precisa ser interpretado juntamente com o método e a documentação da API.
+
+## Códigos relacionados a requisições inválidas
+400 (Bad Request) sinaliza problema na requisição. 401 (Unauthorized) indica que faltam credenciais válidas de autenticação. 403 (Forbidden) indica que o servidor compreendeu a requisição, mas recusa sua execução. 404 (Not Found) informa que o recurso não foi encontrado.
+
+## Códigos de falha no servidor
+500 (Int
+
+[C003] ernal Server Error) representa falha inesperada no servidor. 503 (Service Unavailable) indica incapacidade temporária de atender à requisição, por exemplo quando o serviço está indisponível ou sobrecarregado. O cliente não deve pressupor que todas as falhas 503 serão resolvidas rapidamente.
+
+## Representações JSON
+JSON pode representar objetos com pares chave/valor, arrays, textos, números, booleanos e null. O cabeçalho Content-Type: application/json descreve o formato enviado. HTTP não obriga que toda resposta seja JSON. Uma API pode escolher outra representação e deve documentá-la.
+
+## Autenticação e autorização
+Autenticação verifica a identidade do solicitante. Autorização verifica se uma identidade pode realizar determinada ação sobre um recurso. Um usuário autenticado pode não ter permissão para excluir dados. A aplicação precisa val

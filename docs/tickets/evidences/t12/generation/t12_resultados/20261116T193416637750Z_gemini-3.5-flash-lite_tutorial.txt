@@ -1,0 +1,22 @@
+{
+  "summary": "Este tutorial aborda os conceitos fundamentais de requisições HTTP, códigos de resposta, o uso do formato JSON e as diferenças entre autenticação e autorização.",
+  "sections": [
+    {
+      "title": "Requisições e Métodos HTTP",
+      "body": "O protocolo HTTP gerencia a comunicação entre clientes e servidores. O cliente envia uma requisição e o servidor retorna uma resposta. Para consultar recursos, utiliza-se o método GET. Para enviar dados para processamento ou criar recursos, o método POST é o normalmente utilizado."
+    },
+    {
+      "title": "Códigos de Resposta HTTP",
+      "body": "As respostas HTTP incluem códigos de status para indicar o resultado da operação. O código 200 significa sucesso e o 201 indica que um recurso foi criado. Erros do cliente são representados pelo 400, enquanto a falta de credenciais válidas gera o 401. O código 404 indica que o recurso não foi encontrado e o 500 aponta um erro inesperado no servidor."
+    },
+    {
+      "title": "Formato JSON e Segurança",
+      "body": "O formato JSON é usado para representar dados estruturados, embora o HTTP não exija o seu uso em todas as mensagens. Além disso, a autenticação identifica quem faz a chamada, enquanto a autorização verifica se a identidade autenticada possui permissão para realizar uma operação."
+    }
+  ],
+  "takeaways": [
+    "O método GET consulta recursos e o POST cria ou envia dados para processamento.",
+    "Os códigos de status HTTP como 200, 201, 400, 401, 404 e 500 indicam o resultado da requisição.",
+    "A autenticação identifica o usuário, ao passo que a autorização verifica as permissões de acesso."
+  ]
+}
